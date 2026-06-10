@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=77.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ancestree"
+version = "0.1.0"
+description = "A Python package for tracing and managing data lineage"
+readme = "README.md"
+authors = [
+  {name = "Joshua Smith", email = "josh.smith195@outlook.com"}
+]
+maintainers = [
+  {name = "Joshua Smith", email = "josh.smith195@outlook.com"}
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+license = "MIT"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "coverage",  # testing
+    "mypy",  # linting
+    "pytest",  # testing
+    "ruff"  # linting
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/JS195/ancestree/issues"
+Changelog = "https://github.com/JS195/ancestree/blob/main/changelog.md"
+Homepage = "https://github.com/JS195/ancestree"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["ancestree", "ancestree.assets"]
+
+[tool.setuptools.package-data]
+"ancestree.assets" = ["*"]
+
+# Mypy
+# ----
+[tool.mypy]
+files = "."
+strict = true
+warn_unreachable = true
+warn_no_return = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+allow_untyped_defs = true
+disable_error_code = "attr-defined"

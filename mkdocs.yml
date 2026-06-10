@@ -1,0 +1,72 @@
+site_name: Ancestree Documentation
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+  features:
+    - content.code.py
+    - navigation.expand
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_symbol_type_heading: true
+            show_root_full_path: true
+            show_source: true
+            group_by_category: true
+
+  - mkdocs-jupyter:
+      show_input: true
+      execute: false
+      kernel_name: python3
+      no_input: false
+
+markdown_extensions:
+  - attr_list
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: ["."]
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Home: index.md
+  - Examples:
+    - Overview: examples.md
+    - Basic Usage: examples/basic_usage.ipynb
+    - Machine Learning Pipeline: examples/ML_pipeline.ipynb
+
+  - API Reference: reference.md
+
+extra_css:
+  - stylesheets/extra.css
