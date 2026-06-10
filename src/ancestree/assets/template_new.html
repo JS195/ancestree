@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+    <title>Interactive Pipeline Explorer</title>
+
+    <script type="text/javascript" src="../../web_app/vis-network.min.js"></script>
+    <link rel="stylesheet" href ="../../web_app/styles.css">
+
+</head>
+<body>
+
+<header class="app-header">
+    <div class="header-left">
+        <h1>Pipeline <span>Explorer</span></h1>
+        <div class="main-title">Interactive Pipeline Explorer</div>
+    </div>
+
+    <div class ="header-right">
+        <button class="theme-toggle control-button" onclick="toggleTheme()">Toggle Theme</button>
+        <div class="color-picker-wrapper control-button">
+            <label for="accent-picker">Accent</label>
+            <input type="color" id="accent-picker" value="#0071e3">
+        </div>
+    </div>
+</header>
+
+<main id="app-container">
+    <div id="mynetwork"></div>
+    <div id="resizer"></div>
+    <aside id="details-pane">
+        <div class="pane-content">
+            <div id="node-content">
+                <div class="empty-state">
+                    <p>Select a node to view details. Cmd click a second node to compare.</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</main>
+
+<script type="text/javascript">
+    window.PIPELINE_DATA = {
+        nodes: {{PYTHON_NODES}},
+        edges: {{PYTHON_EDGES}}
+    };
+</script>
+
+<script src="../../web_app/actions.js"></script>
+
+</body>
+</html>
