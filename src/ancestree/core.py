@@ -102,8 +102,13 @@ class LineageStore:
 
     @contextmanager
     def create_node(self, step_type:str, parent: Union['Node', str, None] = None):
-        """Creates a new node on the disk while enforcing lineage rules. 
-        
+        """Creates a new node while enforcing lineage rules.
+
+        The node only materialises on disk once the user writes an artifact or
+        adds metadata; an untouched node is discarded with a warning. If the
+        user's code raises after writing, the partial work is persisted and the
+        node's 'healthy' metadata flag is set to False (True on clean completion).
+
         If parent is not supplied, the store will search the most recently created node to serve as a parent subject to the lineage rules.
 
         Args:
@@ -117,12 +122,6 @@ class LineageStore:
         Yields:
             'Node': A new node instance.
         """
-        if parent is None:
-            parent_node_type = self.rules.get(step_type)
-            try:
-                parent = self.get_most_recent_node(step_type=parent_node_type[0])
-            except:
-                parent = None
 
         parent_node = self.get_node(parent)
         parent_type = parent_node.step_type if parent_node else None
@@ -149,29 +148,40 @@ class LineageStore:
         parent_id = parent_node.node_id if parent_node else None
         new_node = Node._create(node_path, node_id, current_gen, parent_id, step_type=step_type)
 
-        new_node.path.mkdir(parents=True, exist_ok=False)
         try:
             yield new_node
-
-            has_artifacts = bool(new_node.artifacts())
-            has_user_meta = bool(set(new_node._metadata) - new_node._system_keys)
-
-            if has_artifacts or has_user_meta:
-                new_node._write_meta()
-                self.database.add(new_node.node_id, new_node.to_db())
-            else:
+        except BaseException:
+            # Keep partial work: anything written before the failure persists,
+            # flagged as unhealthy. An untouched node leaves no trace.
+            if not self._persist_if_touched(new_node, healthy=False):
                 shutil.rmtree(new_node.path, ignore_errors=True)
-                import warnings
-                warnings.warn(
-                    f"Node '{new_node.node_id}' (step_type='{step_type}') was discarded: "
-                    "no artifacts were written and no metadata was added. "
-                    "Write at least one file or call node.add_meta() to persist the node.",
-                    UserWarning,
-                    stacklevel=2
-                )
-        except Exception:
-            shutil.rmtree(new_node.path, ignore_errors=True)
             raise
+
+        if not self._persist_if_touched(new_node, healthy=True):
+            shutil.rmtree(new_node.path, ignore_errors=True)
+            import warnings
+            warnings.warn(
+                f"Node '{new_node.node_id}' (step_type='{step_type}') was discarded: "
+                "no artifacts were written and no metadata was added. "
+                "Write at least one file or call node.add_meta() to persist the node.",
+                UserWarning,
+                stacklevel=2
+            )
+
+    def _persist_if_touched(self, node: 'Node', healthy: bool) -> bool:
+        """
+        Persists and indexes the node if the user wrote any artifact or
+        metadata, recording whether its code block ran to completion in the
+        'healthy' flag. Returns True if the node was persisted.
+        """
+        has_artifacts = bool(node.artifacts())
+        has_user_meta = bool(set(node._metadata) - node._system_keys)
+        if not (has_artifacts or has_user_meta):
+            return False
+        node.add_meta('healthy', healthy, type='text', group='Structural Properties')
+        node._write_meta()
+        self.database.add(node.node_id, node.to_db())
+        return True
 
     def rebuild_db_from_disk(self) -> None:
         """
