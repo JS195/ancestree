@@ -10,7 +10,6 @@ from .database import lineage_database
 # Local imports
 from .models import Node
 from .vis import run_web_generator
-from .utils import is_match
 
 class LineageStore:
     """
@@ -147,12 +146,14 @@ class LineageStore:
             current_gen=parent_gen
 
         node_id = uuid.uuid4().hex[:8]
+        while node_id in self.database.cache or (self.root / node_id).exists():
+            node_id = uuid.uuid4().hex[:8]
         node_path = self.root / node_id
 
         parent_id = parent_node.node_id if parent_node else None
         new_node = Node(node_path, node_id, current_gen, parent_id, step_type=step_type)
 
-        new_node.path.mkdir(parents=True, exist_ok=True)
+        new_node.path.mkdir(parents=True, exist_ok=False)
         try:
             yield new_node
 
@@ -224,8 +225,10 @@ class LineageStore:
         Returns:
             List[Path]: A list of matching Node objects.
         """
-        lineage = self.get_lineage(node)
-        return [n for n in lineage if is_match(n.to_db(), **kwargs)]
+        if isinstance(node, Node):
+            node = node.node_id
+        matching_ids = self.database.find_in_lineage(node, **kwargs)
+        return [self.get_node(node_id) for node_id in matching_ids]
 
     def get_most_recent_node(self, **kwargs: Any) -> Optional['Node']:
         """
