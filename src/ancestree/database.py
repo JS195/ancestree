@@ -15,28 +15,18 @@ def parse_iso_utc(s: str) -> datetime:
     return datetime.fromisoformat(s)
     
 
-def _finditem(obj, target_key):
-    """Internal helper — flat dict lookup with list support."""
-    if isinstance(obj, dict):
-        return obj.get(target_key)
-    if isinstance(obj, list):
-        for item in obj:
-            result = _finditem(item, target_key)
-            if result is not None:
-                return result
-    return None
-
-
 def is_match(meta, **kwargs):
+    """Flat key lookup against an index entry: every kwarg must equal the
+    stored value, or — for callable values — return truthy when applied to it."""
     for key, value in kwargs.items():
-        nested_val = _finditem(meta, key)
+        stored = meta.get(key)
         if callable(value):
             try:
-                if not value(nested_val):
+                if not value(stored):
                     return False
             except Exception:
                 return False
-        elif nested_val != value:
+        elif stored != value:
             return False
     return True
 

@@ -28,7 +28,33 @@ class Node:
 
     @property
     def metadata(self):
-        return deepcopy(self._metadata)
+        return deepcopy(self._hydrate())
+
+    def _hydrate(self):
+        # Index-backed nodes (_from_index) defer reading meta.json until the
+        # full metadata is actually needed.
+        if self._metadata is None:
+            self._metadata = json.loads((self.path / "meta.json").read_text())
+        return self._metadata
+
+    @classmethod
+    def _from_index(cls, path: Path, flat: dict) -> 'Node':
+        """
+        Builds a node from the database's flattened index entry without
+        touching disk. The full metadata is hydrated lazily from meta.json
+        on first access.
+
+        Args:
+            path (Path): The directory of the node.
+            flat (dict): The node's flat index entry (key -> value).
+
+        Returns:
+            Node: The index-backed node.
+        """
+        node = cls(path, flat.get('node_id'), flat.get('generation'),
+                   flat.get('parent_id'), step_type=flat.get('step_type'))
+        node._metadata = None
+        return node
 
     @classmethod
     def _load(cls, path: Path) -> 'Node':
@@ -87,7 +113,7 @@ class Node:
             'group': group,
             'searchable': searchable
         }}
-        self._metadata.update(entry)
+        self._hydrate().update(entry)
 
     def _write_meta(self):
         """
@@ -106,11 +132,10 @@ class Node:
     def to_db(self):
         # This is a flat key value dict for easy searching and indexing
         entries = {}
-        for m in self.metadata.keys():
-            nested_properties = self.metadata.get(m)
-            if nested_properties.get('searchable', True):
-                entries[m] = nested_properties.get('value')
-        
+        for key, properties in self._hydrate().items():
+            if properties.get('searchable', True):
+                entries[key] = properties.get('value')
+
         return entries
 
 
