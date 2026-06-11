@@ -20,7 +20,7 @@ theme:
         name: Switch to light mode
 
   features:
-    - content.code.py
+    - content.code.copy
     - navigation.expand
 
 plugins:
@@ -44,6 +44,7 @@ plugins:
 
 markdown_extensions:
   - attr_list
+  - md_in_html
   - admonition
   - pymdownx.highlight:
       anchor_linenums: true
@@ -65,6 +66,7 @@ nav:
     - Overview: examples.md
     - Basic Usage: examples/basic_usage.ipynb
     - Machine Learning Pipeline: examples/ML_pipeline.ipynb
+    - Timing Benchmark: examples/timing_benchmark.ipynb
 
   - API Reference: reference.md
 

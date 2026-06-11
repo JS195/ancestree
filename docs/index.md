@@ -32,5 +32,9 @@ store = ancestree.LineageStore(root="./my_store", rules={"process":[None]})
 
 # Create
 with store.create_node(step_type="process") as node:
-    # do something
+    node.add_meta("rows", 100, type="number")
 ```
+
+## Next Steps
+- Walk through the [Examples](examples.md) to see complete pipelines.
+- Browse the [API Reference](reference.md) for full details on every class.

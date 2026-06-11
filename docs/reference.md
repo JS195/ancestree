@@ -1,6 +1,6 @@
 # API Reference 
 
-Technical documentation for the **Ancestree** lineage system. All core classes and utilities are accessible directly from the top-level `ancestree` package.
+Technical documentation for the **Ancestree** lineage system. The `LineageStore` is the public entry point and is accessible directly from the top-level `ancestree` package — searching, lineage traversal, and visualisation all happen through its methods.
 
 ## Core Orchestration
 The `LineageStore` is the prime entry point for managing your pipeline.
@@ -13,24 +13,16 @@ The `LineageStore` is the prime entry point for managing your pipeline.
 
 ---
 
-## Data models
-The `Node` class represents the actual directories and associated metadata stored on the disk.
+## Working with Nodes
+You never construct a `Node` yourself — they are created by `LineageStore.create_node` and returned by the store's search and lineage methods. You will interact with them to read and attach metadata, locate artifacts, and build paths inside a node's directory.
 
-::: ancestree.Node
+::: ancestree.models.Node
     options:
         show_root_heading: true
         heading_level: 3
-
-## Formatting Metadata
-Metadata requires formatting for decoding and display in the interactive HTML.
-
-::: ancestree.format_metadata
-    options:
-        show_root_heading: true
-        heading_level: 3
-
-<!-- ---
-
-## Visualisation
-Helper functions for generating graphs and formatting metadata.
-::: ancestree.vis -->
+        show_if_no_docstring: true
+        members:
+            - metadata
+            - add_meta
+            - artifacts
+            - __truediv__
