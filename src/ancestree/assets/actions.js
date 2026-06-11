@@ -97,6 +97,10 @@ function toggleTheme() {
         font: {color:edgeColor, inherit: false}
     })));
 
+    // The accent has light/dark variants: re-resolve it for edge highlights
+    const accent = getStyle('--accent');
+    network.setOptions({edges: {color: {highlight: accent, hover: accent}}});
+
     // Re-dim non-matches with the new theme's colors
     applySearchHighlight();
 }
@@ -141,22 +145,6 @@ function initResizer() {
 
 window.onload = function() {
     initResizer();
-    document.getElementById('accent-picker').addEventListener('input', function(e){
-        const newAccent = e.target.value;
-
-        document.documentElement.style.setProperty('--accent', newAccent);
-
-        if (network) {
-            network.setOptions({
-                edges: {
-                    color: {
-                        highlight:newAccent,
-                        hover:newAccent
-                    }
-                }
-            });
-        }
-    });
 
     if (!window.PIPELINE_DATA) {
         console.error("No pipeline data from Python");
@@ -165,23 +153,6 @@ window.onload = function() {
 
     nodes=new vis.DataSet(window.PIPELINE_DATA.nodes);
     edges = new vis.DataSet(window.PIPELINE_DATA.edges)
-
-    function stringToColor(str) {
-        let hash = 2166136261;
-        for (let i = 0; i<str.length; i++) {
-            hash ^= str.charCodeAt(i);
-            // hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
-            hash = Math.imul(hash, 16777619)
-        }
-        const phi = 0.618033988749895;
-        let hue = Math.abs(hash*phi) % 1;
-        hue = Math.floor(hue*360)
-
-        return {
-            node_colour: `hsl(${hue}, 70%, 60%)`,
-            node_border_colour: `hsl(${hue}, 80%, 35%)`
-        };
-    }
 
     function getOptions(nodes) {
         const groups = {};
@@ -239,7 +210,7 @@ window.onload = function() {
             edges: {
                 arrows: {to: {enabled:true}},
                 smooth: {type:'cubicBezier', forceDirection:'horizontal'},
-                color: {color:'#848484', highlight:'#3498db', hover:'#3498db', inherit:false},
+                color: {color:'#848484', highlight:getStyle('--accent'), hover:getStyle('--accent'), inherit:false},
                 // opacity: 0.6
                 },
             // nodes: {
@@ -340,6 +311,23 @@ window.onload = function() {
     });
 };
 
+function stringToColor(str) {
+    let hash = 2166136261;
+    for (let i = 0; i<str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        // hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+        hash = Math.imul(hash, 16777619)
+    }
+    const phi = 0.618033988749895;
+    let hue = Math.abs(hash*phi) % 1;
+    hue = Math.floor(hue*360)
+
+    return {
+        node_colour: `hsl(${hue}, 70%, 60%)`,
+        node_border_colour: `hsl(${hue}, 80%, 35%)`
+    };
+}
+
 function renderMetadata(entries) {
     if (!entries) return '';
     const groups = {};
@@ -377,17 +365,8 @@ function renderValue(entry) {
 }
 
 function generateNodeHtml(nodeData) {
-    const entries = Object.fromEntries(
-        Object.entries(nodeData.entries || {}).filter(([key]) => key !== 'node_id')
-    );
     return `<div class="node-info">
-    <div class="section-card node-title-card">
-    <div class="section-header">Node</div>
-    <div class="section-body">
-    <div class="node-id-value">${nodeData.id}</div>
-    </div>
-    </div>
-    ${renderMetadata(entries)}
+    ${renderMetadata(nodeData.entries)}
     </div>`;
 }
 
