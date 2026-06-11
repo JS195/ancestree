@@ -5,9 +5,8 @@ import uuid
 from typing import List, Dict, Any, Optional, Union
 import shutil
 from contextlib import contextmanager
-from .database import lineage_database
 
-# Local imports
+from .database import lineage_database
 from .models import Node
 from .vis import run_web_generator
 
@@ -97,10 +96,7 @@ class LineageStore:
         if not node_path.exists():
             return None
         try:
-            meta_path = node_path / "meta.json"
-            m = json.loads((meta_path).read_text())
-            n = Node(self.root / node, node, m.get('generation').get('value'), m.get('parent_id').get('value'), m.get('step_type').get('value'))
-            return n
+            return Node._load(node_path)
         except (FileNotFoundError, json.JSONDecodeError, AttributeError):
             return None
 
@@ -151,15 +147,14 @@ class LineageStore:
         node_path = self.root / node_id
 
         parent_id = parent_node.node_id if parent_node else None
-        new_node = Node(node_path, node_id, current_gen, parent_id, step_type=step_type)
+        new_node = Node._create(node_path, node_id, current_gen, parent_id, step_type=step_type)
 
         new_node.path.mkdir(parents=True, exist_ok=False)
         try:
             yield new_node
 
-            structural_keys = {'node_id', 'parent_id', 'generation', 'step_type', 'timestamp'}
             has_artifacts = bool(new_node.artifacts())
-            has_user_meta = bool(set(new_node._metadata.keys()) - structural_keys)
+            has_user_meta = bool(set(new_node._metadata) - new_node._system_keys)
 
             if has_artifacts or has_user_meta:
                 new_node._write_meta()

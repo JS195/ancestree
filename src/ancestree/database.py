@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-import datetime
+from datetime import datetime
 
 def parse_iso_utc(s: str) -> datetime:
     """
