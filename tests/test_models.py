@@ -13,10 +13,10 @@ def node(tmp_path):
     """A fresh in-memory node rooted under tmp_path (meta not yet written)."""
     path = tmp_path / "abcd1234"
     path.mkdir()
-    return Node(path, "abcd1234", 0, None, step_type="ingest")
+    return Node._create(path, "abcd1234", 0, None, step_type="ingest")
 
 
-class TestSpinUp:
+class TestCreateAndLoad:
     def test_fresh_node_builds_structural_metadata(self, node):
         meta = node.metadata
         assert meta["node_id"]["value"] == "abcd1234"
@@ -25,20 +25,62 @@ class TestSpinUp:
         assert meta["step_type"]["value"] == "ingest"
         # Timestamp must be parseable ISO-8601.
         datetime.fromisoformat(meta["timestamp"]["value"])
-        for entry in meta.values():
-            assert entry["group"] == "Structural Properties"
+        for key in ("node_id", "parent_id", "generation", "step_type", "timestamp"):
+            assert meta[key]["group"] == "Structural Properties"
 
-    def test_existing_node_loads_metadata_from_disk(self, node):
+    def test_fresh_node_captures_provenance(self, node):
+        meta = node.metadata
+        for key in ("user", "python_version", "platform", "git_commit", "git_dirty", "git_branch"):
+            assert meta[key]["group"] == "Provenance"
+            assert meta[key]["searchable"] is False
+
+    def test_create_records_system_keys(self, node):
+        assert node._system_keys == set(node.metadata)
+        node.add_meta("accuracy", 0.95)
+        assert set(node.metadata) - node._system_keys == {"accuracy"}
+
+    def test_bare_constructor_performs_no_io(self, tmp_path):
+        bare = Node(tmp_path / "missing", "abcd1234", 0, None, step_type="ingest")
+        assert bare.metadata == {}
+        assert not (tmp_path / "missing").exists()
+
+    def test_load_derives_attributes_from_disk(self, node):
         node.add_meta("source", "api")
         node._write_meta()
 
-        reloaded = Node(node.path, "abcd1234", 0, None, step_type="ingest")
+        reloaded = Node._load(node.path)
         assert reloaded.metadata == node.metadata
+        assert reloaded.node_id == "abcd1234"
+        assert reloaded.generation == 0
+        assert reloaded.parent_id is None
+        assert reloaded.step_type == "ingest"
 
     def test_metadata_property_returns_defensive_copy(self, node):
         snapshot = node.metadata
         snapshot["node_id"]["value"] = "tampered"
         assert node.metadata["node_id"]["value"] == "abcd1234"
+
+
+class TestFromIndex:
+    def test_attributes_come_from_index_without_disk(self, tmp_path):
+        flat = {"node_id": "abcd1234", "generation": 2, "parent_id": "ffff0000", "step_type": "clean"}
+        lazy = Node._from_index(tmp_path / "abcd1234", flat)  # path doesn't exist
+
+        assert lazy.node_id == "abcd1234"
+        assert lazy.generation == 2
+        assert lazy.parent_id == "ffff0000"
+        assert lazy.step_type == "clean"
+
+    def test_metadata_hydrates_lazily_from_disk(self, node):
+        node._write_meta()
+        lazy = Node._from_index(node.path, node.to_db())
+        assert lazy._metadata is None  # nothing read yet
+        assert lazy.metadata == node.metadata
+
+    def test_metadata_access_without_meta_json_raises(self, tmp_path):
+        lazy = Node._from_index(tmp_path / "missing", {"node_id": "missing"})
+        with pytest.raises(FileNotFoundError):
+            lazy.metadata
 
 
 class TestAddMeta:
