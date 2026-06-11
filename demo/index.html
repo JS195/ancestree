@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="..">
+        <link rel="prev" href="../examples/timing_benchmark/">
       
       
-        <link rel="next" href="basic_usage/">
+        <link rel="next" href="../reference/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Overview - Ancestree Documentation</title>
+        <title>Live Demo - Ancestree Documentation</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#examples" class="md-skip">
+        <a href="#live-demo" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Live Demo
             
           </span>
         </div>
@@ -209,6 +209,8 @@
           
             
               
+                
+              
               <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
@@ -260,20 +262,20 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -294,7 +296,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -309,19 +311,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
         
   
   
@@ -337,7 +330,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -350,7 +342,7 @@
   
   
     <li class="md-nav__item">
-      <a href="basic_usage/" class="md-nav__link">
+      <a href="../examples/basic_usage/" class="md-nav__link">
         
   
   
@@ -378,7 +370,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ML_pipeline/" class="md-nav__link">
+      <a href="../examples/ML_pipeline/" class="md-nav__link">
         
   
   
@@ -406,7 +398,7 @@
   
   
     <li class="md-nav__item">
-      <a href="timing_benchmark/" class="md-nav__link">
+      <a href="../examples/timing_benchmark/" class="md-nav__link">
         
   
   
@@ -438,10 +430,19 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../demo/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -457,6 +458,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -496,7 +498,9 @@
             
             
               
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -520,26 +524,23 @@
               <article class="md-content__inner md-typeset">
                 
                   
+  
 
 
 
-<h1 id="examples">Examples</h1>
-<p>Explore how to use <strong>Ancestree</strong> for different scenarios. Each example is a runnable Jupyter notebook rendered directly in these docs.</p>
-<div class="grid cards">
-<ul>
-<li>
-<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"/></svg></span> <strong><a href="basic_usage/">Basic Usage</a></strong></p>
-<p>Create a store, build a small lineage, and visualise it — the best place to start.</p>
-</li>
-<li>
-<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5"/></svg></span> <strong><a href="ML_pipeline/">Machine Learning Pipeline</a></strong></p>
-<p>Track a realistic multi-step ML workflow from ingestion through to model output.</p>
-</li>
-<li>
-<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a7 7 0 0 1-7-7 7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7m7.03-12.61 1.42-1.42c-.45-.51-.9-.97-1.41-1.41L17.62 6c-1.55-1.26-3.5-2-5.62-2a9 9 0 0 0-9 9 9 9 0 0 0 9 9c5 0 9-4.03 9-9 0-2.12-.74-4.07-1.97-5.61M11 14h2V8h-2m4-7H9v2h6z"/></svg></span> <strong><a href="timing_benchmark/">Timing Benchmark</a></strong></p>
-<p>Measure Ancestree's overhead as the number of nodes grows.</p>
-</li>
-</ul>
+
+<h1 id="live-demo">Live Demo</h1>
+<p>This is a real, unmodified <code>interactive_pipeline.html</code> produced by the <a href="../examples/ML_pipeline/">Machine Learning Pipeline example</a> — the iris dataset run through two scalers, three embedding methods, and two clustering algorithms, tracked as 21 nodes across four generations.</p>
+<p>Explore it exactly as you would on your own machine: drag to pan, scroll to zoom, and <strong>click any node</strong> to inspect its metadata — hyperparameters, scores, the cluster plots rendered inline as figures, and links to every artifact the node produced.</p>
+<p><a class="md-button" href="../assets/demo/interactive_pipeline.html" target="_blank"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2z"/></svg></span> Open full screen</a></p>
+<iframe src="../assets/demo/interactive_pipeline.html"
+        width="100%" height="720"
+        style="border: 1px solid var(--md-default-fg-color--lightest); border-radius: 4px;"
+        title="Ancestree interactive pipeline demo"></iframe>
+
+<div class="admonition tip">
+<p class="admonition-title">Generate your own</p>
+<p>This file is the output of a single call — <code>store.generate_web_graph()</code> — and is fully self-contained: no server, no dependencies, just open it in a browser or share it as-is.</p>
 </div>
 
 
@@ -548,8 +549,13 @@
 
 
 
+  
+  
 
 
+
+
+  
 
 
 
