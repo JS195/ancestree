@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "raw data": [
+      null
+    ],
+    "scaling": [
+      "raw data"
+    ],
+    "embedding": [
+      "scaling"
+    ],
+    "clustering": [
+      "embedding"
+    ]
+  },
+  "triggers": [
+    "scaling",
+    "embedding",
+    "clustering"
+  ]
+}
