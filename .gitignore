@@ -117,5 +117,4 @@ docs/examples/ML_pipeline
 docs/examples/benchmark_10k_store
 
 .ipynb_checkpoints/
-*.ipynb
 .DS_Store

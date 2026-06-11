@@ -1,0 +1,50 @@
+{
+  "node_id": {
+    "value": "d5a5ddda",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "parent_id": {
+    "value": "fb197e8f",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "generation": {
+    "value": 3,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "step_type": {
+    "value": "clustering",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "timestamp": {
+    "value": "2026-06-11T15:56:23.791696+00:00",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "CH_score": {
+    "value": 1912.6168710173179,
+    "type": "text",
+    "group": "Metrics",
+    "searchable": true
+  },
+  "Final Results": {
+    "value": "d5a5ddda/clustering_img.png",
+    "type": "image",
+    "group": "Results",
+    "searchable": true
+  },
+  "healthy": {
+    "value": true,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  }
+}

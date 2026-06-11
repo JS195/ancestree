@@ -1,12 +1,24 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Dict
 from .utils import get_provenance
 from copy import deepcopy
 from typing import Union
 
 class Node:
+    """
+    Represents a single step in the pipeline: a directory on disk holding the step's artifacts and a meta.json describing it.
+
+    Nodes are not constructed directly. They are created by `LineageStore.create_node` and returned by the store's search and lineage methods (`find_node`, `get_lineage`, `get_child_nodes`, ...). Interact with a node to read and attach metadata, locate its artifacts, and build paths inside its directory with the `/` operator.
+
+    Attributes:
+        path (Path): The node's directory on disk.
+        node_id (str): The unique 8-character identifier of the node.
+        generation (int): The generation number of the node in the pipeline.
+        parent_id (str): The node_id of the parent node, or None for a root node.
+        step_type (str): The type of pipeline step this node represents.
+    """
     def __init__(self, path: Path, node_id: str, generation: int, parent_id: str, step_type:str=None):
         """
         Initialises a node instance. Performs no I/O: use Node._load() to read
@@ -27,7 +39,21 @@ class Node:
         self._system_keys = set[Any]()
 
     @property
-    def metadata(self):
+    def metadata(self) -> Dict[str, Dict[str, Any]]:
+        """
+        The node's full metadata as a dictionary.
+
+        Each key maps to an entry of the form `{'value': ..., 'type': ..., 'group': ..., 'searchable': ...}`. This includes both the structural metadata written by the store (node_id, parent_id, generation, step_type, timestamp, provenance) and anything added with `add_meta`.
+
+        Returns a deep copy: mutating the result does not change the node. Use `add_meta` to modify metadata.
+
+        Returns:
+            Dict[str, Dict]: A mapping of metadata key to its entry dictionary.
+
+        Examples:
+            >>> node.metadata["accuracy"]["value"]
+            0.92
+        """
         return deepcopy(self._hydrate())
 
     def _hydrate(self):
@@ -105,6 +131,23 @@ class Node:
 
 
     def add_meta(self, key, value, type='text', group=None, searchable=True):
+        """
+        Attaches a piece of metadata to the node.
+
+        Metadata is what makes a node discoverable: every searchable entry can be matched by the store's search methods (`find_node`, `find_in_lineage`, `get_most_recent_node`) and is displayed in the interactive web graph. Adding a key that already exists overwrites the previous entry.
+
+        Args:
+            key (str): The name of the metadata entry.
+            value (Any): The value to store. Must be JSON-serialisable.
+            type (str, optional): How the value is rendered in the web graph. Use 'image' for a path to an image file inside the node (the value is rewritten relative to the store root and displayed inline) or 'link' for a clickable file link. Any other value, e.g. the default 'text', renders as plain text. Defaults to 'text'.
+            group (str, optional): A heading to group related entries under in the web graph display. Defaults to None.
+            searchable (bool, optional): If True the entry is indexed and can be matched by the store's search methods. Set to False for display-only metadata. Defaults to True.
+
+        Examples:
+            >>> with store.create_node(step_type="model") as node:
+            ...     node.add_meta("accuracy", 0.92, group="Metrics")
+            ...     node.add_meta("loss_curve", node / "loss.png", type="image", group="Metrics")
+        """
         if type == 'image':
             value = str(Path(str(value).removeprefix(str(self.path.parent) + "/").removeprefix(str(self.path.parent))))
         entry = {f'{key}': {
@@ -145,13 +188,15 @@ class Node:
         Recursively finds all artifacts regardless of storage depth.
 
         Args:
-            contains (str, optional): A glob pattern to filter discovered files. Defaults to "*".
+            contains (str, optional): A glob pattern to filter discovered files. A plain substring also works: it is matched anywhere in the filename, case-insensitively. Defaults to "*" (all files).
 
         Returns:
-            List[Path]: A list of dictionaries containing file metadata including name, absolute path, and extension (file type).
-        
+            List[Path]: The matching file paths, relative to the store root.
+
         Examples:
             >>> node.artifacts("*.csv")
+            [PosixPath('abc12345/sample.csv')]
+            >>> node.artifacts("sample")
             [PosixPath('abc12345/sample.csv')]
         """
         artifacts = []
@@ -166,20 +211,21 @@ class Node:
                     artifacts.append(f.relative_to(self.path.parent))
         return artifacts
             
-    def __truediv__(self, relative_loc: Union[Path, str]):
+    def __truediv__(self, relative_loc: Union[Path, str]) -> Path:
         """
-        Allows the use of the '/' operator to create paths relative to the node.
+        Allows the use of the '/' operator to create paths inside the node's directory, mirroring pathlib.
+
+        This is the idiomatic way to choose where to write an artifact. Any intermediate directories in the path are created automatically, so the returned path is always ready to write to.
 
         Args:
             relative_loc (Union[Path, str]): The string or Path object to append to the node's base path.
 
-        Returns (Path):
-            A path object representing the desired destination.
+        Returns:
+            Path: The resolved destination inside the node's directory.
 
         Examples:
-            >>> node = store.get_node("abc12345")
-            >>> data_path = node / "results/some_data.csv"
-            Path('store/abc12345/results/some_data.csv')
+            >>> with store.create_node(step_type="clean") as node:
+            ...     df.to_csv(node / "results/cleaned.csv")
         """
         target_path = self.path/relative_loc
         target_path.parent.mkdir(parents=True, exist_ok=True)
