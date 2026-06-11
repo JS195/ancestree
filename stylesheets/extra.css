@@ -1,23 +1,48 @@
+/* Ancestree brand — matches the interactive graph palette */
+[data-md-color-primary="custom"] {
+    --md-primary-fg-color: #0071e3;
+    --md-primary-fg-color--light: #4da3f0;
+    --md-primary-fg-color--dark: #0058b0;
+    --md-accent-fg-color: #5ac8fa;
+    --md-accent-fg-color--transparent: #5ac8fa1a;
+    --md-typeset-a-color: #0071e3;
+}
+
+[data-md-color-scheme="slate"][data-md-color-primary="custom"] {
+    --md-hue: 210;
+    --md-primary-fg-color: #0a84ff;
+    --md-primary-fg-color--light: #409cff;
+    --md-primary-fg-color--dark: #0066cc;
+    --md-accent-fg-color: #64d2ff;
+    --md-accent-fg-color--transparent: #64d2ff1a;
+    --md-typeset-a-color: #64d2ff;
+}
+
+.hero-buttons {
+    display: inline-grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 0.6rem;
+}
+
+.hero-buttons .md-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 0;
+}
+
+.hero-buttons .md-button:nth-child(4) {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
 .doc-object {
     margin-top: 50px !important;
     margin-bottom: 50px !important;
 }
 
 .doc-object {
-    border-top: 1px solid #eeeeee;
+    border-top: 1px solid var(--md-default-fg-color--lightest);
     padding-top: 25px;
 }
-
-/* [data-md-color-scheme="slate"] {
-    --md-default-bg-color: #1a1a1a;
-} */
-
-/* .md-typeset pre code {
-    background-color: #f8f9fa;
-    border-left: 4px solid #3f51b5;
-}
-
-.md-button--primary {
-    background-color: #3f51b5;
-    border-color: #3f51b5;
-} */

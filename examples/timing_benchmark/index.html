@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../ML_pipeline/">
       
       
-        <link rel="next" href="../ML_pipeline/">
+        <link rel="next" href="../../demo/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Basic Usage - Ancestree Documentation</title>
+        <title>10k Node Timing Test - Ancestree Documentation</title>
       
     
     
@@ -77,6 +77,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#10k-node-timing-test" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -109,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Basic Usage
+              10k Node Timing Test
             
           </span>
         </div>
@@ -332,17 +337,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../basic_usage/" class="md-nav__link">
         
   
   
@@ -358,7 +356,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -396,10 +393,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../timing_benchmark/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10k Node Timing Test
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -415,6 +439,114 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-create-10000-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Create 10,000 nodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-searching-and-querying-warm-in-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Searching and querying (warm, in-memory)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lineage-traversal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Lineage traversal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-cold-start-fresh-process-simulation-new-store-instance-loads-the-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Cold start (fresh process simulation: new store instance loads the snapshot)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-full-index-rebuild-the-only-disk-crawl-recovery-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Full index rebuild (the only disk crawl — recovery path)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-prune-the-first-roots-subtree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Prune the first root's subtree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-web-graph-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Web graph generation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-whats-on-disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. What's on disk
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -498,6 +630,104 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-create-10000-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Create 10,000 nodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-searching-and-querying-warm-in-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Searching and querying (warm, in-memory)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lineage-traversal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Lineage traversal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-cold-start-fresh-process-simulation-new-store-instance-loads-the-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Cold start (fresh process simulation: new store instance loads the snapshot)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-full-index-rebuild-the-only-disk-crawl-recovery-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Full index rebuild (the only disk crawl — recovery path)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-prune-the-first-roots-subtree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Prune the first root's subtree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-web-graph-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Web graph generation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-whats-on-disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. What's on disk
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -513,8 +743,6 @@
                   
 
 
-
-  <h1>Basic Usage</h1>
 
 <script>
 (function (global, factory) {
@@ -1237,8 +1465,21 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=intro">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="10k-node-timing-test">10k Node Timing Test<a class="anchor-link" href="#10k-node-timing-test">¶</a></h1><p>Actions happening in 100ms or less appears instant to a human. This is what we are aiming for.</p>
+<p>Spawns <strong>10,000 nodes</strong> as a branching forest and times every operation. From 5 ingest roots, each new node usually continues the most recent line of work, sometimes backs up a few steps to try an alternative, and occasionally splinters off a much older node — so parents have varying numbers of children, like a real exploratory workflow.
+Nodes are metadata-only so the timings are dominated by ancestree itself, not artifact I/O.
+Re-run top to bottom; the store is wiped at the start of each run.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=setup">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1256,16 +1497,34 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span><span class="o">,</span><span class="w"> </span><span class="nn">random</span><span class="o">,</span><span class="w"> </span><span class="nn">io</span><span class="o">,</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
+
+<span class="n">ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"benchmark_10k_store"</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">ROOT</span><span class="p">)</span>
+
+<span class="n">rules</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"ingest"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="s2">"transform"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"ingest"</span><span class="p">,</span> <span class="s2">"transform"</span><span class="p">]}</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">ROOT</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="p">[</span><span class="s2">"ingest"</span><span class="p">])</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import ancestree</div>
+<div class="clipboard-copy-txt" id="cell-1">import shutil, time, random, io, contextlib
+from pathlib import Path
+import ancestree
+
+ROOT = Path("benchmark_10k_store")
+if ROOT.exists():
+    shutil.rmtree(ROOT)
+
+rules = {"ingest": [None], "transform": ["ingest", "transform"]}
+store = ancestree.LineageStore(ROOT, rules=rules, gen_triggers=["ingest"])</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2df7fe30">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1283,42 +1542,51 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># We can call the store something. This can be either a str or a Path object.</span>
-<span class="n">folder_name</span> <span class="o">=</span> <span class="s1">'basic_usage'</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="c1"># Define a ruleset for the store (this needs only be done. It is written to the store in the .lineage_config.json file and found automatically even if the store does not stay in memory)</span>
-<span class="c1"># Rules define how steps progress and trigger defines which step triggers a new generation </span>
-<span class="c1"># RULES = {"from this step":["To this step"]}</span>
-
-<span class="n">RULES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"import data"</span><span class="p">:[</span><span class="kc">None</span><span class="p">],</span> <span class="c1"># Start a fresh pipeline with an import data variable</span>
-    <span class="s2">"clean NaN"</span><span class="p">:[</span><span class="s2">"import data"</span><span class="p">],</span> <span class="c1"># Cleaning NaNs must follow importing data</span>
-    <span class="s2">"scale"</span><span class="p">:[</span><span class="s2">"clean NaN"</span><span class="p">],</span> <span class="c1"># Scaling step must follow cleaning NaNs</span>
-    <span class="s2">"train model"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"scale"</span><span class="p">]</span> <span class="c1"># Model training must follow a cleaning of Nans</span>
-<span class="p">}</span>
-<span class="n">trigger</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'train model'</span><span class="p">]</span> <span class="c1"># On which step do you want a new generation to begin</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">timed</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">reps</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">times</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="p">[],</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">reps</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">fn</span><span class="p">()</span>
+        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="n">hits</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="si">}</span><span class="s2"> hits"</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="c1"># print(f"{label:&lt;50} best of {reps}: {min(times):8.2f} ms   ({hits})")</span>
+    <span class="c1"># print(f"{label:&lt;50} worst of {reps}: {max(times):8.2f} ms   ({hits})")</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">&lt;50</span><span class="si">}</span><span class="s2"> median of </span><span class="si">{</span><span class="n">reps</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms   (</span><span class="si">{</span><span class="n">hits</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2"># We can call the store something. This can be either a str or a Path object.
-folder_name = 'basic_usage'
+<div class="clipboard-copy-txt" id="cell-2">import numpy as np
 
-# Define a ruleset for the store (this needs only be done. It is written to the store in the .lineage_config.json file and found automatically even if the store does not stay in memory)
-# Rules define how steps progress and trigger defines which step triggers a new generation 
-# RULES = {"from this step":["To this step"]}
-
-RULES = {
-    "import data":[None], # Start a fresh pipeline with an import data variable
-    "clean NaN":["import data"], # Cleaning NaNs must follow importing data
-    "scale":["clean NaN"], # Scaling step must follow cleaning NaNs
-    "train model": ["scale"] # Model training must follow a cleaning of Nans
-}
-trigger = ['train model'] # On which step do you want a new generation to begin</div>
+def timed(label, fn, reps=100):
+    times, result = [], None
+    for _ in range(reps):
+        t = time.perf_counter()
+        result = fn()
+        times.append((time.perf_counter() - t) * 1000)
+    hits = f"{len(result)} hits" if isinstance(result, list) else type(result).__name__
+    # print(f"{label:&lt;50} best of {reps}: {min(times):8.2f} ms   ({hits})")
+    # print(f"{label:&lt;50} worst of {reps}: {max(times):8.2f} ms   ({hits})")
+    print(f"{label:&lt;50} median of {reps}: {np.median(times):8.2f} ms   ({hits})")
+    return result</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=create-md">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="1-create-10000-nodes">1. Create 10,000 nodes<a class="anchor-link" href="#1-create-10000-nodes">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=create">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1336,20 +1604,128 @@ trigger = ['train model'] # On which step do you want a new generation to begin<
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create the store</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">10_000</span>
+<span class="n">N_ROOTS</span> <span class="o">=</span> <span class="mi">5</span>
 
-<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">folder_name</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="n">trigger</span><span class="p">)</span>
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">nodes</span><span class="p">,</span> <span class="n">ids</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="n">depth</span><span class="p">,</span> <span class="n">children</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{}</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N_ROOTS</span><span class="p">:</span>
+        <span class="n">step</span><span class="p">,</span> <span class="n">parent</span> <span class="o">=</span> <span class="s2">"ingest"</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="s2">"transform"</span>
+        <span class="c1"># Exploratory branching: mostly continue the current line of work,</span>
+        <span class="c1"># sometimes back up a few steps and try an alternative, occasionally</span>
+        <span class="c1"># splinter off something much older.</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="mf">0.6</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="mf">0.9</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"accuracy"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"batch"</span><span class="p">,</span> <span class="n">i</span> <span class="o">//</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+    <span class="n">depth</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">depth</span><span class="p">[</span><span class="n">parent</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">children</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> nodes   </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="si">:</span><span class="s2">6.1f</span><span class="si">}</span><span class="s2">s elapsed"</span><span class="p">)</span>
+
+<span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="n">fanouts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">children</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">created </span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2"> nodes in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s  (</span><span class="si">{</span><span class="n">elapsed</span><span class="o">/</span><span class="n">N</span><span class="o">*</span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms/node)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"tree shape: </span><span class="si">{</span><span class="n">N_ROOTS</span><span class="si">}</span><span class="s2"> roots, max depth </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">depth</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">, "</span>
+      <span class="sa">f</span><span class="s2">"max fan-out </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">fanouts</span><span class="p">)</span><span class="si">}</span><span class="s2">, "</span>
+      <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fanouts</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes with multiple children"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3"># Create the store
+<div class="clipboard-copy-txt" id="cell-3">N = 10_000
+N_ROOTS = 5
 
-store = ancestree.LineageStore(folder_name, rules=RULES, gen_triggers=trigger)</div>
+random.seed(0)
+nodes, ids = [], []
+depth, children = {}, {}
+t0 = time.perf_counter()
+for i in range(N):
+    if i &lt; N_ROOTS:
+        step, parent = "ingest", None
+    else:
+        step = "transform"
+        # Exploratory branching: mostly continue the current line of work,
+        # sometimes back up a few steps and try an alternative, occasionally
+        # splinter off something much older.
+        r = random.random()
+        if r &lt; 0.6:
+            parent = nodes[-1]
+        elif r &lt; 0.9:
+            parent = random.choice(nodes[-50:])
+        else:
+            parent = random.choice(nodes)
+    with store.create_node(step_type=step, parent=parent) as node:
+        node.add_meta("accuracy", round(random.random(), 4))
+        node.add_meta("batch", i // 100)
+    nodes.append(node)
+    ids.append(node.node_id)
+    depth[node.node_id] = 0 if parent is None else depth[parent.node_id] + 1
+    if parent is not None:
+        children.setdefault(parent.node_id, []).append(node.node_id)
+    if (i + 1) % 1000 == 0:
+        print(f"{i+1:&gt;6} nodes   {time.perf_counter()-t0:6.1f}s elapsed")
+
+elapsed = time.perf_counter() - t0
+fanouts = [len(c) for c in children.values()]
+print(f"\ncreated {N} nodes in {elapsed:.1f}s  ({elapsed/N*1000:.2f} ms/node)")
+print(f"tree shape: {N_ROOTS} roots, max depth {max(depth.values())}, "
+      f"max fan-out {max(fanouts)}, "
+      f"{sum(1 for f in fanouts if f &gt; 1)} nodes with multiple children")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>  1000 nodes     17.9s elapsed
+  2000 nodes     37.5s elapsed
+  3000 nodes     58.4s elapsed
+  4000 nodes     80.8s elapsed
+  5000 nodes    105.2s elapsed
+  6000 nodes    131.1s elapsed
+  7000 nodes    158.7s elapsed
+  8000 nodes    188.3s elapsed
+  9000 nodes    219.6s elapsed
+ 10000 nodes    253.1s elapsed
+
+created 10000 nodes in 253.1s  (25.31 ms/node)
+tree shape: 5 roots, max depth 153, max fan-out 5, 2196 nodes with multiple children
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=query-md">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="2-searching-and-querying-warm-in-memory">2. Searching and querying (warm, in-memory)<a class="anchor-link" href="#2-searching-and-querying-warm-in-memory">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=query">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1367,45 +1743,60 @@ store = ancestree.LineageStore(folder_name, rules=RULES, gen_triggers=trigger)</
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Lets write some data to this node. Writing follows familiar syntax but the store handles pathing for us.</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-
-<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s1">'basic_usage'</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"import data"</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
-
-    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
-
-    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'something'</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="nb">type</span><span class="o">=</span><span class="s1">'text'</span><span class="p">)</span>
-
-    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span><span class="o">/</span><span class="s1">'samples.npy'</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(step_type='ingest')"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"ingest"</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(batch=250)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(lambda accuracy &gt; 0.99)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"get_most_recent_node(step_type='transform')"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"transform"</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"get_child_nodes(first root)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_child_nodes</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"get_most_recent_node()"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">())</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4"># Lets write some data to this node. Writing follows familiar syntax but the store handles pathing for us.
-import ancestree
-import numpy as np
-
-store = ancestree.LineageStore('basic_usage')
-
-with store.create_node(step_type="import data") as node:
-
-    X = np.random.randint(0, 100, (5,5))
-
-    node.add_meta('something', [1,2,3], type='text')
-
-    np.save(node/'samples.npy', X)</div>
+<div class="clipboard-copy-txt" id="cell-4">_ = timed("find_node(step_type='ingest')", lambda: store.find_node(step_type="ingest"))
+_ = timed("find_node(batch=250)", lambda: store.find_node(batch=20))
+_ = timed("find_node(lambda accuracy &gt; 0.99)", lambda: store.find_node(accuracy=lambda a: a is not None and a &gt; 0.99))
+_ = timed("get_most_recent_node(step_type='transform')", lambda: store.get_most_recent_node(step_type="transform"))
+_ = timed("get_child_nodes(first root)", lambda: store.get_child_nodes(ids[0]))
+_ = timed("get_most_recent_node()", lambda: store.get_most_recent_node())</div>
 </div>
 </div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>find_node(step_type='ingest')                      median of 100:     2.24 ms   (5 hits)
+find_node(batch=250)                               median of 100:     5.11 ms   (100 hits)
+find_node(lambda accuracy &gt; 0.99)                  median of 100:     5.49 ms   (97 hits)
+get_most_recent_node(step_type='transform')        median of 100:     4.23 ms   (Node)
+get_child_nodes(first root)                        median of 100:     2.16 ms   (1 hits)
+get_most_recent_node()                             median of 100:     2.97 ms   (Node)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=lineage-md">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="3-lineage-traversal">3. Lineage traversal<a class="anchor-link" href="#3-lineage-traversal">¶</a></h2>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=lineage">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
@@ -1418,9 +1809,13 @@ with store.create_node(step_type="import data") as node:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">deepest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">depth</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>  <span class="c1"># tip of the longest exploration line</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="sa">f</span><span class="s2">"get_lineage (depth </span><span class="si">{</span><span class="n">depth</span><span class="p">[</span><span class="n">deepest</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_lineage</span><span class="p">(</span><span class="n">deepest</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_in_lineage(lambda accuracy &gt; 0.5)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_in_lineage</span><span class="p">(</span><span class="n">deepest</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">n = store.get_most_recent_node()</div>
+<div class="clipboard-copy-txt" id="cell-5">deepest = max(depth, key=depth.get)  # tip of the longest exploration line
+_ = timed(f"get_lineage (depth {depth[deepest]})", lambda: store.get_lineage(deepest))
+_ = timed("find_in_lineage(lambda accuracy &gt; 0.5)", lambda: store.find_in_lineage(deepest, accuracy=lambda a: a is not None and a &gt; 0.5))</div>
 </div>
 </div>
 </div>
@@ -1429,17 +1824,30 @@ with store.create_node(step_type="import data") as node:
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[ ]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>Node = 8e027638, path = 8e027638, generation = 0</pre>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>get_lineage (depth 153)                            median of 100:     4.36 ms   (154 hits)
+find_in_lineage(lambda accuracy &gt; 0.5)             median of 100:     2.29 ms   (80 hits)
+</pre>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=cold-md">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="4-cold-start-fresh-process-simulation-new-store-instance-loads-the-snapshot">4. Cold start (fresh process simulation: new store instance loads the snapshot)<a class="anchor-link" href="#4-cold-start-fresh-process-simulation-new-store-instance-loads-the-snapshot">¶</a></h2>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=cold">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1457,9 +1865,17 @@ with store.create_node(step_type="import data") as node:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">store2</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">ROOT</span><span class="p">)</span>
+<span class="n">first</span> <span class="o">=</span> <span class="n">store2</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cold start (init + load index + first query):    </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"same query again (warm)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store2</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">store.generate_web_graph()</div>
+<div class="clipboard-copy-txt" id="cell-6">t = time.perf_counter()
+store2 = ancestree.LineageStore(ROOT)
+first = store2.find_node(batch=0)
+print(f"cold start (init + load index + first query):    {(time.perf_counter()-t)*1000:8.2f} ms")
+_ = timed("same query again (warm)", lambda: store2.find_node(batch=0))</div>
 </div>
 </div>
 </div>
@@ -1471,7 +1887,253 @@ with store.create_node(step_type="import data") as node:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Graph generated at basic_usage/interactive_pipeline.html
+<pre>cold start (init + load index + first query):       84.71 ms
+same query again (warm)                            median of 100:     4.78 ms   (100 hits)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=rebuild-md">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="5-full-index-rebuild-the-only-disk-crawl-recovery-path">5. Full index rebuild (the only disk crawl — recovery path)<a class="anchor-link" href="#5-full-index-rebuild-the-only-disk-crawl-recovery-path">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=rebuild">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">store</span><span class="o">.</span><span class="n">rebuild_db_from_disk</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rebuild_db_from_disk (</span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2"> meta.json files): </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-7">t = time.perf_counter()
+store.rebuild_db_from_disk()
+print(f"rebuild_db_from_disk ({N} meta.json files): {time.perf_counter()-t:.2f} s")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>rebuild_db_from_disk (10000 meta.json files): 0.40 s
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=prune-md">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="6-prune-the-first-roots-subtree">6. Prune the first root's subtree<a class="anchor-link" href="#6-prune-the-first-roots-subtree">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=prune">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">subtree_size</span><span class="p">(</span><span class="n">node_id</span><span class="p">):</span>
+    <span class="n">size</span><span class="p">,</span> <span class="n">stack</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">node_id</span><span class="p">]</span>
+    <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+        <span class="n">nid</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">size</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">children</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">nid</span><span class="p">,</span> <span class="p">[]))</span>
+    <span class="k">return</span> <span class="n">size</span>
+
+<span class="n">n_sub</span> <span class="o">=</span> <span class="n">subtree_size</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()):</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"prune dry-run (subtree of </span><span class="si">{</span><span class="n">n_sub</span><span class="si">}</span><span class="s2">):  </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">store</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"prune for real (subtree of </span><span class="si">{</span><span class="n">n_sub</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-8">def subtree_size(node_id):
+    size, stack = 0, [node_id]
+    while stack:
+        nid = stack.pop()
+        size += 1
+        stack.extend(children.get(nid, []))
+    return size
+
+n_sub = subtree_size(ids[0])
+t = time.perf_counter()
+with contextlib.redirect_stdout(io.StringIO()):
+    store.prune(ids[0], dry_run=True)
+print(f"prune dry-run (subtree of {n_sub}):  {(time.perf_counter()-t)*1000:8.2f} ms")
+
+t = time.perf_counter()
+store.prune(ids[0], recursive=True, dry_run=False)
+print(f"prune for real (subtree of {n_sub}): {(time.perf_counter()-t)*1000:8.2f} ms")</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=graph-md">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="7-web-graph-generation">7. Web graph generation<a class="anchor-link" href="#7-web-graph-generation">¶</a></h2><p>Timing the HTML generation only — don't actually open a 10k node graph in a browser unless you enjoy fan noise.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=graph">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()):</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"generate_web_graph: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="n">html</span> <span class="o">=</span> <span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"interactive_pipeline.html"</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"HTML size: </span><span class="si">{</span><span class="n">html</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-9">t = time.perf_counter()
+with contextlib.redirect_stdout(io.StringIO()):
+    store.generate_web_graph()
+print(f"generate_web_graph: {time.perf_counter()-t:.2f} s")
+html = ROOT / "interactive_pipeline.html"
+print(f"HTML size: {html.stat().st_size/1e6:.1f} MB")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>generate_web_graph: 1.27 s
+HTML size: 15.2 MB
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=disk-md">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="8-whats-on-disk">8. What's on disk<a class="anchor-link" href="#8-whats-on-disk">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=disk">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*"</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">()]</span>
+<span class="n">snap</span> <span class="o">=</span> <span class="n">ROOT</span> <span class="o">/</span> <span class="s2">".index.json"</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"snapshot (.index.json): </span><span class="si">{</span><span class="n">snap</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store total:            </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB across </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-10">files = [f for f in ROOT.rglob("*") if f.is_file()]
+snap = ROOT / ".index.json"
+print(f"snapshot (.index.json): {snap.stat().st_size/1e6:.2f} MB")
+print(f"store total:            {sum(f.stat().st_size for f in files)/1e6:.1f} MB across {len(files)} files")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>snapshot (.index.json): 1.87 MB
+store total:            19.3 MB across 9983 files
 </pre>
 </div>
 </div>
