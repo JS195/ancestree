@@ -1,84 +1,120 @@
-from pathlib import Path
-import shelve
 import json
-from .utils import parse_iso_utc, is_match
+from pathlib import Path
 from datetime import datetime
-from zoneinfo import ZoneInfo
+
+def parse_iso_utc(s: str) -> datetime:
+    """
+    Returns a datetime from a string.
+
+    Args:
+        s (str): String object representing a datetime.
+
+    Returns:
+        datetime: A datetime object.
+    """
+    return datetime.fromisoformat(s)
+    
+
+def is_match(meta, **kwargs):
+    """Flat key lookup against an index entry: every kwarg must equal the
+    stored value, or — for callable values — return truthy when applied to it."""
+    for key, value in kwargs.items():
+        stored = meta.get(key)
+        if callable(value):
+            try:
+                if not value(stored):
+                    return False
+            except Exception:
+                return False
+        elif stored != value:
+            return False
+    return True
+
+
+def _flatten(meta):
+    return {k: v.get('value') for k, v in meta.items()
+            if isinstance(v, dict) and v.get('searchable', True)}
+
 
 class lineage_database:
+    """In-memory index of node metadata, persisted as a disposable JSON
+    snapshot in the store root. meta.json files remain the source of truth:
+    the snapshot is reconciled against the directory listing on load and can
+    be rebuilt from disk at any time."""
+
     def __init__(self, root):
-        self.root = root
-        self.shelf_path = str(Path(self.root) / 'metadata_shelf.db')
+        self.root = Path(root)
+        self.snapshot_path = self.root / '.index.json'
+        self._cache = None
+
+    @property
+    def cache(self):
+        if self._cache is None:
+            self._load()
+        return self._cache
+
+    def _load(self):
+        if self.snapshot_path.exists():
+            self._cache = json.loads(self.snapshot_path.read_text())
+            self._reconcile()
+        else:
+            self.rebuild_from_disk()
+
+    def _reconcile(self):
+        on_disk = {d.name for d in self.root.iterdir() if (d / 'meta.json').exists()}
+        if on_disk != set(self._cache):
+            for node_id in set(self._cache) - on_disk:
+                del self._cache[node_id]
+            for node_id in on_disk - set(self._cache):
+                self._cache[node_id] = _flatten(json.loads((self.root / node_id / 'meta.json').read_text()))
+            self._flush()
+
+    def _flush(self):
+        # Atomic replace so concurrent readers never see a torn file.
+        tmp = self.root / '.index.json.tmp'
+        tmp.write_text(json.dumps(self.cache))
+        tmp.replace(self.snapshot_path)
 
     def rebuild_from_disk(self):
-        folder = Path(self.root)
-        with shelve.open(self.shelf_path) as db:
-            for file_path in folder.rglob("*meta.json"):
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    metadata = json.load(f)
-                key = str(file_path.parent.name)
-                db[key] = {
-                    k: v.get('value')
-                    for k, v in metadata.items()
-                    if isinstance(v, dict) and v.get('searchable', True)
-                }
+        self._cache = {p.parent.name: _flatten(json.loads(p.read_text()))
+                       for p in self.root.glob('*/meta.json')}
+        self._flush()
 
     def add(self, node_id, meta):
-        with shelve.open(self.shelf_path) as db:
-            db[node_id] = meta
+        self.cache[node_id] = meta
+        self._flush()
 
     def remove(self, node_id):
-        with shelve.open(self.shelf_path) as db:
-            del db[node_id]
+        del self.cache[node_id]
+        self._flush()
 
     def find_matches(self, **kwargs):
-        correct_nodes = []
-        
-        with shelve.open(self.shelf_path) as db:
-            shelve_keys = list(db.keys())
+        return [k for k, m in self.cache.items() if is_match(m, **kwargs)]
 
-            for shelve_key in shelve_keys:
+    def find_in_lineage(self, curr_node, **kwargs):
+        return [k for k in self.get_lineage(curr_node)
+                if is_match(self.cache[k], **kwargs)]
 
-                meta = db[shelve_key]
-
-                if is_match(meta, **kwargs):
-                    correct_nodes.append(shelve_key)
-        
-        return correct_nodes
-    
     def get_lineage(self, curr_node):
-        history = []
-        visited = set()
-        with shelve.open(self.shelf_path) as db:
-            while curr_node:
-                if curr_node in visited:
-                    raise ValueError(
-                        f"Cycle detected in lineage at node '{curr_node}'. "
-                        "The store metadata may be corrupted."
-                    )
-                if curr_node not in db:
-                    raise KeyError(
-                        f"Node '{curr_node}' not found in the index. "
-                        "It may have been pruned without recursive=True. "
-                        "Call store.rebuild_from_disk() to resync the index."
-                    )
-                visited.add(curr_node)
-                history.append(curr_node)
-                curr_node = db[curr_node].get('parent_id')
+        history, visited = [], set()
+        while curr_node:
+            if curr_node in visited:
+                raise ValueError(
+                    f"Cycle detected in lineage at node '{curr_node}'. "
+                    "The store metadata may be corrupted."
+                )
+            if curr_node not in self.cache:
+                raise KeyError(
+                    f"Node '{curr_node}' not found in the index. "
+                    "It may have been pruned without recursive=True. "
+                    "Call store.rebuild_db_from_disk() to resync the index."
+                )
+            visited.add(curr_node)
+            history.append(curr_node)
+            curr_node = self.cache[curr_node].get('parent_id')
         return history[::-1]
-    
+
     def get_most_recent(self, **kwargs):
-        all_nodes = self.find_matches(**kwargs)
-
-        best_seen = None
-        to_beat = datetime.min.replace(tzinfo=ZoneInfo("UTC"))
-
-        with shelve.open(self.shelf_path) as db:
-            for key in all_nodes:
-                timestamp = parse_iso_utc(db[key].get('timestamp'))
-
-                if timestamp > to_beat:
-                    to_beat = timestamp
-                    best_seen = key
-        
-        return best_seen
+        matches = self.find_matches(**kwargs)
+        return max(matches, default=None,
+                   key=lambda k: parse_iso_utc(self.cache[k].get('timestamp')))

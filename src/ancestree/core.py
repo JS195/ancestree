@@ -5,12 +5,10 @@ import uuid
 from typing import List, Dict, Any, Optional, Union
 import shutil
 from contextlib import contextmanager
-from .database import lineage_database
 
-# Local imports
+from .database import lineage_database
 from .models import Node
 from .vis import run_web_generator
-from .utils import is_match
 
 class LineageStore:
     """
@@ -59,23 +57,30 @@ class LineageStore:
 
     def find_node(self, **kwargs: Any) -> List['Node']:
         """
-        Search for nodes based on metadata key values. To simply find a key regardless of the value it holds the keyword can be specified with an ellipsis value.
+        Search for nodes based on metadata key values. Values are matched by
+        equality against the searchable metadata; pass a callable to express
+        a predicate instead.
 
         Args:
-            **kwargs (Any): Key-value pairs to match against node metadata (searches top level and nested dict entries).
+            **kwargs (Any): Key-value pairs to match against the node's searchable metadata keys.
 
         Returns:
             List['Node']: A list of node objects that match all provided criteria.
-        
+
         Examples:
             >>> store.find_node(step_type="ingest")
-            >>> store.find_node(accuracy>0.8, generation<3)
+            >>> store.find_node(accuracy=lambda a: a is not None and a > 0.8)
         """
-        node_objs = []
-        nodes = self.database.find_matches(**kwargs)
-        for node in nodes:
-            node_objs.append(self.get_node(node))
-        return node_objs
+        return [self._node_from_index(node_id)
+                for node_id in self.database.find_matches(**kwargs)]
+
+    def _node_from_index(self, node_id: str) -> 'Node':
+        """
+        Builds a Node from the in-memory index without touching disk; the
+        full metadata is hydrated lazily on first access. Only valid for ids
+        present in the index.
+        """
+        return Node._from_index(self.root / node_id, self.database.cache[node_id])
 
     def get_node(self, node: Union[str, 'Node', None] = None) -> Optional['Node']:
         """
@@ -98,23 +103,22 @@ class LineageStore:
         if not node_path.exists():
             return None
         try:
-            meta_path = node_path / "meta.json"
-            m = json.loads((meta_path).read_text())
-            n = Node(self.root / node, node, m.get('generation').get('value'), m.get('parent_id').get('value'), m.get('step_type').get('value'))
-            return n
+            return Node._load(node_path)
         except (FileNotFoundError, json.JSONDecodeError, AttributeError):
             return None
 
     @contextmanager
     def create_node(self, step_type:str, parent: Union['Node', str, None] = None):
-        """Creates a new node on the disk while enforcing lineage rules. 
-        
-        If parent is not supplied, the store will search the most recently created node to serve as a parent subject to the lineage rules.
+        """Creates a new node while enforcing lineage rules.
+
+        The node only materialises on disk once the user writes an artifact or
+        adds metadata; an untouched node is discarded with a warning. If the
+        user's code raises after writing, the partial work is persisted and the
+        node's 'healthy' metadata flag is set to False (True on clean completion).
 
         Args:
             step_type (str): The type of pipeline step being performed. 
             parent ('Node' | str, optional): The parent Node object or node_id. Defaults to None.
-            extra_metadata (Dict, optional): Other arbitrary extra_metadata to store in the node's 'data' field. Defaults to None.
 
         Raises:
             ValueError: If the step type transition is not permitted according to the store rules.
@@ -122,12 +126,6 @@ class LineageStore:
         Yields:
             'Node': A new node instance.
         """
-        if parent is None:
-            parent_node_type = self.rules.get(step_type)
-            try:
-                parent = self.get_most_recent_node(step_type=parent_node_type[0])
-            except:
-                parent = None
 
         parent_node = self.get_node(parent)
         parent_type = parent_node.step_type if parent_node else None
@@ -147,35 +145,47 @@ class LineageStore:
             current_gen=parent_gen
 
         node_id = uuid.uuid4().hex[:8]
+        while node_id in self.database.cache or (self.root / node_id).exists():
+            node_id = uuid.uuid4().hex[:8]
         node_path = self.root / node_id
 
         parent_id = parent_node.node_id if parent_node else None
-        new_node = Node(node_path, node_id, current_gen, parent_id, step_type=step_type)
+        new_node = Node._create(node_path, node_id, current_gen, parent_id, step_type=step_type)
 
-        new_node.path.mkdir(parents=True, exist_ok=True)
         try:
             yield new_node
-
-            structural_keys = {'node_id', 'parent_id', 'generation', 'step_type', 'timestamp'}
-            has_artifacts = bool(new_node.artifacts())
-            has_user_meta = bool(set(new_node._metadata.keys()) - structural_keys)
-
-            if has_artifacts or has_user_meta:
-                new_node._write_meta()
-                self.database.add(new_node.node_id, new_node.to_db())
-            else:
+        except BaseException:
+            # Keep partial work: anything written before the failure persists,
+            # flagged as unhealthy. An untouched node leaves no trace.
+            if not self._persist_if_touched(new_node, healthy=False):
                 shutil.rmtree(new_node.path, ignore_errors=True)
-                import warnings
-                warnings.warn(
-                    f"Node '{new_node.node_id}' (step_type='{step_type}') was discarded: "
-                    "no artifacts were written and no metadata was added. "
-                    "Write at least one file or call node.add_meta() to persist the node.",
-                    UserWarning,
-                    stacklevel=2
-                )
-        except Exception:
-            shutil.rmtree(new_node.path, ignore_errors=True)
             raise
+
+        if not self._persist_if_touched(new_node, healthy=True):
+            shutil.rmtree(new_node.path, ignore_errors=True)
+            import warnings
+            warnings.warn(
+                f"Node '{new_node.node_id}' (step_type='{step_type}') was discarded: "
+                "no artifacts were written and no metadata was added. "
+                "Write at least one file or call node.add_meta() to persist the node.",
+                UserWarning,
+                stacklevel=2
+            )
+
+    def _persist_if_touched(self, node: 'Node', healthy: bool) -> bool:
+        """
+        Persists and indexes the node if the user wrote any artifact or
+        metadata, recording whether its code block ran to completion in the
+        'healthy' flag. Returns True if the node was persisted.
+        """
+        has_artifacts = bool(node.artifacts())
+        has_user_meta = bool(set(node._metadata) - node._system_keys)
+        if not (has_artifacts or has_user_meta):
+            return False
+        node.add_meta('healthy', healthy, type='text', group='Structural Properties')
+        node._write_meta()
+        self.database.add(node.node_id, node.to_db())
+        return True
 
     def rebuild_db_from_disk(self) -> None:
         """
@@ -207,11 +217,8 @@ class LineageStore:
         """
         if isinstance(node, Node):
             node = node.node_id
-        str_ids = self.database.get_lineage(node)
-        node_objs = []
-        for node in str_ids:
-            node_objs.append(self.get_node(node))
-        return node_objs
+        return [self._node_from_index(node_id)
+                for node_id in self.database.get_lineage(node)]
 
     def find_in_lineage(self, node: Union[str, 'Node'], **kwargs: Any)-> List['Node']:
         """
@@ -224,8 +231,10 @@ class LineageStore:
         Returns:
             List[Path]: A list of matching Node objects.
         """
-        lineage = self.get_lineage(node)
-        return [n for n in lineage if is_match(n.to_db(), **kwargs)]
+        if isinstance(node, Node):
+            node = node.node_id
+        return [self._node_from_index(node_id)
+                for node_id in self.database.find_in_lineage(node, **kwargs)]
 
     def get_most_recent_node(self, **kwargs: Any) -> Optional['Node']:
         """
@@ -238,7 +247,7 @@ class LineageStore:
             List['Node']: A list of all matching nodes. 
         """
         str_id = self.database.get_most_recent(**kwargs)
-        return self.get_node(str_id)
+        return self._node_from_index(str_id) if str_id else None
     
     def from_parent(self, node: Union[str, 'Node'], filename: str) -> List[Path]:
         """
@@ -270,35 +279,37 @@ class LineageStore:
         target = self.get_node(node)
         return self.find_node(parent_id=target.node_id) if target else []
 
-    def prune(self, node: Union[str, 'Node'], recursive: bool = True, dry_run: bool = True) -> None:
+    def prune(self, node: Union[str, 'Node'], dry_run: bool = True) -> List['Node']:
         """
-        Delete a node and optionally all children. Searches recursively and purges the entire branch.
+        THIS IS RECURSIVE — deleting a node deletes anything downstream.
+        Delete a node and all children, purging the entire branch.
 
         Args:
-            node (Union[str, 'Node']): Either a node ID sting or a node object.
-            recursive (bool): Whether to prune everything downstream as well. This will delete all nodes that can trace their lineage back to the selected node. Defaults to True.
-            dry_run (bool): Print a list of what will be deleted without deleting anything. Must be manually set to False to delete nodes.
-            
+            node (Union[str, 'Node']): Either a node ID string or a node object.
+            dry_run (bool): If True, returns the list of nodes that would be
+                deleted without deleting anything. Must be set to False to
+                actually delete. Defaults to True.
+
         Returns:
-            None
+            List['Node']: Nodes that were (or would be) deleted.
         """
         target = self.get_node(node)
         if not target:
-            return None
-        
+            return []
+
         if target.path.resolve() == self.root.resolve():
             raise PermissionError("Cannot prune the root lineageStore directory.")
 
-        if recursive:
-            for child in self.get_child_nodes(target):
-                self.prune(child, recursive=True, dry_run=dry_run)
-        
+        deleted = []
+        for child in self.get_child_nodes(target):
+            deleted.extend(self.prune(child, dry_run=dry_run))
+
         if not dry_run:
             shutil.rmtree(target.path)
             self.database.remove(target.node_id)
-        else:
-            print(f"Would delete: {target}")
-        return None
+
+        deleted.append(target)
+        return deleted
 
     def generate_web_graph(self):
         """
