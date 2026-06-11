@@ -68,6 +68,7 @@ nav:
     - Machine Learning Pipeline: examples/ML_pipeline.ipynb
     - Timing Benchmark: examples/timing_benchmark.ipynb
 
+  - Live Demo: demo.md
   - API Reference: reference.md
 
 extra_css:
