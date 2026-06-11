@@ -109,12 +109,9 @@ class LineageStore:
         user's code raises after writing, the partial work is persisted and the
         node's 'healthy' metadata flag is set to False (True on clean completion).
 
-        If parent is not supplied, the store will search the most recently created node to serve as a parent subject to the lineage rules.
-
         Args:
             step_type (str): The type of pipeline step being performed. 
             parent ('Node' | str, optional): The parent Node object or node_id. Defaults to None.
-            extra_metadata (Dict, optional): Other arbitrary extra_metadata to store in the node's 'data' field. Defaults to None.
 
         Raises:
             ValueError: If the step type transition is not permitted according to the store rules.
@@ -278,35 +275,37 @@ class LineageStore:
         target = self.get_node(node)
         return self.find_node(parent_id=target.node_id) if target else []
 
-    def prune(self, node: Union[str, 'Node'], recursive: bool = True, dry_run: bool = True) -> None:
+    def prune(self, node: Union[str, 'Node'], dry_run: bool = True) -> List['Node']:
         """
-        Delete a node and optionally all children. Searches recursively and purges the entire branch.
+        THIS IS RECURSIVE — deleting a node deletes anything downstream.
+        Delete a node and all children, purging the entire branch.
 
         Args:
-            node (Union[str, 'Node']): Either a node ID sting or a node object.
-            recursive (bool): Whether to prune everything downstream as well. This will delete all nodes that can trace their lineage back to the selected node. Defaults to True.
-            dry_run (bool): Print a list of what will be deleted without deleting anything. Must be manually set to False to delete nodes.
-            
+            node (Union[str, 'Node']): Either a node ID string or a node object.
+            dry_run (bool): If True, returns the list of nodes that would be
+                deleted without deleting anything. Must be set to False to
+                actually delete. Defaults to True.
+
         Returns:
-            None
+            List['Node']: Nodes that were (or would be) deleted.
         """
         target = self.get_node(node)
         if not target:
-            return None
-        
+            return []
+
         if target.path.resolve() == self.root.resolve():
             raise PermissionError("Cannot prune the root lineageStore directory.")
 
-        if recursive:
-            for child in self.get_child_nodes(target):
-                self.prune(child, recursive=True, dry_run=dry_run)
-        
+        deleted = []
+        for child in self.get_child_nodes(target):
+            deleted.extend(self.prune(child, dry_run=dry_run))
+
         if not dry_run:
             shutil.rmtree(target.path)
             self.database.remove(target.node_id)
-        else:
-            print(f"Would delete: {target}")
-        return None
+
+        deleted.append(target)
+        return deleted
 
     def generate_web_graph(self):
         """
