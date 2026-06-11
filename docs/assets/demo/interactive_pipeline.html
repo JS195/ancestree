@@ -34,28 +34,69 @@
 //# sourceMappingURL=vis-network.min.js.map</script>
     <style>:root {
     --bg-app:#f5f5f7;
-    --bg-panel:rgba(255,255,255,0.72);
+    /* Ambient light layer — only seen THROUGH the frosted chrome, never over the graph */
+    --bg-ambient:
+        radial-gradient(1100px 520px at 100% -5%,  rgba(0,113,227,0.10), transparent 60%),
+        radial-gradient(900px 700px  at 108% 105%, rgba(124,77,255,0.07), transparent 55%),
+        var(--bg-app);
+
+    --bg-panel:rgba(255,255,255,0.6);
     --bg-card: #ffffff;
+    --bg-glass: rgba(255,255,255,0.55);          /* frosted pills / inputs sitting on the header */
+    --bg-glass-hover: rgba(255,255,255,0.78);
+
     --text-primary: #1d1d1f;
     --text-secondary: #86868b;
     --text-muted: rgb(from var(--text-primary) r g b / 10%);
     --accent:#0071e3;
-    --border: rgba(0,0,0,0.1);
-    --glass: blur(20px) saturate(180%);
-    --shadow: 0 8px 30px rgba(0,0,0,0.04);
+    --border: rgba(0,0,0,0.08);
+
+    /* The glass material */
+    --glass: blur(28px) saturate(180%);
+    --glass-highlight: rgba(255,255,255,0.65);   /* inner edge that catches the light */
+    --ring: color-mix(in srgb, var(--accent) 22%, transparent);
+
+    --shadow: 0 8px 30px rgba(0,0,0,0.06);
+    --shadow-panel: -12px 0 44px rgba(0,0,0,0.05);
+
+    /* Raised content tiles (cards in the details pane) */
+    --bg-elevated: #ffffff;
+    --card-highlight: rgba(255,255,255,0.9);
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 6px 16px rgba(0,0,0,0.07);
+    --strip: rgba(0,0,0,0.035);                  /* relative tint for card header bands */
+
     --node-color:#0071e3;
 }
 
 [data-theme="dark"] {
     --bg-app:#000000;
-    --bg-panel:rgba(28,28,30,0.8);
+    --bg-ambient:
+        radial-gradient(1100px 520px at 100% -5%,  rgba(10,132,255,0.16), transparent 60%),
+        radial-gradient(900px 700px  at 108% 105%, rgba(124,77,255,0.12), transparent 55%),
+        var(--bg-app);
+
+    --bg-panel:rgba(28,28,30,0.6);
     --bg-card: #1c1c1e;
+    --bg-glass: rgba(72,72,74,0.45);
+    --bg-glass-hover: rgba(99,99,102,0.55);
+
     --text-primary: #f5f5f7;
     --text-secondary: #a1a1a6;
     --text-muted: rgb(from var(--text-primary) r g b / 10%);
     --accent:#0a84ff;
-    --border: rgba(255,255,255,0.15);
-    --shadow: 0 8px 30px rgba(0,0,0,0.3);
+    --border: rgba(255,255,255,0.12);
+
+    --glass-highlight: rgba(255,255,255,0.12);
+
+    --shadow: 0 8px 30px rgba(0,0,0,0.35);
+    --shadow-panel: -12px 0 44px rgba(0,0,0,0.4);
+
+    /* Raised content tiles: in the dark, elevation reads as a LIGHTER surface */
+    --bg-elevated: #2c2c2e;
+    --card-highlight: rgba(255,255,255,0.10);
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.5), 0 10px 28px rgba(0,0,0,0.55);
+    --strip: rgba(255,255,255,0.05);
+
     --node-color:#0a84ff;
 }
 body {
@@ -64,11 +105,20 @@ body {
     display: flex;
     flex-direction: column;        
     height: 100vh;
-    background: var(--bg-app);
+    background: var(--bg-ambient);
+    background-attachment: fixed;
     color: var(--text-primary);
     overflow: hidden;
     -webkit-font-smoothing:antialiased
 }
+
+/* Kill text selection while dragging the resizer (fixes the highlight-on-drag bug) */
+body.is-dragging, body.is-dragging * {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: col-resize;
+}
+
 .app-header { 
     height: 60px;
     background: var(--bg-panel);
@@ -80,6 +130,10 @@ body {
     justify-content: space-between; 
     align-items: center; 
     border-bottom: 0.5px solid var(--border);
+    /* top hairline of light + a soft drop to lift it off the canvas */
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 24px rgba(0,0,0,0.04);
+    position: relative;
+    z-index: 10;
 }
 
 .header-left h1 {
@@ -98,7 +152,7 @@ body {
 .control-button {
     display: flex;
     align-items: center;
-    background: var(--bg-card);
+    background: var(--bg-glass);
     border: 0.5px solid var(--border);
     padding: 6px 12px;
     border-radius: 20px;
@@ -108,44 +162,18 @@ body {
     font-weight: 500;
     cursor: pointer;
     color: var(--text-secondary); 
-    font-family: inherit;       
+    font-family: inherit;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 2px rgba(0,0,0,0.04);
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 button.theme-toggle:hover {
-    background: var(--bg-app);
+    background: var(--bg-glass-hover);
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 14px rgba(0,0,0,0.10);
 }
-button.color-picker-wrapper:hover{
-    background: var(--bg-app);
-}
-.color-picker-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.color-picker-wrapper label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-#accent-picker {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-}
-#accent-picker::-webkit-color-swatch {
-    border-radius: 50%;
-    border: 2px solid var(--bg-app);
-    box-shadow: 0 0 0 1px var(--border);
-}
-#accent-picker::-moz-color-swatch {
-    border-radius: 50%;
-    border: 2px solid var(--bg-app);
-    box-shadow: 0 0 0 1px var(--border);
+button.theme-toggle:active {
+    transform: translateY(0);
 }
 
 .main-title {
@@ -172,13 +200,15 @@ button.color-picker-wrapper:hover{
 #details-pane {
     width: 400px;
     background: var(--bg-panel); 
-    backdrop-filter: var(-glass);
-    -webkit-backdrop-filter: avr(--glass);
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
     border-left: 0.5px solid var(--border);
+    /* left hairline of light + a soft shadow so the pane floats over the canvas */
+    box-shadow: inset 1px 0 0 var(--glass-highlight), var(--shadow-panel);
     overflow-y: auto;
     transition: width 0.05s linear;
 }
-.pane-content { padding: 32px 24px; }
+.pane-content { padding: 24px; }
 .empty-state {
     text-align: center;
     margin-top: 60px;
@@ -194,8 +224,8 @@ button.color-picker-wrapper:hover{
     padding: 10px 15px; 
     border-radius: 14px; 
     border: 0.5px solid var(--border); 
-    background: var(--bg-card); 
-    box-shadow: var(--shadow);
+    background: var(--bg-elevated); 
+    box-shadow: inset 0 1px 0 var(--card-highlight), var(--card-shadow);
     animation: slideIn 0.3s ease-out;
 }
 
@@ -233,15 +263,19 @@ button.color-picker-wrapper:hover{
     border: 0.5px solid var(--border);
 }
 .section-card {
-    background: var(--bg-card);
+    background: var(--bg-elevated);
     border: 0.5px solid var(--border);
     border-radius: 10px;
     margin-bottom: 16px;
     overflow: hidden;
     margin-top: 16px;
+    box-shadow: inset 0 1px 0 var(--card-highlight), var(--card-shadow);
+}
+.node-info > .section-card:first-child {
+    margin-top: 0;
 }
 .section-header {
-    background: var(--bg-app);
+    background: var(--strip);
     padding: 8px 12px;
     font-size: 11px;
     font-weight: 700;
@@ -345,16 +379,21 @@ button.color-picker-wrapper:hover{
     display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--bg-card);
+    background: var(--bg-glass);
     border: 0.5px solid var(--border);
     border-radius: 20px;
     height: 32px;
     padding: 0 12px;
     box-sizing: border-box;
     width: min(420px, 100%);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 .search-wrapper:focus-within {
     border-color: var(--accent);
+    background: var(--bg-glass-hover);
+    /* soft Apple-style focus ring */
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 0 0 3px var(--ring);
 }
 #search-input {
     flex: 1;
@@ -387,7 +426,22 @@ button.color-picker-wrapper:hover{
 #search-clear:hover {
     color: var(--text-primary);
 }
-</style>
+
+/* ---- Graceful fallbacks ---------------------------------------------------
+   If a browser can't blur, or the user has asked their OS to reduce
+   transparency, fall back to opaque surfaces so text stays crisp. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .app-header, #details-pane { background: var(--bg-card); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .app-header, #details-pane {
+        background: var(--bg-card);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    .control-button, .search-wrapper { background: var(--bg-card); }
+}</style>
 
 </head>
 <body>
@@ -408,10 +462,6 @@ button.color-picker-wrapper:hover{
 
     <div class ="header-right">
         <button class="theme-toggle control-button" onclick="toggleTheme()">Toggle Theme</button>
-        <div class="color-picker-wrapper control-button">
-            <label for="accent-picker">Accent</label>
-            <input type="color" id="accent-picker" value="#0071e3">
-        </div>
     </div>
 </header>
 
@@ -535,6 +585,10 @@ function toggleTheme() {
         font: {color:edgeColor, inherit: false}
     })));
 
+    // The accent has light/dark variants: re-resolve it for edge highlights
+    const accent = getStyle('--accent');
+    network.setOptions({edges: {color: {highlight: accent, hover: accent}}});
+
     // Re-dim non-matches with the new theme's colors
     applySearchHighlight();
 }
@@ -579,22 +633,6 @@ function initResizer() {
 
 window.onload = function() {
     initResizer();
-    document.getElementById('accent-picker').addEventListener('input', function(e){
-        const newAccent = e.target.value;
-
-        document.documentElement.style.setProperty('--accent', newAccent);
-
-        if (network) {
-            network.setOptions({
-                edges: {
-                    color: {
-                        highlight:newAccent,
-                        hover:newAccent
-                    }
-                }
-            });
-        }
-    });
 
     if (!window.PIPELINE_DATA) {
         console.error("No pipeline data from Python");
@@ -603,23 +641,6 @@ window.onload = function() {
 
     nodes=new vis.DataSet(window.PIPELINE_DATA.nodes);
     edges = new vis.DataSet(window.PIPELINE_DATA.edges)
-
-    function stringToColor(str) {
-        let hash = 2166136261;
-        for (let i = 0; i<str.length; i++) {
-            hash ^= str.charCodeAt(i);
-            // hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
-            hash = Math.imul(hash, 16777619)
-        }
-        const phi = 0.618033988749895;
-        let hue = Math.abs(hash*phi) % 1;
-        hue = Math.floor(hue*360)
-
-        return {
-            node_colour: `hsl(${hue}, 70%, 60%)`,
-            node_border_colour: `hsl(${hue}, 80%, 35%)`
-        };
-    }
 
     function getOptions(nodes) {
         const groups = {};
@@ -677,7 +698,7 @@ window.onload = function() {
             edges: {
                 arrows: {to: {enabled:true}},
                 smooth: {type:'cubicBezier', forceDirection:'horizontal'},
-                color: {color:'#848484', highlight:'#3498db', hover:'#3498db', inherit:false},
+                color: {color:'#848484', highlight:getStyle('--accent'), hover:getStyle('--accent'), inherit:false},
                 // opacity: 0.6
                 },
             // nodes: {
@@ -778,6 +799,23 @@ window.onload = function() {
     });
 };
 
+function stringToColor(str) {
+    let hash = 2166136261;
+    for (let i = 0; i<str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        // hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+        hash = Math.imul(hash, 16777619)
+    }
+    const phi = 0.618033988749895;
+    let hue = Math.abs(hash*phi) % 1;
+    hue = Math.floor(hue*360)
+
+    return {
+        node_colour: `hsl(${hue}, 70%, 60%)`,
+        node_border_colour: `hsl(${hue}, 80%, 35%)`
+    };
+}
+
 function renderMetadata(entries) {
     if (!entries) return '';
     const groups = {};
@@ -816,7 +854,6 @@ function renderValue(entry) {
 
 function generateNodeHtml(nodeData) {
     return `<div class="node-info">
-    <h4>Node: ${nodeData.id}</h4>
     ${renderMetadata(nodeData.entries)}
     </div>`;
 }
