@@ -1,4 +1,83 @@
 let nodes, edges, network;
+let searchMatches = null; // Set of matched node ids, or null when no search is active
+
+function parseQuery(query) {
+    return query.trim().toLowerCase().split(/\s+/).filter(Boolean).map(term => {
+        const m = term.match(/^([^=:<>]+)(>=|<=|=|:|>|<)(.+)$/);
+        return m ? {field: m[1], op: m[2] === ':' ? '=' : m[2], value: m[3]}
+                 : {op: 'text', value: term};
+    });
+}
+
+function entryMatches(key, entry, term) {
+    if (entry.searchable === false) return false;
+    const value = String(entry.value ?? '').toLowerCase();
+
+    if (term.op === 'text') return key.includes(term.value) || value.includes(term.value);
+    if (!key.includes(term.field)) return false;
+    if (term.op === '=') return value.includes(term.value);
+
+    const num = parseFloat(value);
+    const target = parseFloat(term.value);
+    if (isNaN(num) || isNaN(target)) return false;
+    switch (term.op) {
+        case '>': return num > target;
+        case '<': return num < target;
+        case '>=': return num >= target;
+        case '<=': return num <= target;
+    }
+}
+
+function nodeMatches(node, terms) {
+    const entries = Object.entries(node.entries || {});
+    return terms.every(term => {
+        if (term.op === 'text' &&
+            (String(node.id).toLowerCase().includes(term.value) ||
+             String(node.group).toLowerCase().includes(term.value))) {
+            return true;
+        }
+        return entries.some(([key, entry]) => entryMatches(key.toLowerCase(), entry, term));
+    });
+}
+
+function applySearchHighlight() {
+    const activeColor = getStyle('--text-primary');
+    const dimmedColor = getStyle('--text-muted');
+
+    if (!searchMatches) {
+        nodes.update(nodes.getIds().map(id => ({id: id, color: null, font: {color: activeColor}})));
+        edges.update(edges.getIds().map(id => ({id: id, color: null})));
+        return;
+    }
+
+    nodes.update(nodes.getIds().map(id => ({
+        id: id,
+        color: searchMatches.has(id) ? null : 'rgba(150, 150, 150, 0.1)',
+        font: {color: searchMatches.has(id) ? activeColor : dimmedColor}
+    })));
+    edges.update(edges.get().map(edge => ({
+        id: edge.id,
+        color: (searchMatches.has(edge.from) && searchMatches.has(edge.to)) ? null : 'rgba(200, 200, 200, 0.05)'
+    })));
+}
+
+function runSearch(query) {
+    const counter = document.getElementById('search-count');
+    const clearBtn = document.getElementById('search-clear');
+    const terms = parseQuery(query);
+
+    if (terms.length === 0) {
+        searchMatches = null;
+        counter.textContent = '';
+        clearBtn.style.display = 'none';
+    } else {
+        const matched = nodes.get().filter(n => nodeMatches(n, terms)).map(n => n.id);
+        searchMatches = new Set(matched);
+        counter.textContent = `${matched.length}/${nodes.length}`;
+        clearBtn.style.display = 'inline';
+    }
+    applySearchHighlight();
+}
 
 function toggleTheme() {
     const body = document.documentElement;
@@ -13,10 +92,13 @@ function toggleTheme() {
         font: {color:nodeColor} 
     })));
 
-    edges.update(nodes.getIds().map(id => ({ 
-        id:id, 
-        font: {color:edgeColor, inherit: false} 
+    edges.update(nodes.getIds().map(id => ({
+        id:id,
+        font: {color:edgeColor, inherit: false}
     })));
+
+    // Re-dim non-matches with the new theme's colors
+    applySearchHighlight();
 }
 
 function getStyle(prop) {
@@ -177,6 +259,23 @@ window.onload = function() {
     options.interaction.multiselect = true;
     network = new vis.Network(document.getElementById('mynetwork'), {nodes, edges}, options);
 
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', e => runSearch(e.target.value));
+        searchInput.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                runSearch('');
+                searchInput.blur();
+            }
+        });
+        document.getElementById('search-clear').addEventListener('click', () => {
+            searchInput.value = '';
+            runSearch('');
+            searchInput.focus();
+        });
+    }
+
     network.on("hoverNode", function (params){
         let hoveredNodeId = params.node;
 
@@ -213,19 +312,10 @@ window.onload = function() {
         })));
     });
     
-    // Blurring
+    // Blurring: restore the active search highlight, or reset if none
     network.on("blurNode", function () {
-        const activeColor = getStyle('--text-primary')
-        nodes.update(nodes.getIds().map(id => ({
-            id:id,
-            color: null,
-            font: {color: activeColor}
-        })));
-        edges.update(edges.getIds().map(id=> ({
-            id:id,
-            color:null
-        })));
-    });    
+        applySearchHighlight();
+    });
 
     network.on('select', function(params){
         const selectedIds = params.nodes;
@@ -257,7 +347,11 @@ function renderMetadata(entries) {
     for (const [key, entry] of Object.entries(entries))
     (groups[entry.group] ??= []).push([key, entry]);
 
-    return Object.entries(groups).map(([group, items]) => `
+    // Provenance is reference material, not results: render it last.
+    const ordered = Object.entries(groups).sort((a, b) =>
+        (a[0] === 'Provenance') - (b[0] === 'Provenance'));
+
+    return ordered.map(([group, items]) => `
     <div class="section-card">
     <div class="section-header">${group}</div>
     <div class="section-body">
@@ -283,9 +377,17 @@ function renderValue(entry) {
 }
 
 function generateNodeHtml(nodeData) {
+    const entries = Object.fromEntries(
+        Object.entries(nodeData.entries || {}).filter(([key]) => key !== 'node_id')
+    );
     return `<div class="node-info">
-    <h4>Node: ${nodeData.id}</h4>
-    ${renderMetadata(nodeData.entries)}
+    <div class="section-card node-title-card">
+    <div class="section-header">Node</div>
+    <div class="section-body">
+    <div class="node-id-value">${nodeData.id}</div>
+    </div>
+    </div>
+    ${renderMetadata(entries)}
     </div>`;
 }
 
