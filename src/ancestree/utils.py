@@ -1,5 +1,4 @@
 from datetime import datetime
-import re
 import subprocess
 import platform
 import getpass
