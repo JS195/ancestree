@@ -1,5 +1,10 @@
 let nodes, edges, network;
 let searchMatches = null; // Set of matched node ids, or null when no search is active
+let typeFilter = null;    // Set of step types to keep, or null when no filter is active
+let heatmap = null;       // {key, min, max} when colour-by-metric is active, or null
+
+const DIM_NODE = 'rgba(150, 150, 150, 0.1)';
+const DIM_EDGE = 'rgba(200, 200, 200, 0.05)';
 
 function parseQuery(query) {
     return query.trim().toLowerCase().split(/\s+/).filter(Boolean).map(term => {
@@ -40,25 +45,197 @@ function nodeMatches(node, terms) {
     });
 }
 
-function applySearchHighlight() {
+function nodeFocused(node) {
+    if (typeFilter && !typeFilter.has(node.group)) return false;
+    if (searchMatches && !searchMatches.has(node.id)) return false;
+    return true;
+}
+
+// Single source of truth for node/edge colors: composes the search matches
+// and the legend's type filter, dimming everything out of focus.
+function applyHighlight() {
     const activeColor = getStyle('--text-primary');
     const dimmedColor = getStyle('--text-muted');
+    const all = nodes.get();
+    const focused = new Set(all.filter(nodeFocused).map(n => n.id));
+    const filtering = searchMatches !== null || typeFilter !== null;
 
-    if (!searchMatches) {
-        nodes.update(nodes.getIds().map(id => ({id: id, color: null, font: {color: activeColor}})));
-        edges.update(edges.getIds().map(id => ({id: id, color: null})));
-        return;
-    }
-
-    nodes.update(nodes.getIds().map(id => ({
-        id: id,
-        color: searchMatches.has(id) ? null : 'rgba(150, 150, 150, 0.1)',
-        font: {color: searchMatches.has(id) ? activeColor : dimmedColor}
+    nodes.update(all.map(n => ({
+        id: n.id,
+        color: focused.has(n.id) ? baseNodeColor(n) : DIM_NODE,
+        font: {color: focused.has(n.id) ? activeColor : dimmedColor}
     })));
     edges.update(edges.get().map(edge => ({
         id: edge.id,
-        color: (searchMatches.has(edge.from) && searchMatches.has(edge.to)) ? null : 'rgba(200, 200, 200, 0.05)'
+        color: (!filtering || (focused.has(edge.from) && focused.has(edge.to))) ? null : DIM_EDGE
     })));
+}
+
+// Strict numeric read of a metadata entry: hex ids, booleans, and
+// image/link entries never count as metrics.
+function numericValue(node, key) {
+    const entry = (node.entries || {})[key];
+    if (!entry || entry.searchable === false) return null;
+    if (entry.type === 'image' || entry.type === 'link') return null;
+    // Timestamps carry a pre-parsed epoch from the Python side
+    if (typeof entry.epoch === 'number' && Number.isFinite(entry.epoch)) return entry.epoch;
+    if (typeof entry.value === 'boolean' || entry.value == null || entry.value === '') return null;
+    const v = Number(entry.value);
+    return Number.isFinite(v) ? v : null;
+}
+
+function numericMetricKeys(allNodes) {
+    const keys = new Set();
+    allNodes.forEach(n => Object.keys(n.entries || {}).forEach(key => {
+        if (numericValue(n, key) !== null) keys.add(key);
+    }));
+    return [...keys].sort();
+}
+
+// Sequential green-spectrum ramp, t in [0, 1]: pale green for low values
+// darkening through forest green to a near-brown dark olive for high.
+// Luminance carries the ordering — the eye discerns the most shades in
+// the green band — and the hue drift adds extra separation.
+function heatColor(t) {
+    const hue = 135 - 55 * t;         // 135 (green) -> 80 (olive)
+    const sat = 35 + 35 * t;          // 35% -> 70%
+    const light = 92 - 72 * t;        // 92% -> 20%
+    const borderLight = Math.max(light - 16, 10);
+    const bg = `hsl(${hue}, ${sat}%, ${light}%)`;
+    const border = `hsl(${hue}, ${sat}%, ${borderLight}%)`;
+    return {
+        background: bg,
+        border: border,
+        highlight: {background: bg, border: border},
+        hover: {background: bg, border: border}
+    };
+}
+
+function formatMetric(v) {
+    return String(Number.isInteger(v) ? v : +v.toPrecision(3));
+}
+
+function formatTick(v, isTime) {
+    if (!isTime) return formatMetric(v);
+    return new Date(v * 1000).toLocaleString(undefined,
+        {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+}
+
+// Base color when a node is in focus: heat colour when a metric is selected
+// (nodes without the metric dim), otherwise null falls back to its group color.
+function baseNodeColor(node) {
+    if (!heatmap) return null;
+    const v = numericValue(node, heatmap.key);
+    if (v === null) return DIM_NODE;
+    const span = heatmap.max - heatmap.min;
+    const t = span > 0 ? (v - heatmap.min) / span : 0.5;
+    return heatColor(t);
+}
+
+// Walk the graph from a node in one direction only ('from' = ancestors,
+// 'to' = descendants), so sibling branches are never picked up.
+function walkLineage(start, direction) {
+    const seen = new Set([start]);
+    const queue = [start];
+    while (queue.length > 0) {
+        const curr = queue.shift();
+        network.getConnectedNodes(curr, direction).forEach(n => {
+            if (!seen.has(n)) {
+                seen.add(n);
+                queue.push(n);
+            }
+        });
+    }
+    return seen;
+}
+
+function buildLegend(allNodes) {
+    const container = document.getElementById('legend');
+    if (!container) return;
+
+    const types = [...new Set(allNodes.map(n => n.group))];
+    const metricKeys = numericMetricKeys(allNodes);
+
+    container.innerHTML = `
+    <div class="legend-title" id="legend-title">Step types</div>
+    <div id="legend-types">
+    ${types.map(type => {
+        const colors = stringToColor(type);
+        return `
+        <div class="legend-item" data-type="${type}" title="Click to filter">
+            <span class="legend-dot" style="background:${colors.node_colour}; border-color:${colors.node_border_colour}"></span>
+            <span class="legend-label">${type}</span>
+        </div>`;
+    }).join('')}
+    </div>
+    <div id="heat-scale" class="heat-scale" style="display:none">
+        <span class="heat-bar"></span>
+        <div class="heat-ticks">
+            <span id="heat-tick-max"></span>
+            <span id="heat-tick-mid"></span>
+            <span id="heat-tick-min"></span>
+        </div>
+    </div>
+    ${metricKeys.length ? `
+    <div class="legend-heat">
+        <label class="legend-title" for="heat-select">Colour by</label>
+        <select id="heat-select">
+            <option value="">Step type</option>
+            ${metricKeys.map(key => `<option value="${key}">${key}</option>`).join('')}
+        </select>
+    </div>` : ''}`;
+
+    container.querySelectorAll('.legend-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const type = item.dataset.type;
+            if (!typeFilter) typeFilter = new Set();
+            typeFilter.has(type) ? typeFilter.delete(type) : typeFilter.add(type);
+
+            // No selection (or everything selected) means no filter
+            if (typeFilter.size === 0 || typeFilter.size === types.length) typeFilter = null;
+
+            container.querySelectorAll('.legend-item').forEach(el =>
+                el.classList.toggle('inactive', typeFilter !== null && !typeFilter.has(el.dataset.type)));
+            applyHighlight();
+        });
+    });
+
+    const heatSelect = document.getElementById('heat-select');
+    if (heatSelect) {
+        heatSelect.addEventListener('change', () => {
+            const key = heatSelect.value;
+            const scale = document.getElementById('heat-scale');
+            const typeList = document.getElementById('legend-types');
+            const title = document.getElementById('legend-title');
+
+            if (!key) {
+                heatmap = null;
+                scale.style.display = 'none';
+                typeList.style.display = '';
+                title.textContent = 'Step types';
+            } else {
+                const values = allNodes.map(n => numericValue(n, key)).filter(v => v !== null);
+                const isTime = allNodes.some(n => {
+                    const entry = (n.entries || {})[key];
+                    return entry && typeof entry.epoch === 'number';
+                });
+                heatmap = {key: key, min: Math.min(...values), max: Math.max(...values)};
+
+                // The colour bar takes over the key's slot: clear any type
+                // filter, since its controls are hidden in heatmap mode.
+                typeFilter = null;
+                container.querySelectorAll('.legend-item').forEach(el => el.classList.remove('inactive'));
+
+                document.getElementById('heat-tick-max').textContent = formatTick(heatmap.max, isTime);
+                document.getElementById('heat-tick-mid').textContent = formatTick((heatmap.min + heatmap.max) / 2, isTime);
+                document.getElementById('heat-tick-min').textContent = formatTick(heatmap.min, isTime);
+                typeList.style.display = 'none';
+                scale.style.display = 'flex';
+                title.textContent = key;
+            }
+            applyHighlight();
+        });
+    }
 }
 
 function runSearch(query) {
@@ -76,7 +253,7 @@ function runSearch(query) {
         counter.textContent = `${matched.length}/${nodes.length}`;
         clearBtn.style.display = 'inline';
     }
-    applySearchHighlight();
+    applyHighlight();
 }
 
 function toggleTheme() {
@@ -102,7 +279,7 @@ function toggleTheme() {
     network.setOptions({edges: {color: {highlight: accent, hover: accent}}});
 
     // Re-dim non-matches with the new theme's colors
-    applySearchHighlight();
+    applyHighlight();
 }
 
 function getStyle(prop) {
@@ -230,6 +407,8 @@ window.onload = function() {
     options.interaction.multiselect = true;
     network = new vis.Network(document.getElementById('mynetwork'), {nodes, edges}, options);
 
+    buildLegend(nodes.get());
+
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', e => runSearch(e.target.value));
@@ -248,44 +427,32 @@ window.onload = function() {
     }
 
     network.on("hoverNode", function (params){
-        let hoveredNodeId = params.node;
+        // Full lineage: everything upstream and everything downstream
+        const lineageNodes = walkLineage(params.node, 'from');
+        walkLineage(params.node, 'to').forEach(n => lineageNodes.add(n));
 
-        let lineageNodes = [hoveredNodeId];
-        let queue = [hoveredNodeId];
+        const lineageEdges = new Set(edges.get()
+            .filter(edge => lineageNodes.has(edge.from) && lineageNodes.has(edge.to))
+            .map(edge => edge.id));
 
-        while (queue.length > 0) {
-            let curr = queue.shift();
-            let ancestors = network.getConnectedNodes(curr, 'from');
-            ancestors.forEach(a => {
-                if (!lineageNodes.includes(a)) {
-                    lineageNodes.push(a);
-                    queue.push(a);
-                }
-            });
-        }
-
-        // Ensure upstream edges are not highlighted
-        let allEdges = edges.get();
-        let lineageEdges = allEdges.filter(edge => lineageNodes.includes(edge.to) && lineageNodes.includes(edge.from)).map(edge => edge.id);
-        
         const activeColor = getStyle('--text-primary');
         const dimmedColor = getStyle('--text-muted');
 
-        nodes.update(nodes.getIds().map(id => ({
-            id: id,
-            color: lineageNodes.includes(id) ? null : 'rgba(150, 150, 150, 0.1)',
-            font: { color: lineageNodes.includes(id) ? activeColor : dimmedColor }
+        nodes.update(nodes.get().map(n => ({
+            id: n.id,
+            color: lineageNodes.has(n.id) ? baseNodeColor(n) : DIM_NODE,
+            font: { color: lineageNodes.has(n.id) ? activeColor : dimmedColor }
         })));
 
         edges.update(edges.getIds().map(id => ({
-            id:id,
-            color:lineageEdges.includes(id) ? null : 'rgba(200, 200, 200, 0.05)'
+            id: id,
+            color: lineageEdges.has(id) ? null : DIM_EDGE
         })));
     });
     
     // Blurring: restore the active search highlight, or reset if none
     network.on("blurNode", function () {
-        applySearchHighlight();
+        applyHighlight();
     });
 
     network.on('select', function(params){
