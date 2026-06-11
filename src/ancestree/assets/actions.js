@@ -176,6 +176,10 @@ function buildLegend(allNodes) {
             <span id="heat-tick-min"></span>
         </div>
     </div>
+    <div id="heat-rank" class="heat-rank" style="display:none">
+        <div class="legend-title heat-rank-head" id="heat-rank-head" title="Click to flip sort order"></div>
+        <div id="heat-rank-rows"></div>
+    </div>
     ${metricKeys.length ? `
     <div class="legend-heat">
         <label class="legend-title" for="heat-select">Colour by</label>
@@ -205,12 +209,14 @@ function buildLegend(allNodes) {
         heatSelect.addEventListener('change', () => {
             const key = heatSelect.value;
             const scale = document.getElementById('heat-scale');
+            const rank = document.getElementById('heat-rank');
             const typeList = document.getElementById('legend-types');
             const title = document.getElementById('legend-title');
 
             if (!key) {
                 heatmap = null;
                 scale.style.display = 'none';
+                rank.style.display = 'none';
                 typeList.style.display = '';
                 title.textContent = 'Step types';
             } else {
@@ -219,7 +225,8 @@ function buildLegend(allNodes) {
                     const entry = (n.entries || {})[key];
                     return entry && typeof entry.epoch === 'number';
                 });
-                heatmap = {key: key, min: Math.min(...values), max: Math.max(...values)};
+                heatmap = {key: key, min: Math.min(...values), max: Math.max(...values),
+                           isTime: isTime, desc: true};
 
                 // The colour bar takes over the key's slot: clear any type
                 // filter, since its controls are hidden in heatmap mode.
@@ -231,11 +238,59 @@ function buildLegend(allNodes) {
                 document.getElementById('heat-tick-min').textContent = formatTick(heatmap.min, isTime);
                 typeList.style.display = 'none';
                 scale.style.display = 'flex';
+                rank.style.display = 'block';
                 title.textContent = key;
+                renderRanking(allNodes);
             }
             applyHighlight();
         });
     }
+
+    const rankHead = document.getElementById('heat-rank-head');
+    if (rankHead) {
+        rankHead.addEventListener('click', () => {
+            if (!heatmap) return;
+            heatmap.desc = !heatmap.desc;
+            renderRanking(allNodes);
+        });
+    }
+}
+
+// Ranked list of nodes by the active heatmap metric — answers "which run is
+// best, and what were its params". Clicking a row selects that node in the
+// graph and opens its details.
+function renderRanking(allNodes) {
+    if (!heatmap) return;
+    const ranked = allNodes
+        .map(n => ({node: n, value: numericValue(n, heatmap.key)}))
+        .filter(r => r.value !== null)
+        .sort((a, b) => heatmap.desc ? b.value - a.value : a.value - b.value)
+        .slice(0, 10);
+
+    document.getElementById('heat-rank-head').innerHTML =
+        heatmap.desc ? 'Top 10 &#9660;' : 'Bottom 10 &#9650;';
+
+    const rowsEl = document.getElementById('heat-rank-rows');
+    rowsEl.innerHTML = ranked.map((r, i) => `
+    <div class="heat-rank-row" data-id="${r.node.id}" title="${r.node.id}">
+        <span class="heat-rank-pos">${i + 1}</span>
+        <span class="heat-rank-label">${r.node.group}<span class="heat-rank-id">${r.node.id}</span></span>
+        <span class="heat-rank-value">${formatTick(r.value, heatmap.isTime)}</span>
+    </div>`).join('');
+
+    rowsEl.querySelectorAll('.heat-rank-row').forEach(row =>
+        row.addEventListener('click', () => selectNode(row.dataset.id)));
+}
+
+// Jump the graph to a node: select it, pan to it, and show its details.
+// Programmatic selection fires no select event, so render the pane directly.
+function selectNode(id) {
+    network.selectNodes([id]);
+    network.focus(id, {
+        scale: Math.max(network.getScale(), 0.8),
+        animation: {duration: 400, easingFunction: 'easeInOutQuad'}
+    });
+    showSelection([id]);
 }
 
 function runSearch(query) {
@@ -455,28 +510,31 @@ window.onload = function() {
         applyHighlight();
     });
 
-    network.on('select', function(params){
-        const selectedIds = params.nodes;
-        const btn = document.getElementById('compare-btn');
-        const contentArea = document.getElementById('node-content');
-
-        if (btn) btn.disabled = selectedIds.length !== 2;
-
-        if (selectedIds.length === 1) {
-            const nodeData = nodes.get(selectedIds[0]);
-            contentArea.innerHTML = generateNodeHtml(nodeData);
-        }
-        else if (selectedIds.length ===2) {
-            triggerComparison(selectedIds);
-        } else {
-            contentArea.innerHTML = `
-            <div class="empty-state">
-            <p>Select a node to view details. Cmd click a second node to trigger comparison.</p>
-            </div>
-            `;
-        }
-    });
+    network.on('select', params => showSelection(params.nodes));
 };
+
+// Render the details pane for a selection: shared by the graph's select
+// event and programmatic selection from the ranking list.
+function showSelection(selectedIds) {
+    const btn = document.getElementById('compare-btn');
+    const contentArea = document.getElementById('node-content');
+
+    if (btn) btn.disabled = selectedIds.length !== 2;
+
+    if (selectedIds.length === 1) {
+        const nodeData = nodes.get(selectedIds[0]);
+        contentArea.innerHTML = generateNodeHtml(nodeData);
+    }
+    else if (selectedIds.length ===2) {
+        triggerComparison(selectedIds);
+    } else {
+        contentArea.innerHTML = `
+        <div class="empty-state">
+        <p>Select a node to view details. Cmd click a second node to trigger comparison.</p>
+        </div>
+        `;
+    }
+}
 
 function stringToColor(str) {
     let hash = 2166136261;
