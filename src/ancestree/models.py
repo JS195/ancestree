@@ -1,8 +1,7 @@
 import json
 from datetime import datetime, timezone
-import time
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import List
 from .utils import get_provenance
 from copy import deepcopy
 from typing import Union
@@ -43,6 +42,8 @@ class Node:
             self.add_meta('generation', self.generation, type='text', group='Structural Properties')
             self.add_meta('step_type', self.step_type, type='text', group='Structural Properties')
             self.add_meta('timestamp', datetime.now(timezone.utc).isoformat(), type='text', group='Structural Properties')
+            for key, value in get_provenance().items():
+                self.add_meta(key, value, type='text', group='Provenance', searchable=False)
 
 
     def add_meta(self, key, value, type='text', group=None, searchable=True):
