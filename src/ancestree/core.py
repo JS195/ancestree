@@ -57,23 +57,30 @@ class LineageStore:
 
     def find_node(self, **kwargs: Any) -> List['Node']:
         """
-        Search for nodes based on metadata key values. To simply find a key regardless of the value it holds the keyword can be specified with an ellipsis value.
+        Search for nodes based on metadata key values. Values are matched by
+        equality against the searchable metadata; pass a callable to express
+        a predicate instead.
 
         Args:
-            **kwargs (Any): Key-value pairs to match against node metadata (searches top level and nested dict entries).
+            **kwargs (Any): Key-value pairs to match against the node's searchable metadata keys.
 
         Returns:
             List['Node']: A list of node objects that match all provided criteria.
-        
+
         Examples:
             >>> store.find_node(step_type="ingest")
-            >>> store.find_node(accuracy>0.8, generation<3)
+            >>> store.find_node(accuracy=lambda a: a is not None and a > 0.8)
         """
-        node_objs = []
-        nodes = self.database.find_matches(**kwargs)
-        for node in nodes:
-            node_objs.append(self.get_node(node))
-        return node_objs
+        return [self._node_from_index(node_id)
+                for node_id in self.database.find_matches(**kwargs)]
+
+    def _node_from_index(self, node_id: str) -> 'Node':
+        """
+        Builds a Node from the in-memory index without touching disk; the
+        full metadata is hydrated lazily on first access. Only valid for ids
+        present in the index.
+        """
+        return Node._from_index(self.root / node_id, self.database.cache[node_id])
 
     def get_node(self, node: Union[str, 'Node', None] = None) -> Optional['Node']:
         """
@@ -210,11 +217,8 @@ class LineageStore:
         """
         if isinstance(node, Node):
             node = node.node_id
-        str_ids = self.database.get_lineage(node)
-        node_objs = []
-        for node in str_ids:
-            node_objs.append(self.get_node(node))
-        return node_objs
+        return [self._node_from_index(node_id)
+                for node_id in self.database.get_lineage(node)]
 
     def find_in_lineage(self, node: Union[str, 'Node'], **kwargs: Any)-> List['Node']:
         """
@@ -229,8 +233,8 @@ class LineageStore:
         """
         if isinstance(node, Node):
             node = node.node_id
-        matching_ids = self.database.find_in_lineage(node, **kwargs)
-        return [self.get_node(node_id) for node_id in matching_ids]
+        return [self._node_from_index(node_id)
+                for node_id in self.database.find_in_lineage(node, **kwargs)]
 
     def get_most_recent_node(self, **kwargs: Any) -> Optional['Node']:
         """
@@ -243,7 +247,7 @@ class LineageStore:
             List['Node']: A list of all matching nodes. 
         """
         str_id = self.database.get_most_recent(**kwargs)
-        return self.get_node(str_id)
+        return self._node_from_index(str_id) if str_id else None
     
     def from_parent(self, node: Union[str, 'Node'], filename: str) -> List[Path]:
         """
