@@ -17,6 +17,14 @@
         <div class="main-title">Interactive Pipeline Explorer</div>
     </div>
 
+    <div class="header-center">
+        <div class="search-wrapper">
+            <input type="text" id="search-input" placeholder="Search nodes — e.g. pca, method=pca, CH_score>1000" autocomplete="off" spellcheck="false">
+            <span id="search-count"></span>
+            <button id="search-clear" title="Clear search">&times;</button>
+        </div>
+    </div>
+
     <div class ="header-right">
         <button class="theme-toggle control-button" onclick="toggleTheme()">Toggle Theme</button>
         <div class="color-picker-wrapper control-button">
