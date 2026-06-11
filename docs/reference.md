@@ -20,7 +20,6 @@ You never construct a `Node` yourself — they are created by `LineageStore.crea
     options:
         show_root_heading: true
         heading_level: 3
-        show_if_no_docstring: true
         members:
             - metadata
             - add_meta
