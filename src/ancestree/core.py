@@ -2,7 +2,7 @@
 from pathlib import Path
 import json
 import uuid
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, Iterator
 import shutil
 from contextlib import contextmanager
 
@@ -30,8 +30,8 @@ class LineageStore:
             gen_triggers (List, optional): List of step types that when reached increment the node's generation. Defaults to None.
         
         Examples:
-            >>> rules = {"clean": ["ingest"], "model":["clean"]}
-            >>> store = LineageStore("my_project", rules=rules, triggers=["ingest"])
+            >>> rules = {"clean": ["ingest"], "model": ["clean"]}
+            >>> store = LineageStore("my_project", rules=rules, gen_triggers=["ingest"])
         """
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
@@ -84,16 +84,18 @@ class LineageStore:
 
     def get_node(self, node: Union[str, 'Node', None] = None) -> Optional['Node']:
         """
-        Method to check if argument supplied is a Node. If not it resolves str into a Node object.
+        Resolves a node_id string into a Node object, loading it from disk.
+
+        Accepts a Node as well (returned unchanged), so it can be used to normalise any "node or id" argument. Returns None rather than raising if the node does not exist or its metadata cannot be read.
 
         Args:
-            node: Can be a Node instance, str node_id, or None.
+            node (Union[str, Node, None]): A node_id string, an existing Node instance, or None.
 
         Returns:
-            'Node': The resolved Node object or None if the input is invalid or not found.
-        
+            Optional[Node]: The resolved Node, or None if the input is None, invalid, or not found.
+
         Examples:
-            >>> store.get_node("abc12345")
+            >>> node = store.get_node("abc12345")
         """
         if not node or str(node).lower() == "none":
             return None
@@ -108,7 +110,7 @@ class LineageStore:
             return None
 
     @contextmanager
-    def create_node(self, step_type:str, parent: Union['Node', str, None] = None):
+    def create_node(self, step_type:str, parent: Union['Node', str, None] = None) -> Iterator['Node']:
         """Creates a new node while enforcing lineage rules.
 
         The node only materialises on disk once the user writes an artifact or
@@ -117,14 +119,19 @@ class LineageStore:
         node's 'healthy' metadata flag is set to False (True on clean completion).
 
         Args:
-            step_type (str): The type of pipeline step being performed. 
-            parent ('Node' | str, optional): The parent Node object or node_id. Defaults to None.
+            step_type (str): The type of pipeline step being performed.
+            parent (Union[Node, str], optional): The parent Node object or node_id. Defaults to None.
 
         Raises:
             ValueError: If the step type transition is not permitted according to the store rules.
 
         Yields:
-            'Node': A new node instance.
+            Node: The new node, ready to receive artifacts and metadata.
+
+        Examples:
+            >>> with store.create_node(step_type="clean", parent=ingest_node) as node:
+            ...     df.to_csv(node / "cleaned.csv")
+            ...     node.add_meta("rows", len(df))
         """
 
         parent_node = self.get_node(parent)
@@ -224,12 +231,17 @@ class LineageStore:
         """
         Searches a node's ancestry for nodes matching specified search parameters.
 
+        This is `find_node` restricted to a single lineage: only the target node and its ancestors are considered. Values are matched by equality against the searchable metadata; pass a callable to express a predicate instead.
+
         Args:
-            node (Union[str, 'Node', None], optional): The Node or node_id whose history to search. If None, the store will use the most recent node. Defaults to None.
-            **kwargs (Any): Key-value pairs to match against node metadata (searches top level and nested dict entries).
+            node (Union[str, Node]): The Node or node_id whose ancestry to search.
+            **kwargs (Any): Key-value pairs to match against the nodes' searchable metadata keys.
 
         Returns:
-            List[Path]: A list of matching Node objects.
+            List[Node]: The nodes in the lineage that match all provided criteria.
+
+        Examples:
+            >>> store.find_in_lineage(model_node, step_type="clean")
         """
         if isinstance(node, Node):
             node = node.node_id
@@ -238,27 +250,38 @@ class LineageStore:
 
     def get_most_recent_node(self, **kwargs: Any) -> Optional['Node']:
         """
-        Finds and returns the most recent node subject to some keyword arguments. These arguments are used to search the metadata for matching parameters.
-        
+        Finds the single most recently created node that matches the given search parameters.
+
+        Recency is determined by the timestamp recorded when each node was created. Useful for picking up a pipeline where it left off, e.g. fetching the latest cleaned dataset.
+
         Args:
-            **kwargs (Any): Key-value pairs to match against node metadata (searches top level and nested dict entries).
-        
+            **kwargs (Any): Key-value pairs to match against the nodes' searchable metadata keys, as in `find_node`.
+
         Returns:
-            List['Node']: A list of all matching nodes. 
+            Optional[Node]: The most recent matching node, or None if nothing matches.
+
+        Examples:
+            >>> latest = store.get_most_recent_node(step_type="clean")
         """
         str_id = self.database.get_most_recent(**kwargs)
         return self._node_from_index(str_id) if str_id else None
     
     def from_parent(self, node: Union[str, 'Node'], filename: str) -> List[Path]:
         """
-        Shortcut to get a specific file(s) from the parent node of the specified node.
+        Shortcut to get specific file(s) from the parent node of the specified node.
+
+        Equivalent to looking up the node's parent and calling `artifacts` on it. The typical use is reading the previous step's output as the current step's input.
 
         Args:
-            node (Union[str, 'Node']): The specified node
-            filename (str): The file string to match to get from the parent
+            node (Union[str, Node]): The Node or node_id whose parent to search.
+            filename (str): A glob pattern or substring to match against the parent's files, as in `Node.artifacts`.
 
         Returns:
-            List[Path]: A list of file paths from the parent node
+            List[Path]: The matching file paths from the parent node, relative to the store root. Empty if the node has no parent or nothing matches.
+
+        Examples:
+            >>> with store.create_node(step_type="model", parent=clean_node) as node:
+            ...     [training_data] = store.from_parent(node, "cleaned.csv")
         """
         node = self.get_node(node)
         if node.parent_id is None:
@@ -268,30 +291,38 @@ class LineageStore:
     
     def get_child_nodes(self, node: Union[str, 'Node']) -> List['Node']:
         """
-        Returns the offspring nodes of the specified node.
+        Returns the direct children of the specified node.
+
+        Only immediate offspring are returned, not the full subtree. To walk further down the branch, call this on each child in turn.
 
         Args:
-            node (Union[str, 'Node']): A 'Node' object or node id string.
+            node (Union[str, Node]): A Node object or node_id string.
 
         Returns:
-            List['Node']: A list of all child nodes.
+            List[Node]: All nodes whose parent is the specified node. Empty if the node has no children or does not exist.
         """
         target = self.get_node(node)
         return self.find_node(parent_id=target.node_id) if target else []
 
     def prune(self, node: Union[str, 'Node'], dry_run: bool = True) -> List['Node']:
         """
-        THIS IS RECURSIVE — deleting a node deletes anything downstream.
-        Delete a node and all children, purging the entire branch.
+        Deletes a node and all of its descendants, purging the entire branch.
+
+        THIS IS RECURSIVE — deleting a node deletes anything downstream of it, removing both the directories on disk and their index entries. Run with the default `dry_run=True` first to preview exactly what would be removed.
 
         Args:
-            node (Union[str, 'Node']): Either a node ID string or a node object.
-            dry_run (bool): If True, returns the list of nodes that would be
-                deleted without deleting anything. Must be set to False to
-                actually delete. Defaults to True.
+            node (Union[str, Node]): Either a node_id string or a Node object.
+            dry_run (bool, optional): If True, returns the list of nodes that would be deleted without deleting anything. Must be set to False to actually delete. Defaults to True.
 
         Returns:
-            List['Node']: Nodes that were (or would be) deleted.
+            List[Node]: Nodes that were (or would be) deleted, deepest first.
+
+        Raises:
+            PermissionError: If the target resolves to the store's root directory.
+
+        Examples:
+            >>> store.prune("abc12345")                  # preview only
+            >>> store.prune("abc12345", dry_run=False)   # actually delete
         """
         target = self.get_node(node)
         if not target:
@@ -313,7 +344,11 @@ class LineageStore:
 
     def generate_web_graph(self):
         """
-        Create interactive web graph of node hierarchies and lineage.
+        Creates an interactive web graph of node hierarchies and lineage.
+
+        Renders every node in the store as a self-contained HTML file — all styles and scripts are inlined, so the file can be opened directly in a browser or shared as-is. Nodes are laid out by lineage and coloured by step type; clicking a node reveals its metadata and artifacts.
+
+        The file is written to `<store root>/interactive_pipeline.html`, and the location is printed on completion.
         """
         path = run_web_generator(self)
         print(f"Graph generated at {path}")
