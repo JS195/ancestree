@@ -113,10 +113,9 @@ ancestree-venv/
 # *.html
 
 # Examples
-docs/examples/basic_usage
-docs/examples/Sample_ML_pipeline
 docs/examples/ML_pipeline
 docs/examples/benchmark_10k_store
 
 .ipynb_checkpoints/
+*.ipynb
 .DS_Store
