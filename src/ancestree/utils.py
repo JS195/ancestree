@@ -1,7 +1,4 @@
 from datetime import datetime
-from typing import Literal, Dict, Any
-from pathlib import Path
-import re
 import subprocess
 import platform
 import getpass
@@ -20,77 +17,6 @@ def is_pandas(obj):
     """
     return type(obj).__name__ == 'DataFrame' and hasattr(obj, 'to_dict')
 
-# This should have more type checking
-def format_metadata(data_type: Literal['text', 'table', 'link', 'list', 'image'], content: Any, label = None) -> Dict:
-    """
-    Function to format items in the metadata into something the JS web app can interpret and display.
-    If data_type = 'table', content must be a pandas DataFrame.
-    If data_type = 'image', content must be a str or Path to a .png or .jpeg file.
-
-    Args:
-        data_type: Must be one of 'text', 'table', 'link', 'list', 'image'.
-        content: The content to store in the metadata.
-        label: The label of the content. Defaults to None.
-
-    Returns:
-        Dict: A dictionary of the formatted metadata.
-
-    Examples:
-        >>> ancestree.format_metadata("text", "Task complete", label="Status")
-        {'type': data_type, 'content': 'Task complete', 'label': 'Status'}
-    """
-    data_type = data_type.lower()    
-    formatted_content = content
-    
-    if data_type == "table":
-        if is_pandas(content):
-
-            split = content.to_dict(orient='split')
-            formatted_content = {
-                "columns":split['columns'],
-                "rows":split['data']
-            }
-
-        else:         
-            raise TypeError(f"Expected a pandas DataFrame for 'table', got {type(content).__name__}")
-    
-    if data_type == 'image':
-        p = Path(content)
-
-        parts = p.parts
-        for i, part in enumerate(parts):
-            if re.match(r'^[0-9a-f]{8}$', part):
-                formatted_content = str(Path(*parts[i:]))
-        
-    return {
-        "type": data_type, # "text", "table", "link", "list", "image"
-        "content": formatted_content,
-        "label": label
-    }
-
-def _finditem(obj, target_key):
-    """Internal helper — flat dict lookup with list support."""
-    if isinstance(obj, dict):
-        return obj.get(target_key)
-    if isinstance(obj, list):
-        for item in obj:
-            result = _finditem(item, target_key)
-            if result is not None:
-                return result
-    return None
-
-def is_match(meta, **kwargs):
-    for key, value in kwargs.items():
-        nested_val = _finditem(meta, key)
-        if callable(value):
-            try:
-                if not value(nested_val):
-                    return False
-            except Exception:
-                return False
-        elif nested_val != value:
-            return False
-    return True
 
 def safe_get_user():
     """
@@ -101,57 +27,44 @@ def safe_get_user():
     except Exception:
         return os.environ.get("USER", "unknown")
 
-def get_provenance():
+def get_environment_provenance():
     """
-    Track who/ what/ how produced the node
+    Track who and what produced the node.
     """
-    prov = {
+    return {
         "user": safe_get_user(),
         "python_version": sys.version.split()[0],
         "platform": platform.platform(),
-        "git_commit": None,
-        "git_dirty": False,
-        "git_branch": None,
     }
 
+def _git_output(*args):
     try:
-        commit = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"],
+        return subprocess.check_output(
+            ["git", *args],
             stderr=subprocess.DEVNULL,
             encoding="utf-8"
         ).strip()
-        prov["git_commit"] = commit
-
-        status = subprocess.check_output(
-            ["git", "status", "--porcelain"],
-            stderr=subprocess.DEVNULL,
-            encoding="utf-8"
-        ).strip()
-        prov["git_dirty"] = len(status) > 0
-
-        branch = subprocess.check_output(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            stderr=subprocess.DEVNULL,
-            encoding="utf-8"
-        ).strip()
-        prov["git_branch"] = branch
-
     except Exception:
         # Not a git repo or git not installed
-        pass
-    return prov
+        return None
 
-def parse_iso_utc(s: str) -> datetime:
+def get_git_provenance():
     """
-    Returns a datetime from a string.
-
-    Args:
-        s (str): String object representing a datetime.
-
-    Returns:
-        datetime: A datetime object.
+    Track the git state the node was produced under.
     """
-    return datetime.fromisoformat(s)
+    status = _git_output("status", "--porcelain")
+    return {
+        "git_commit": _git_output("rev-parse", "HEAD"),
+        "git_dirty": bool(status),
+        "git_branch": _git_output("rev-parse", "--abbrev-ref", "HEAD"),
+    }
+
+def get_provenance():
+    """
+    Track who/ what/ how produced the node. Returns a flat dict so each
+    field can be stored as an individual metadata entry via add_meta.
+    """
+    return {**get_environment_provenance(), **get_git_provenance()}
 
 def parse_time(iso_str):
     if not iso_str: return "N/A"

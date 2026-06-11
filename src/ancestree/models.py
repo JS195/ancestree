@@ -1,8 +1,7 @@
 import json
 from datetime import datetime, timezone
-import time
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, List
 from .utils import get_provenance
 from copy import deepcopy
 from typing import Union
@@ -10,13 +9,14 @@ from typing import Union
 class Node:
     def __init__(self, path: Path, node_id: str, generation: int, parent_id: str, step_type:str=None):
         """
-        Initialises a node instance and ensures its directory exists.
+        Initialises a node instance. Performs no I/O: use Node._load() to read
+        an existing node from disk or Node._create() to initialise a new one.
 
         Args:
             path (Path): The filesystem path where the node is stored.
             node_id (str): A unique 8-character alphanumeric identifier.
             generation (int): The generation number of the node in the pipeline.
-            parent_id (str): The unique 8-character identifier of node the current node descends from. 
+            parent_id (str): The unique 8-character identifier of node the current node descends from.
         """
         self.path = path
         self.node_id = node_id
@@ -24,25 +24,84 @@ class Node:
         self.parent_id = parent_id
         self.step_type = step_type
         self._metadata = {}
-
-        self._spin_up_node()
+        self._system_keys = set[Any]()
 
     @property
     def metadata(self):
-        return deepcopy(self._metadata)
+        return deepcopy(self._hydrate())
 
-    def _spin_up_node(self):
-        meta_path = self.path / "meta.json"
-        if meta_path.exists():
-            # If the node exists we load the metadata
-            self._metadata = json.loads((meta_path).read_text())
-        else:
-            # If the node does not yet exist we must write its properties to the metadata
-            self.add_meta('node_id', self.node_id, type='text', group='Structural Properties')
-            self.add_meta('parent_id', self.parent_id, type='text', group='Structural Properties')
-            self.add_meta('generation', self.generation, type='text', group='Structural Properties')
-            self.add_meta('step_type', self.step_type, type='text', group='Structural Properties')
-            self.add_meta('timestamp', datetime.now(timezone.utc).isoformat(), type='text', group='Structural Properties')
+    def _hydrate(self):
+        # Index-backed nodes (_from_index) defer reading meta.json until the
+        # full metadata is actually needed.
+        if self._metadata is None:
+            self._metadata = json.loads((self.path / "meta.json").read_text())
+        return self._metadata
+
+    @classmethod
+    def _from_index(cls, path: Path, flat: dict) -> 'Node':
+        """
+        Builds a node from the database's flattened index entry without
+        touching disk. The full metadata is hydrated lazily from meta.json
+        on first access.
+
+        Args:
+            path (Path): The directory of the node.
+            flat (dict): The node's flat index entry (key -> value).
+
+        Returns:
+            Node: The index-backed node.
+        """
+        node = cls(path, flat.get('node_id'), flat.get('generation'),
+                   flat.get('parent_id'), step_type=flat.get('step_type'))
+        node._metadata = None
+        return node
+
+    @classmethod
+    def _load(cls, path: Path) -> 'Node':
+        """
+        Loads an existing node from its meta.json, which is the single source
+        of truth for the structural attributes.
+
+        Args:
+            path (Path): The directory of the node to load.
+
+        Returns:
+            Node: The loaded node.
+        """
+        meta = json.loads((path / "meta.json").read_text())
+        def _value(key):
+            return meta.get(key).get('value')
+        node = cls(path, _value('node_id'), _value('generation'),
+                   _value('parent_id'), step_type=_value('step_type'))
+        node._metadata = meta
+        return node
+
+    @classmethod
+    def _create(cls, path: Path, node_id: str, generation: int, parent_id: str, step_type:str=None) -> 'Node':
+        """
+        Initialises a brand new node with its structural and provenance
+        metadata. The initial keys are recorded in _system_keys so the store
+        can tell system-written metadata apart from user additions.
+
+        Args:
+            path (Path): The filesystem path where the node is stored.
+            node_id (str): A unique 8-character alphanumeric identifier.
+            generation (int): The generation number of the node in the pipeline.
+            parent_id (str): The unique 8-character identifier of node the current node descends from.
+
+        Returns:
+            Node: The new node. Nothing is written to disk until _write_meta().
+        """
+        node = cls(path, node_id, generation, parent_id, step_type=step_type)
+        node.add_meta('node_id', node_id, type='text', group='Structural Properties')
+        node.add_meta('parent_id', parent_id, type='text', group='Structural Properties')
+        node.add_meta('generation', generation, type='text', group='Structural Properties')
+        node.add_meta('step_type', step_type, type='text', group='Structural Properties')
+        node.add_meta('timestamp', datetime.now(timezone.utc).isoformat(), type='text', group='Structural Properties')
+        for key, value in get_provenance().items():
+            node.add_meta(key, value, type='text', group='Provenance', searchable=False)
+        node._system_keys = set(node._metadata)
+        return node
 
 
     def add_meta(self, key, value, type='text', group=None, searchable=True):
@@ -54,7 +113,7 @@ class Node:
             'group': group,
             'searchable': searchable
         }}
-        self._metadata.update(entry)
+        self._hydrate().update(entry)
 
     def _write_meta(self):
         """
@@ -73,11 +132,10 @@ class Node:
     def to_db(self):
         # This is a flat key value dict for easy searching and indexing
         entries = {}
-        for m in self.metadata.keys():
-            nested_properties = self.metadata.get(m)
-            if nested_properties.get('searchable', True):
-                entries[m] = nested_properties.get('value')
-        
+        for key, properties in self._hydrate().items():
+            if properties.get('searchable', True):
+                entries[key] = properties.get('value')
+
         return entries
 
 
