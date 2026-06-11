@@ -1,5 +1,6 @@
 from .utils import parse_time
 import json
+from datetime import datetime
 from importlib import resources
 from pathlib import Path
 from collections import defaultdict
@@ -40,6 +41,21 @@ def visualise_nodes(store):
         if node_obj is None:
             continue
         entries = dict(node_obj.metadata)
+
+        # Timestamps are stored as ISO strings: attach the parsed epoch so the
+        # web UI can treat them numerically (colour-by-time), and display the
+        # human-readable form instead of the raw ISO value.
+        iso = entries.get('timestamp', {}).get('value')
+        if iso:
+            try:
+                entries['timestamp'] = {
+                    **entries['timestamp'],
+                    'value': parse_time(iso),
+                    'epoch': datetime.fromisoformat(iso).timestamp(),
+                }
+            except (ValueError, TypeError):
+                pass
+
         for item in node_obj.artifacts():
             path = Path(*item.parts[1:])
             entries[str(path)] = {
