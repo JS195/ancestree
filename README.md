@@ -128,7 +128,7 @@ Inside it:
 ## Documentation & examples
 
 - **[Documentation site](https://js195.github.io/ancestree/)** — full API reference and a live demo of the explorer.
-- **Example notebooks** in `[docs/examples/](docs/examples/)`: [basic usage](docs/examples/basic_usage.ipynb), an end-to-end [ML pipeline](docs/examples/ML_pipeline.ipynb), and a [10k node timing benchmark](docs/examples/timing_benchmark.ipynb).
+- **Example notebooks** in [docs/examples/](docs/examples/): [basic usage](docs/examples/basic_usage.ipynb), an end-to-end [ML pipeline](docs/examples/ML_pipeline.ipynb), and a [10k node timing benchmark](docs/examples/timing_benchmark.ipynb).
 
 ---
 
