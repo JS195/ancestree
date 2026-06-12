@@ -1378,7 +1378,7 @@ store = ancestree.LineageStore(folder_name, rules=RULES, gen_triggers=trigger)</
 
     <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 
-    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'something'</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'key'</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="s1">'other'</span><span class="p">:[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]}),</span> <span class="n">data_type</span><span class="o">=</span><span class="s1">'table'</span><span class="p">)</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'something'</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'key'</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="s1">'other'</span><span class="p">:[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]}))</span>
 
     <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span><span class="o">/</span><span class="s1">'samples.npy'</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 </pre></div>
@@ -1393,7 +1393,7 @@ with store.create_node(step_type="import data") as node:
 
     X = np.random.randint(0, 100, (5,5))
 
-    node.add_meta('something', pd.DataFrame({'key':[1,2,3], 'other':[4,5,6]}), data_type='table')
+    node.add_meta('something', pd.DataFrame({'key':[1,2,3], 'other':[4,5,6]}))
 
     np.save(node/'samples.npy', X)</div>
 </div>

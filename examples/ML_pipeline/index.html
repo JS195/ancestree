@@ -1276,7 +1276,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="p">}</span>
 <span class="n">triggers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"scaling"</span><span class="p">,</span> <span class="s2">"embedding"</span><span class="p">,</span> <span class="s2">"clustering"</span><span class="p">]</span>
 
-<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"../assets/demo"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"ML_pipeline"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import pandas as pd
 import numpy as np
@@ -1298,7 +1298,7 @@ rules = {
 }
 triggers = ["scaling", "embedding", "clustering"]
 
-store = ancestree.LineageStore("../assets/demo", rules=rules, gen_triggers=triggers)</div>
+store = ancestree.LineageStore("ML_pipeline", rules=rules, gen_triggers=triggers)</div>
 </div>
 </div>
 </div>
@@ -1324,7 +1324,7 @@ store = ancestree.LineageStore("../assets/demo", rules=rules, gen_triggers=trigg
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -1365,7 +1365,7 @@ store = ancestree.LineageStore("../assets/demo", rules=rules, gen_triggers=trigg
                     <span class="n">embedding</span> <span class="o">=</span> <span class="n">embedder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">scaled_data</span><span class="p">)</span>
 
                     <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">e_node</span><span class="o">/</span><span class="s2">"map.npy"</span><span class="p">,</span> <span class="n">embedding</span><span class="p">)</span>
-                    <span class="n">e_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'method'</span><span class="p">,</span> <span class="n">e_type</span><span class="p">,</span> <span class="s1">'text'</span><span class="p">,</span> <span class="s1">'Method'</span><span class="p">)</span>
+                    <span class="n">e_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'method'</span><span class="p">,</span> <span class="n">e_type</span><span class="p">,</span> <span class="s1">'Method'</span><span class="p">)</span>
 
                     <span class="c1"># Clustering</span>
                     <span class="k">for</span> <span class="n">c_type</span> <span class="ow">in</span> <span class="n">clusterers</span><span class="p">:</span>
@@ -1384,7 +1384,7 @@ store = ancestree.LineageStore("../assets/demo", rules=rules, gen_triggers=trigg
                             <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">embedding</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">embedding</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'turbo'</span><span class="p">)</span>
                             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">c_node</span><span class="o">/</span><span class="s2">"clustering_img.png"</span><span class="p">)</span>
                             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                            <span class="n">c_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'Final Results'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">c_node</span><span class="o">/</span><span class="s2">"clustering_img.png"</span><span class="p">),</span> <span class="s1">'image'</span><span class="p">,</span> <span class="s1">'Results'</span><span class="p">)</span>
+                            <span class="n">c_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'Final Results'</span><span class="p">,</span> <span class="n">c_node</span><span class="o">/</span><span class="s2">"clustering_img.png"</span><span class="p">,</span> <span class="s1">'Results'</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">scalers = {"robust": RobustScaler(), "standard":StandardScaler()}
 embedders = ["umap", "tsne", "pca"]
@@ -1414,7 +1414,7 @@ with store.create_node("raw data") as root_node:
                     embedding = embedder.fit_transform(scaled_data)
 
                     np.save(e_node/"map.npy", embedding)
-                    e_node.add_meta('method', e_type, 'text', 'Method')
+                    e_node.add_meta('method', e_type, 'Method')
 
                     # Clustering
                     for c_type in clusterers:
@@ -1433,7 +1433,7 @@ with store.create_node("raw data") as root_node:
                             plt.scatter(embedding[:, 0], embedding[:,1], c=labels, cmap='turbo')
                             plt.savefig(c_node/"clustering_img.png")
                             plt.close()
-                            c_node.add_meta('Final Results', str(c_node/"clustering_img.png"), 'image', 'Results')</div>
+                            c_node.add_meta('Final Results', c_node/"clustering_img.png", 'Results')</div>
 </div>
 </div>
 </div>
@@ -1469,7 +1469,7 @@ with store.create_node("raw data") as root_node:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -1496,7 +1496,7 @@ with store.create_node("raw data") as root_node:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Graph generated at ../assets/demo/interactive_pipeline.html
+<pre>Graph generated at ML_pipeline/interactive_pipeline.html
 </pre>
 </div>
 </div>
