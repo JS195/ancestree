@@ -1,9 +1,17 @@
-from .utils import parse_time
+# Python packages
 import json
 from datetime import datetime
 from importlib import resources
 from pathlib import Path
 from collections import defaultdict
+
+def parse_time(iso_str):
+    if not iso_str: return "N/A"
+    try:
+        dt=datetime.fromisoformat(iso_str)
+        return dt.strftime("%d %b %Y, %H:%M:%S")
+    except:
+        return iso_str
 
 def _val(entries, key, default = None):
     e = entries.get(key)

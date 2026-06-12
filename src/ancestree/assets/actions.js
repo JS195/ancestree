@@ -10,6 +10,10 @@ let tableSort = {key: 'timestamp', desc: true}; // active runs-table column sort
 const DIM_NODE = 'rgba(150, 150, 150, 0.1)';
 const DIM_EDGE = 'rgba(200, 200, 200, 0.05)';
 
+// Entry types that render as rich content rather than plain values; they
+// never count as numeric metrics.
+const RICH_TYPES = new Set(['image', 'link', 'table', 'json', 'code']);
+
 function parseQuery(query) {
     return query.trim().toLowerCase().split(/\s+/).filter(Boolean).map(term => {
         const m = term.match(/^([^=:<>]+)(>=|<=|=|:|>|<)(.+)$/);
@@ -180,7 +184,7 @@ function numericValue(node, key) {
     if (key === 'node_id' || key === 'parent_id' || key === 'generation') return null;
     const entry = (node.entries || {})[key];
     if (!entry || entry.searchable === false) return null;
-    if (entry.data_type === 'image' || entry.data_type === 'link' || entry.data_type === 'table') return null;
+    if (RICH_TYPES.has(entry.data_type)) return null;
     // Timestamps carry a pre-parsed epoch from the Python side
     if (typeof entry.epoch === 'number' && Number.isFinite(entry.epoch)) return entry.epoch;
     if (typeof entry.value === 'boolean' || entry.value == null || entry.value === '') return null;
@@ -846,7 +850,7 @@ function renderMetadata(entries) {
     <div class="section-header">${group}</div>
     <div class="section-body">
     ${items.map(([key,entry]) => `
-    <div class="metadata-row${entry.data_type === 'table' ? ' metadata-row--block' : ''}">
+    <div class="metadata-row${['table', 'json', 'code'].includes(entry.data_type) ? ' metadata-row--block' : ''}">
     <div class="metadata-key">${entry.label || key}</div>
     <div class="metadata-value">${renderValue(entry)}</div>
     </div>`).join('')}
@@ -863,9 +867,24 @@ function renderValue(entry) {
             return `<img src="${entry.value.path ?? entry.value}" style="max-width:100%">`;
         case "table":
             return renderTableValue(entry.value);
+        case "json":
+            return renderJsonValue(entry.value);
+        case "code":
+            return `<pre class="code-value">${entry.value ?? 'N/A'}</pre>`;
         default:
             return `<span>${entry.value ?? 'N/A'}</span>`;
     }
+}
+
+// A dict or list stored by add_meta(data_type='json'), pretty-printed.
+function renderJsonValue(value) {
+    if (typeof value === 'string') {
+        try { value = JSON.parse(value); } catch (e) { /* fall through to N/A */ }
+    }
+    if (value === null || typeof value !== 'object') {
+        return '<span>N/A</span>';
+    }
+    return `<pre class="json-value">${JSON.stringify(value, null, 2)}</pre>`;
 }
 
 // A pandas DataFrame stored by add_meta(data_type='table'): the Python side
@@ -925,7 +944,7 @@ function generateNodeHtml(nodeData) {
 // Plain numeric read of an entry for delta display; unlike numericValue it
 // takes the entry directly and never treats timestamps as numbers.
 function entryNumber(entry) {
-    if (!entry || entry.data_type === 'image' || entry.data_type === 'link' || entry.data_type === 'table') return null;
+    if (!entry || RICH_TYPES.has(entry.data_type)) return null;
     if (typeof entry.value === 'boolean' || entry.value == null || entry.value === '') return null;
     const v = Number(entry.value);
     return Number.isFinite(v) ? v : null;

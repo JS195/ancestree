@@ -324,13 +324,35 @@ button.theme-toggle:active {
     border-bottom: none;
 }
 
-/* Wide values (tables) stack under their key instead of sitting beside it */
+/* Wide values (tables, json) stack under their key instead of beside it */
 .metadata-row--block {
     display: block;
 }
 .metadata-row--block .metadata-value {
     text-align: left;
     margin-top: 6px;
+}
+
+/* Monospace blocks: pretty-printed dicts/lists (data_type='json') and
+   command/query snippets (data_type='code') */
+.json-value, .code-value {
+    margin: 0;
+    padding: 8px 10px;
+    max-height: 240px;
+    overflow: auto;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: var(--strip);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    white-space: pre;
+}
+.code-value {
+    /* Long one-liner commands wrap rather than forcing a horizontal scroll */
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 /* ---- Node comparison -------------------------------------------------------
