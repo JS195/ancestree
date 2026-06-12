@@ -194,9 +194,9 @@ class LineageStore:
         if not (has_artifacts or has_user_meta):
             return False
         size = sum(f.stat().st_size for f in node.path.rglob('*') if f.is_file())
-        node.add_meta('healthy', healthy, type='text', group='Structural Properties')
-        node.add_meta('duration_s', round(duration, 3), type='text', group='Structural Properties')
-        node.add_meta('size_mb', round(size / 1e6, 6), type='text', group='Structural Properties')
+        node.add_meta('healthy', healthy, data_type='text', group='Structural Properties')
+        node.add_meta('duration_s', round(duration, 3), data_type='text', group='Structural Properties')
+        node.add_meta('size_mb', round(size / 1e6, 6), data_type='text', group='Structural Properties')
         node._write_meta()
         self.database.add(node.node_id, node.to_db())
         return True

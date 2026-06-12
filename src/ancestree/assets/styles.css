@@ -324,6 +324,15 @@ button.theme-toggle:active {
     border-bottom: none;
 }
 
+/* Wide values (tables) stack under their key instead of sitting beside it */
+.metadata-row--block {
+    display: block;
+}
+.metadata-row--block .metadata-value {
+    text-align: left;
+    margin-top: 6px;
+}
+
 /* ---- Node comparison -------------------------------------------------------
    Aligned diff: identical rows recede, differing rows carry the weight,
    numeric changes get a delta badge. */
