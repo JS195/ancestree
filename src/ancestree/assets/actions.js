@@ -457,10 +457,10 @@ function renderRanking(allNodes) {
         .map(n => ({node: n, value: numericValue(n, heatmap.key)}))
         .filter(r => r.value !== null)
         .sort((a, b) => heatmap.desc ? b.value - a.value : a.value - b.value)
-        .slice(0, 10);
+        .slice(0, 5);
 
     document.getElementById('heat-rank-head').innerHTML =
-        heatmap.desc ? 'Top 10 &#9660;' : 'Bottom 10 &#9650;';
+        heatmap.desc ? 'Top 5 &#9660;' : 'Bottom 5 &#9650;';
 
     const rowsEl = document.getElementById('heat-rank-rows');
     rowsEl.innerHTML = ranked.map((r, i) => `
