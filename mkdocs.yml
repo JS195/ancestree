@@ -1,7 +1,14 @@
 site_name: Ancestree Documentation
+site_url: https://js195.github.io/ancestree/
+site_description: Lightweight, zero-dependency data lineage for Python.
+site_author: Joshua Smith
+repo_url: https://github.com/JS195/ancestree
+repo_name: JS195/ancestree
 
 theme:
   name: material
+  icon:
+    repo: fontawesome/brands/github
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -10,7 +17,6 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
-
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: custom
@@ -18,13 +24,24 @@ theme:
       toggle:
         icon: material/weather-night
         name: Switch to light mode
-
   features:
     - content.code.copy
+    - content.code.annotate
     - navigation.expand
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
 
 plugins:
   - search
+  - social
+  - git-revision-date-localized:
+      type: date
   - mkdocstrings:
       handlers:
         python:
@@ -35,7 +52,6 @@ plugins:
             show_root_full_path: true
             show_source: true
             group_by_category: true
-
   - mkdocs-jupyter:
       show_input: true
       execute: false
@@ -60,14 +76,20 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
 
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/JS195/ancestree
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ancestree/
+
 nav:
   - Home: index.md
   - Examples:
-    - Overview: examples.md
-    - Basic Usage: examples/basic_usage.ipynb
-    - Machine Learning Pipeline: examples/ML_pipeline.ipynb
-    - Timing Benchmark: examples/timing_benchmark.ipynb
-
+      - Overview: examples.md
+      - Basic Usage: examples/basic_usage.ipynb
+      - Machine Learning Pipeline: examples/ML_pipeline.ipynb
+      - Timing Benchmark: examples/timing_benchmark.ipynb
   - Live Demo: demo.md
   - API Reference: reference.md
 
