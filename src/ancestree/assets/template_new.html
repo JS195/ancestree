@@ -17,17 +17,26 @@
         <div class="main-title">Interactive Pipeline Explorer</div>
     </div>
 
-    <div class ="header-right">
-        <button class="theme-toggle control-button" onclick="toggleTheme()">Toggle Theme</button>
-        <div class="color-picker-wrapper control-button">
-            <label for="accent-picker">Accent</label>
-            <input type="color" id="accent-picker" value="#0071e3">
+    <div class="header-center">
+        <div class="search-wrapper">
+            <input type="text" id="search-input" placeholder="Search nodes — e.g. pca, method=pca, CH_score>1000" autocomplete="off" spellcheck="false">
+            <span id="search-count"></span>
+            <button id="search-clear" title="Clear search">&times;</button>
         </div>
+    </div>
+
+    <div class ="header-right">
+        <div id="status-pills" class="status-pills"></div>
+        <button id="view-toggle" class="control-button" onclick="toggleTableView()">Table</button>
+        <button class="theme-toggle control-button" onclick="toggleTheme()">Toggle Theme</button>
     </div>
 </header>
 
 <main id="app-container">
     <div id="mynetwork"></div>
+    <div id="table-view"></div>
+    <div id="legend"></div>
+    <div id="timeline"></div>
     <div id="resizer"></div>
     <aside id="details-pane">
         <div class="pane-content">

@@ -1,28 +1,79 @@
 :root {
     --bg-app:#f5f5f7;
-    --bg-panel:rgba(255,255,255,0.72);
+    /* Ambient light layer — only seen THROUGH the frosted chrome, never over the graph */
+    --bg-ambient:
+        radial-gradient(1100px 520px at 100% -5%,  rgba(0,113,227,0.10), transparent 60%),
+        radial-gradient(900px 700px  at 108% 105%, rgba(124,77,255,0.07), transparent 55%),
+        var(--bg-app);
+
+    --bg-panel:rgba(255,255,255,0.6);
     --bg-card: #ffffff;
+    --bg-glass: rgba(255,255,255,0.55);          /* frosted pills / inputs sitting on the header */
+    --bg-glass-hover: rgba(255,255,255,0.78);
+
     --text-primary: #1d1d1f;
     --text-secondary: #86868b;
     --text-muted: rgb(from var(--text-primary) r g b / 10%);
     --accent:#0071e3;
-    --border: rgba(0,0,0,0.1);
-    --glass: blur(20px) saturate(180%);
-    --shadow: 0 8px 30px rgba(0,0,0,0.04);
+    --border: rgba(0,0,0,0.2);
+
+    /* The glass material */
+    --glass: blur(28px) saturate(180%);
+    --glass-highlight: rgba(255,255,255,0.65);   /* inner edge that catches the light */
+    --ring: color-mix(in srgb, var(--accent) 22%, transparent);
+
+    --shadow: 0 8px 30px rgba(0,0,0,0.06);
+    --shadow-panel: -12px 0 44px rgba(0,0,0,0.05);
+
+    /* Raised content tiles (cards in the details pane) */
+    --bg-elevated: #ffffff;
+    --card-highlight: rgba(255,255,255,0.9);
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 6px 16px rgba(0,0,0,0.07);
+    --strip: rgba(0,0,0,0.06);                  /* relative tint for card header bands */
+
     --node-color:#0071e3;
+
+    /* System status colors */
+    --success: #34c759;
+    --warning: #ff9500;
+    --danger: #ff3b30;
 }
 
 [data-theme="dark"] {
     --bg-app:#000000;
-    --bg-panel:rgba(28,28,30,0.8);
+    --bg-ambient:
+        radial-gradient(1100px 520px at 100% -5%,  rgba(10,132,255,0.16), transparent 60%),
+        radial-gradient(900px 700px  at 108% 105%, rgba(124,77,255,0.12), transparent 55%),
+        var(--bg-app);
+
+    --bg-panel:rgba(28,28,30,0.6);
     --bg-card: #1c1c1e;
+    --bg-glass: rgba(72,72,74,0.45);
+    --bg-glass-hover: rgba(99,99,102,0.55);
+
     --text-primary: #f5f5f7;
     --text-secondary: #a1a1a6;
     --text-muted: rgb(from var(--text-primary) r g b / 10%);
     --accent:#0a84ff;
-    --border: rgba(255,255,255,0.15);
-    --shadow: 0 8px 30px rgba(0,0,0,0.3);
+    --border: rgba(255,255,255,0.12);
+
+    --glass-highlight: rgba(255,255,255,0.12);
+
+    --shadow: 0 8px 30px rgba(0,0,0,0.35);
+    --shadow-panel: -12px 0 44px rgba(0,0,0,0.4);
+
+    /* Raised content tiles: in the dark, elevation reads as a LIGHTER surface */
+    --bg-elevated: #2c2c2e;
+    --card-highlight: rgba(255,255,255,0.10);
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.5), 0 10px 28px rgba(0,0,0,0.55);
+    --strip: rgba(255,255,255,0.05);
+
     --node-color:#0a84ff;
+
+    /* System status colors brighten slightly in the dark */
+    --success: #30d158;
+    --warning: #ff9f0a;
+    --danger: #ff453a;
 }
 body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
@@ -30,11 +81,20 @@ body {
     display: flex;
     flex-direction: column;        
     height: 100vh;
-    background: var(--bg-app);
+    background: var(--bg-ambient);
+    background-attachment: fixed;
     color: var(--text-primary);
     overflow: hidden;
     -webkit-font-smoothing:antialiased
 }
+
+/* Kill text selection while dragging the resizer (fixes the highlight-on-drag bug) */
+body.is-dragging, body.is-dragging * {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: col-resize;
+}
+
 .app-header { 
     height: 60px;
     background: var(--bg-panel);
@@ -46,6 +106,10 @@ body {
     justify-content: space-between; 
     align-items: center; 
     border-bottom: 0.5px solid var(--border);
+    /* top hairline of light + a soft drop to lift it off the canvas */
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 24px rgba(0,0,0,0.04);
+    position: relative;
+    z-index: 10;
 }
 
 .header-left h1 {
@@ -64,7 +128,7 @@ body {
 .control-button {
     display: flex;
     align-items: center;
-    background: var(--bg-card);
+    background: var(--bg-glass);
     border: 0.5px solid var(--border);
     padding: 6px 12px;
     border-radius: 20px;
@@ -74,44 +138,18 @@ body {
     font-weight: 500;
     cursor: pointer;
     color: var(--text-secondary); 
-    font-family: inherit;       
+    font-family: inherit;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 2px rgba(0,0,0,0.04);
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 button.theme-toggle:hover {
-    background: var(--bg-app);
+    background: var(--bg-glass-hover);
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 14px rgba(0,0,0,0.10);
 }
-button.color-picker-wrapper:hover{
-    background: var(--bg-app);
-}
-.color-picker-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.color-picker-wrapper label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-#accent-picker {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-}
-#accent-picker::-webkit-color-swatch {
-    border-radius: 50%;
-    border: 2px solid var(--bg-app);
-    box-shadow: 0 0 0 1px var(--border);
-}
-#accent-picker::-moz-color-swatch {
-    border-radius: 50%;
-    border: 2px solid var(--bg-app);
-    box-shadow: 0 0 0 1px var(--border);
+button.theme-toggle:active {
+    transform: translateY(0);
 }
 
 .main-title {
@@ -138,13 +176,15 @@ button.color-picker-wrapper:hover{
 #details-pane {
     width: 400px;
     background: var(--bg-panel); 
-    backdrop-filter: var(-glass);
-    -webkit-backdrop-filter: avr(--glass);
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
     border-left: 0.5px solid var(--border);
+    /* left hairline of light + a soft shadow so the pane floats over the canvas */
+    box-shadow: inset 1px 0 0 var(--glass-highlight), var(--shadow-panel);
     overflow-y: auto;
     transition: width 0.05s linear;
 }
-.pane-content { padding: 32px 24px; }
+.pane-content { padding: 24px; }
 .empty-state {
     text-align: center;
     margin-top: 60px;
@@ -160,8 +200,8 @@ button.color-picker-wrapper:hover{
     padding: 10px 15px; 
     border-radius: 14px; 
     border: 0.5px solid var(--border); 
-    background: var(--bg-card); 
-    box-shadow: var(--shadow);
+    background: var(--bg-elevated); 
+    box-shadow: inset 0 1px 0 var(--card-highlight), var(--card-shadow);
     animation: slideIn 0.3s ease-out;
 }
 
@@ -199,15 +239,19 @@ button.color-picker-wrapper:hover{
     border: 0.5px solid var(--border);
 }
 .section-card {
-    background: var(--bg-card);
+    background: var(--bg-elevated);
     border: 0.5px solid var(--border);
     border-radius: 10px;
     margin-bottom: 16px;
     overflow: hidden;
     margin-top: 16px;
+    box-shadow: inset 0 1px 0 var(--card-highlight), var(--card-shadow);
+}
+.node-info > .section-card:first-child {
+    margin-top: 0;
 }
 .section-header {
-    background: var(--bg-app);
+    background: var(--strip);
     padding: 8px 12px;
     font-size: 11px;
     font-weight: 700;
@@ -280,9 +324,83 @@ button.color-picker-wrapper:hover{
     border-bottom: none;
 }
 
-.comapre-split {
+/* ---- Node comparison -------------------------------------------------------
+   Aligned diff: identical rows recede, differing rows carry the weight,
+   numeric changes get a delta badge. */
+.compare-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg-elevated);
+    border: 0.5px solid var(--border);
+    box-shadow: inset 0 1px 0 var(--card-highlight), var(--card-shadow);
+}
+.compare-head-col {
     display: flex;
-    flex-direction: row !important;
+    align-items: baseline;
+    gap: 7px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+}
+.compare-head-col .legend-dot {
+    align-self: center;
+}
+.compare-head-type {
+    text-transform: capitalize;
+}
+.compare-head-id {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.compare-row {
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13px;
+}
+.compare-row:last-child {
+    border-bottom: none;
+}
+.compare-row .metadata-key {
+    margin-bottom: 3px;
+}
+.compare-vals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.compare-val {
+    min-width: 0;
+    word-break: break-word;
+}
+.compare-same {
+    opacity: 0.5;
+}
+.compare-diff .compare-val {
+    font-weight: 600;
+}
+.compare-delta {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.compare-missing {
+    color: var(--text-secondary);
 }
 
 .metadata-img {
@@ -298,4 +416,566 @@ button.color-picker-wrapper:hover{
     text-align: center;
     opacity: 0.6;
     margin-bottom: 10px;
+}
+
+.header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    min-width: 0;
+}
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-glass);
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    height: 32px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    width: min(420px, 100%);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.search-wrapper:focus-within {
+    border-color: var(--accent);
+    background: var(--bg-glass-hover);
+    /* soft Apple-style focus ring */
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 0 0 3px var(--ring);
+}
+#search-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-family: inherit;
+}
+#search-input::placeholder {
+    color: var(--text-secondary);
+}
+#search-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+#search-clear {
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    display: none;
+}
+#search-clear:hover {
+    color: var(--text-primary);
+}
+
+/* ---- Graceful fallbacks ---------------------------------------------------
+   If a browser can't blur, or the user has asked their OS to reduce
+   transparency, fall back to opaque surfaces so text stays crisp. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .app-header, #details-pane { background: var(--bg-card); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .app-header, #details-pane {
+        background: var(--bg-card);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    .control-button, .search-wrapper, .status-pill { background: var(--bg-card); }
+}
+/* Legend — floating glass panel over the graph canvas */
+#legend {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 5;
+    background: var(--bg-panel);
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow);
+    font-size: 12px;
+    min-width: 130px;
+    max-width: 220px;
+}
+.legend-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-primary);
+    user-select: none;
+    -webkit-user-select: none;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+.legend-item:hover {
+    background: var(--bg-glass-hover);
+}
+.legend-item.inactive {
+    opacity: 0.35;
+}
+.legend-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.legend-label {
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Colour-by-metric controls inside the legend */
+.legend-heat {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.legend-heat .legend-title {
+    margin-bottom: 0;
+}
+#heat-select {
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-primary);
+    background: var(--bg-glass);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+.heat-scale {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    height: 120px;
+    padding: 2px 4px;
+}
+.heat-bar {
+    width: 10px;
+    border-radius: 5px;
+    border: 0.5px solid var(--border);
+    /* Top = high, bottom = low; stops match heatColor(t) in actions.js */
+    background: linear-gradient(180deg,
+        hsl(80, 70%, 20%),
+        hsl(93.75, 61.25%, 38%),
+        hsl(107.5, 52.5%, 56%),
+        hsl(121.25, 43.75%, 74%),
+        hsl(135, 35%, 92%));
+}
+.heat-ticks {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+}
+
+/* Ranked list of nodes for the active heatmap metric */
+.heat-rank {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 0.5px solid var(--border);
+}
+.heat-rank-head {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.heat-rank-head:hover {
+    color: var(--text-primary);
+}
+.heat-rank-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 3px 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.heat-rank-row:hover {
+    background: var(--bg-glass-hover);
+}
+.heat-rank-pos {
+    width: 14px;
+    flex-shrink: 0;
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+.heat-rank-label {
+    flex: 1;
+    min-width: 0;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.heat-rank-id {
+    margin-left: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: none;
+}
+.heat-rank-value {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Runs table -------------------------------------------------------------
+   Toggleable alternative to the graph: one row per node in focus, one
+   column per numeric metric. The .table-mode class on #app-container is
+   the single switch between the two views. */
+#table-view {
+    display: none;
+    flex: 1;
+    overflow: auto;
+    background: var(--bg-app);
+    padding: 16px;
+    box-sizing: border-box;
+}
+#app-container.table-mode #mynetwork,
+#app-container.table-mode #legend,
+#app-container.table-mode #timeline {
+    display: none;
+}
+#app-container.table-mode #table-view {
+    display: block;
+}
+.runs-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    background: var(--bg-elevated);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 var(--card-highlight), var(--card-shadow);
+}
+.runs-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-elevated);
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    border-bottom: 0.5px solid var(--border);
+    white-space: nowrap;
+}
+.runs-table th[data-key] {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.runs-table th[data-key]:hover {
+    color: var(--text-primary);
+}
+.runs-table td {
+    padding: 9px 14px;
+    border-bottom: 0.5px solid var(--border);
+}
+.runs-table tbody tr[data-id] {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.runs-table tbody tr[data-id]:hover {
+    background: var(--bg-glass-hover);
+}
+.runs-table tbody tr:last-child td {
+    border-bottom: none;
+}
+/* Two classes so it outranks the `.runs-table th` text-align */
+.runs-table .runs-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.runs-type {
+    text-transform: capitalize;
+    font-weight: 500;
+}
+.runs-id {
+    margin-left: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.runs-table .legend-dot {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: -1px;
+}
+.runs-table .status-dot.runs-failed {
+    display: inline-block;
+    margin-left: 6px;
+    background: var(--danger);
+}
+.runs-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 24px;
+}
+
+/* ---- Activity timeline -----------------------------------------------------
+   Runs per day, coloured by health, floating over the canvas like the
+   legend. Clicking a bar filters the graph to that day. */
+#timeline {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 5;
+    background: var(--bg-panel);
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow);
+    max-width: 320px;
+}
+#timeline:empty {
+    display: none;
+}
+.timeline-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 38px;
+    overflow-x: auto;
+}
+.timeline-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1px;
+    width: 10px;
+    height: 100%;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: 2px 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+.timeline-bar:hover {
+    background: var(--bg-glass-hover);
+}
+.timeline-bar.active {
+    background: var(--ring);
+}
+/* With a day selected, quieten the others */
+#timeline:has(.active) .timeline-bar:not(.active) {
+    opacity: 0.45;
+}
+.timeline-seg {
+    width: 100%;
+    border-radius: 2px;
+}
+.timeline-seg--ok {
+    background: var(--success);
+}
+.timeline-seg--failed {
+    background: var(--danger);
+}
+.timeline-range {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Pipeline health -------------------------------------------------------
+   Header pills summarise run health for the whole store; matching badges and
+   tinted cards repeat the story per-node inside the details pane. */
+.status-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 20px;
+    box-sizing: border-box;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+    background: var(--bg-glass);
+    border: 0.5px solid var(--border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 2px rgba(0,0,0,0.04);
+    white-space: nowrap;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: transform 0.2s ease, background 0.2s ease,
+                box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+button.status-pill {
+    cursor: pointer;
+}
+button.status-pill:hover {
+    background: var(--bg-glass-hover);
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 14px rgba(0,0,0,0.10);
+}
+button.status-pill:active {
+    transform: translateY(0);
+}
+.status-pill--ok svg {
+    color: var(--success);
+}
+
+/* Status dots: a saturated core with a soft halo of the same hue */
+.status-pill-dot, .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.status-pill--failed .status-pill-dot {
+    background: var(--danger);
+    animation: status-pulse 2.6s ease-out infinite;
+}
+.status-pill--dirty .status-pill-dot {
+    background: var(--warning);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 18%, transparent);
+}
+@keyframes status-pulse {
+    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 45%, transparent); }
+    70%  { box-shadow: 0 0 0 5px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* Engaged filter: the pill fills with its own tint */
+button.status-pill--failed.active {
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 13%, transparent);
+    border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+    box-shadow: inset 0 1px 0 var(--glass-highlight),
+                0 0 0 3px color-mix(in srgb, var(--danger) 16%, transparent);
+}
+button.status-pill--dirty.active {
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 13%, transparent);
+    border-color: color-mix(in srgb, var(--warning) 45%, transparent);
+    box-shadow: inset 0 1px 0 var(--glass-highlight),
+                0 0 0 3px color-mix(in srgb, var(--warning) 16%, transparent);
+}
+
+/* Per-node status in the details pane */
+.status-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 16px;
+    animation: slideIn 0.3s ease-out;
+}
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    align-self: flex-start;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.status-badge--ok {
+    color: color-mix(in srgb, var(--success) 75%, var(--text-primary));
+    background: color-mix(in srgb, var(--success) 11%, transparent);
+    border: 0.5px solid color-mix(in srgb, var(--success) 32%, transparent);
+}
+.status-badge--ok .status-dot {
+    background: var(--success);
+}
+.status-card {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 0.5px solid;
+    box-shadow: inset 0 1px 0 var(--card-highlight);
+}
+.status-card--failed {
+    background: color-mix(in srgb, var(--danger) 9%, transparent);
+    border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+}
+.status-card--dirty {
+    background: color-mix(in srgb, var(--warning) 9%, transparent);
+    border-color: color-mix(in srgb, var(--warning) 32%, transparent);
+}
+.status-card-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.status-card--failed .status-card-title {
+    color: color-mix(in srgb, var(--danger) 85%, var(--text-primary));
+}
+.status-card--failed .status-dot {
+    background: var(--danger);
+}
+.status-card--dirty .status-card-title {
+    color: color-mix(in srgb, var(--warning) 80%, var(--text-primary));
+}
+.status-card--dirty .status-dot {
+    background: var(--warning);
+}
+.status-card-note {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .status-pill-dot {
+        animation: none;
+    }
+    .status-pill--failed .status-pill-dot {
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent);
+    }
 }
