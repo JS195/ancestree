@@ -1,4 +1,5 @@
-name: Deploy MkDocs
+name: Deploy MkDocs & Run Tests
+
 on:
   push:
     branches:
@@ -32,10 +33,15 @@ jobs:
           pip install "mkdocs-material[imaging]" \
                       "mkdocstrings[python]" \
                       mkdocs-jupyter \
-                      mkdocs-git-revision-date-localized-plugin
+                      mkdocs-git-revision-date-localized-plugin \
+                      pytest  # 👈 Added pytest to the installation list
 
       - name: Install package
         run: pip install -e .
 
-      - name: Deploy
+      - name: Run tests with pytest
+        run: |
+          pytest
+
+      - name: Deploy Docs
         run: mkdocs gh-deploy --force
