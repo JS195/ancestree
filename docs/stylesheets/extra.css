@@ -23,11 +23,13 @@
     width: 100%;
 }
 .hero-buttons .md-button {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
     margin: 0;
+    width: 100%;
+    text-align: center;
 }
 .doc-object {
     margin-top: 50px !important;
