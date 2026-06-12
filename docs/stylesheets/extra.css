@@ -16,13 +16,12 @@
     --md-accent-fg-color--transparent: #5de4711a;
     --md-typeset-a-color: #5de471;
 }
-
 .hero-buttons {
-    display: inline-grid;
-    grid-template-columns: repeat(3, auto);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.6rem;
+    width: 100%;
 }
-
 .hero-buttons .md-button {
     display: inline-flex;
     align-items: center;
@@ -30,21 +29,12 @@
     gap: 0.4rem;
     margin: 0;
 }
-
-.hero-buttons .md-button:nth-child(4) {
-    grid-column: 1 / -1;
-    width: 100%;
-}
-
 .doc-object {
     margin-top: 50px !important;
     margin-bottom: 50px !important;
-}
-
-.doc-object {
     border-top: 1px solid var(--md-default-fg-color--lightest);
     padding-top: 25px;
 }
 .md-grid {
     max-width: 100%;
-  }
+}

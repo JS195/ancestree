@@ -2,7 +2,7 @@
 
 **Lightweight, zero-dependency data lineage for Python.** Track every step of your pipeline, enforce valid transitions, and explore the whole flow as an interactive graph — built entirely on the standard library.
 
-[:material-rocket-launch: Quick Start](#quick-start){ .md-button .md-button--primary }
+[:material-rocket-launch: Quick Start](#quick-start){ .md-button }
 [:material-cursor-default-click: Live Demo](demo.md){ .md-button }
 [:material-notebook-outline: Examples](examples.md){ .md-button }
 [:material-code-braces: API Reference](reference.md){ .md-button }
