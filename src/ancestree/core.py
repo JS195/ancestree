@@ -284,17 +284,17 @@ class LineageStore:
             filename (str): A glob pattern or substring to match against the parent's files, as in `Node.artifacts`.
 
         Returns:
-            List[Path]: The matching file paths from the parent node, relative to the store root. Empty if the node has no parent or nothing matches.
+            List[Path]: The matching file paths from the parent node, relative to the store root. Empty if the node or its parent cannot be found, the node has no parent, or nothing matches.
 
         Examples:
             >>> with store.create_node(step_type="model", parent=clean_node) as node:
             ...     [training_data] = store.from_parent(node, "cleaned.csv")
         """
         node = self.get_node(node)
-        if node.parent_id is None:
+        if node is None or node.parent_id is None:
             return []
         parent_node = self.get_node(node.parent_id)
-        return parent_node.artifacts(filename)
+        return parent_node.artifacts(filename) if parent_node else []
     
     def get_child_nodes(self, node: Union[str, 'Node']) -> List['Node']:
         """

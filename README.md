@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/ancestree)](https://pypi.org/project/ancestree/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Build](https://github.com/JS195/ancestree/actions/workflows/deploy.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
+[![Docs](https://github.com/JS195/ancestree/actions/workflows/deploy.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
 
 **A second brain for your data pipelines.** Track the full ancestry of every artifact you produce — who made it, from what, how long it took, and whether you can trust it — then explore the whole story in an interactive map.
 

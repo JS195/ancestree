@@ -30,15 +30,11 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = [
-    "coverage",  # testing
-    "mypy",  # linting
     "pytest",  # testing
-    "ruff"  # linting
 ]
 
 [project.urls]
 "Bug Tracker" = "https://github.com/JS195/ancestree/issues"
-Changelog = "https://github.com/JS195/ancestree/blob/main/changelog.md"
 Homepage = "https://github.com/JS195/ancestree"
 
 [tool.setuptools]
@@ -47,16 +43,3 @@ packages = ["ancestree", "ancestree.assets"]
 
 [tool.setuptools.package-data]
 "ancestree.assets" = ["*"]
-
-# Mypy
-# ----
-[tool.mypy]
-files = "."
-strict = true
-warn_unreachable = true
-warn_no_return = true
-
-[[tool.mypy.overrides]]
-module = "tests.*"
-allow_untyped_defs = true
-disable_error_code = "attr-defined"

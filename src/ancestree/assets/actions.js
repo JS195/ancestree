@@ -590,7 +590,7 @@ function toggleTheme() {
         font: {color:nodeColor} 
     })));
 
-    edges.update(nodes.getIds().map(id => ({
+    edges.update(edges.getIds().map(id => ({
         id:id,
         font: {color:edgeColor, inherit: false}
     })));
