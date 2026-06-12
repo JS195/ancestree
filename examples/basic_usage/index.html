@@ -1348,13 +1348,13 @@ store = ancestree.LineageStore(folder_name, rules=RULES, gen_triggers=trigger)</
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -1370,6 +1370,7 @@ store = ancestree.LineageStore(folder_name, rules=RULES, gen_triggers=trigger)</
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Lets write some data to this node. Writing follows familiar syntax but the store handles pathing for us.</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s1">'basic_usage'</span><span class="p">)</span>
 
@@ -1377,13 +1378,14 @@ store = ancestree.LineageStore(folder_name, rules=RULES, gen_triggers=trigger)</
 
     <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 
-    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'something'</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="nb">type</span><span class="o">=</span><span class="s1">'text'</span><span class="p">)</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'something'</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'key'</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="s1">'other'</span><span class="p">:[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]}),</span> <span class="n">data_type</span><span class="o">=</span><span class="s1">'table'</span><span class="p">)</span>
 
     <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span><span class="o">/</span><span class="s1">'samples.npy'</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4"># Lets write some data to this node. Writing follows familiar syntax but the store handles pathing for us.
 import ancestree
 import numpy as np
+import pandas as pd
 
 store = ancestree.LineageStore('basic_usage')
 
@@ -1391,9 +1393,33 @@ with store.create_node(step_type="import data") as node:
 
     X = np.random.randint(0, 100, (5,5))
 
-    node.add_meta('something', [1,2,3], type='text')
+    node.add_meta('something', pd.DataFrame({'key':[1,2,3], 'other':[4,5,6]}), data_type='table')
 
     np.save(node/'samples.npy', X)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 12</span>
+<span class="ansi-green-fg">      8</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> store.create_node(step_type=<span class="ansi-yellow-fg">"import data"</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> node:
+<span class="ansi-green-fg">      9</span> 
+<span class="ansi-green-fg">     10</span>     X = np.random.randint(<span class="ansi-green-fg">0</span>, <span class="ansi-green-fg">100</span>, (<span class="ansi-green-fg">5</span>,<span class="ansi-green-fg">5</span>))
+<span class="ansi-green-fg">     11</span> 
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">12</span>     node.add_meta(<span class="ansi-yellow-fg">'something'</span>, pd.DataFrame({<span class="ansi-yellow-fg">'key'</span>:[<span class="ansi-green-fg">1</span>,<span class="ansi-green-fg">2</span>,<span class="ansi-green-fg">3</span>], <span class="ansi-yellow-fg">'other'</span>:[<span class="ansi-green-fg">4</span>,<span class="ansi-green-fg">5</span>,<span class="ansi-green-fg">6</span>]}), type=<span class="ansi-yellow-fg">'text'</span>)
+<span class="ansi-green-fg">     13</span> 
+<span class="ansi-green-fg">     14</span>     np.save(node/<span class="ansi-yellow-fg">'samples.npy'</span>, X)
+
+<span class="ansi-red-fg">TypeError</span>: Node.add_meta() got an unexpected keyword argument 'type'</pre>
 </div>
 </div>
 </div>
@@ -1444,7 +1470,7 @@ with store.create_node(step_type="import data") as node:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
