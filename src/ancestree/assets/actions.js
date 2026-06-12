@@ -4,6 +4,8 @@ let typeFilter = null;    // Set of step types to keep, or null when no filter i
 let heatmap = null;       // {key, min, max} when colour-by-metric is active, or null
 let statusFilter = null;  // 'failed' | 'dirty' while a header status pill is active, or null
 let dayFilter = null;     // 'YYYY-MM-DD' while a timeline day is selected, or null
+let tableView = false;    // true while the runs table replaces the graph
+let tableSort = {key: 'timestamp', desc: true}; // active runs-table column sort
 
 const DIM_NODE = 'rgba(150, 150, 150, 0.1)';
 const DIM_EDGE = 'rgba(200, 200, 200, 0.05)';
@@ -165,6 +167,10 @@ function applyHighlight() {
         id: edge.id,
         color: (!filtering || (focused.has(edge.from) && focused.has(edge.to))) ? null : DIM_EDGE
     })));
+
+    // Every filter mutation funnels through here, so this one hook keeps
+    // the runs table in step with search, legend, pills and timeline.
+    if (tableView) renderTable();
 }
 
 // Strict numeric read of a metadata entry: ids, booleans, and image/link
@@ -472,6 +478,74 @@ function renderRanking(allNodes) {
 
     rowsEl.querySelectorAll('.heat-rank-row').forEach(row =>
         row.addEventListener('click', () => selectNode(row.dataset.id)));
+}
+
+function toggleTableView() {
+    tableView = !tableView;
+    document.getElementById('app-container').classList.toggle('table-mode', tableView);
+    document.getElementById('view-toggle').textContent = tableView ? 'Graph' : 'Table';
+    if (tableView) renderTable();
+    else network.redraw(); // canvas was display:none while the table was up
+}
+
+// Runs table: one row per node in focus, one column per numeric metric —
+// the "pick the best run" surface when a decision trades off several
+// metrics. Rows pass through the same nodeFocused() as the graph, so the
+// search bar and every filter apply unchanged; clicking a row jumps back
+// to the node in the graph.
+function renderTable() {
+    const all = nodes.get();
+    const keys = numericMetricKeys(all);
+    const timeCols = new Set(keys.filter(key => all.some(n => {
+        const entry = (n.entries || {})[key];
+        return entry && typeof entry.epoch === 'number';
+    })));
+
+    const rows = all.filter(nodeFocused).sort((a, b) => {
+        const va = numericValue(a, tableSort.key), vb = numericValue(b, tableSort.key);
+        if (va === null && vb === null) return 0;
+        if (va === null) return 1; // rows missing the metric sink to the bottom
+        if (vb === null) return -1;
+        return tableSort.desc ? vb - va : va - vb;
+    });
+
+    const arrow = key => tableSort.key === key ? (tableSort.desc ? ' &#9660;' : ' &#9650;') : '';
+    const container = document.getElementById('table-view');
+    container.innerHTML = `
+    <table class="runs-table">
+        <thead><tr>
+            <th>Run</th>
+            ${keys.map(key => `<th class="runs-num" data-key="${key}">${key}${arrow(key)}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+        ${rows.map(n => `
+        <tr data-id="${n.id}">
+            <td>
+                <span class="legend-dot" style="background:${stringToColor(n.group).node_colour}; border-color:${stringToColor(n.group).node_border_colour}"></span>
+                <span class="runs-type">${n.group}</span>
+                <span class="runs-id">${n.id}</span>
+                ${isUnhealthy(n) ? '<span class="status-dot runs-failed" title="Run failed"></span>' : ''}
+            </td>
+            ${keys.map(key => {
+                const v = numericValue(n, key);
+                return `<td class="runs-num">${v === null ? '—' : formatTick(v, timeCols.has(key))}</td>`;
+            }).join('')}
+        </tr>`).join('')}
+        ${rows.length === 0 ? `<tr><td colspan="${keys.length + 1}" class="runs-empty">No runs match the current filters.</td></tr>` : ''}
+        </tbody>
+    </table>`;
+
+    container.querySelectorAll('th[data-key]').forEach(th =>
+        th.addEventListener('click', () => {
+            const key = th.dataset.key;
+            tableSort = {key: key, desc: tableSort.key === key ? !tableSort.desc : true};
+            renderTable();
+        }));
+    container.querySelectorAll('tr[data-id]').forEach(tr =>
+        tr.addEventListener('click', () => {
+            toggleTableView();
+            selectNode(tr.dataset.id);
+        }));
 }
 
 // Jump the graph to a node: select it, pan to it, and show its details.
