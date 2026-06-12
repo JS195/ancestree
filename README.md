@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/ancestree)](https://pypi.org/project/ancestree/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Build](https://github.com/JS195/ancestree/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
+[![Build](https://github.com/JS195/ancestree/actions/workflows/deploy.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
 
 **A second brain for your data pipelines.** Track the full ancestry of every artifact you produce — who made it, from what, how long it took, and whether you can trust it — then explore the whole story in an interactive map.
 
@@ -33,6 +33,8 @@ Designed to fit seamlessly around your code. One context manager and one method 
 Exploratory research is messy. You clean a dataset three different ways, train ten models, overwrite half your outputs, and two weeks later you're staring at `final_v2_REAL.csv` wondering which preprocessing produced it — and whether the code that made it was even committed.
 
 Ancestree solves this with one idea: **every step of your pipeline is a node**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable family tree of your data — durable on disk, reconstructable at any time, and visual when you want it to be.
+
+---
 
 ## Installation
 
@@ -65,6 +67,8 @@ with store.create_node(step_type="ingest") as node:
 store.generate_web_graph()
 ```
 
+---
+
 ## What's recorded automatically
 
 Every node automatically records the things you'll wish you had written down:
@@ -86,6 +90,8 @@ Every node automatically records the things you'll wish you had written down:
 
 If your code raises inside `create_node`, anything already written is kept and the node is flagged `healthy=False` — partial work is evidence, not garbage. If the step wrote nothing at all, the node silently vanishes: no ghost directories, ever.
 
+---
+
 ## Searching and Querying
 
 The store indexes every searchable metadata key, so questions become one-liners:
@@ -99,6 +105,8 @@ store.find_in_lineage(best_model, step_type="clean")        # which cleaning pro
 best_model.artifacts("*.bin")                                # locate its files
 store.prune(bad_branch)                                      # preview a deletion (dry-run first)
 ```
+
+---
 
 ## The Pipeline Explorer
 
@@ -114,6 +122,8 @@ Inside it:
 - **Rich metadata** — inline images, file links, and pandas DataFrames rendered as tables (`data_type="table"`), grouped into sections you define. Light and dark themes included.
 - **Runs table** — flip the graph into a sortable table of runs × metrics: the "pick the best run" view when decisions trade accuracy against runtime against data size.
 
+---
+
 ## Design principles
 
 1. **Files are the truth.** Nodes are directories; metadata is JSON inside the directory, next to your artifacts.
@@ -122,11 +132,14 @@ Inside it:
 4. **Stays out of the way.** Your pipeline code stays your pipeline code. One context manager and one method (`add_meta`).
 5. **Pick up where you left off.** The store persists its configuration, so in your next session `ancestree.LineageStore(root="./my_project")` picks up exactly where you left off, no need to re-supply rules.
 
+---
 
 ## Documentation & examples
 
 - **[Documentation site](https://js195.github.io/ancestree/)** — full API reference and a live demo of the explorer.
 - **Example notebooks** in `[docs/examples/](docs/examples/)`: [basic usage](docs/examples/basic_usage.ipynb), an end-to-end [ML pipeline](docs/examples/ML_pipeline.ipynb), and a [10k node timing benchmark](docs/examples/timing_benchmark.ipynb).
+
+---
 
 ## Development
 Issues and PRs welcome.
@@ -139,6 +152,8 @@ python -m pytest tests/
 ```
 
 Have a feature request or found a bug? Open an issue or reach out directly at [josh.smith195@outlook.com](mailto:josh.smith195@outlook.com).
+
+---
 
 ## License
 
