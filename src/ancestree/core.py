@@ -185,15 +185,18 @@ class LineageStore:
         """
         Persists and indexes the node if the user wrote any artifact or
         metadata, recording whether its code block ran to completion in the
-        'healthy' flag and how long the block took in 'duration_s'.
-        Returns True if the node was persisted.
+        'healthy' flag, how long the block took in 'duration_s', and the
+        total size of its files in 'size_mb'. Returns True if the node was
+        persisted.
         """
         has_artifacts = bool(node.artifacts())
         has_user_meta = bool(set(node._metadata) - node._system_keys)
         if not (has_artifacts or has_user_meta):
             return False
+        size = sum(f.stat().st_size for f in node.path.rglob('*') if f.is_file())
         node.add_meta('healthy', healthy, type='text', group='Structural Properties')
         node.add_meta('duration_s', round(duration, 3), type='text', group='Structural Properties')
+        node.add_meta('size_mb', round(size / 1e6, 6), type='text', group='Structural Properties')
         node._write_meta()
         self.database.add(node.node_id, node.to_db())
         return True
