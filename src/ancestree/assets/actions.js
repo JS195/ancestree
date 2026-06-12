@@ -724,16 +724,11 @@ window.onload = function() {
 function showSelection(selectedIds) {
     applyHighlight(); // repaint the selection halos
 
-    const btn = document.getElementById('compare-btn');
     const contentArea = document.getElementById('node-content');
 
-    if (btn) btn.disabled = selectedIds.length !== 2;
-
     if (selectedIds.length === 1) {
-        const nodeData = nodes.get(selectedIds[0]);
-        contentArea.innerHTML = generateNodeHtml(nodeData);
-    }
-    else if (selectedIds.length ===2) {
+        contentArea.innerHTML = generateNodeHtml(nodes.get(selectedIds[0]));
+    } else if (selectedIds.length === 2) {
         triggerComparison(selectedIds);
     } else {
         contentArea.innerHTML = `
@@ -831,23 +826,67 @@ function generateNodeHtml(nodeData) {
     </div>`;
 }
 
+// Plain numeric read of an entry for delta display; unlike numericValue it
+// takes the entry directly and never treats timestamps as numbers.
+function entryNumber(entry) {
+    if (!entry || entry.type === 'image' || entry.type === 'link') return null;
+    if (typeof entry.value === 'boolean' || entry.value == null || entry.value === '') return null;
+    const v = Number(entry.value);
+    return Number.isFinite(v) ? v : null;
+}
+
+function compareRow(key, ea, eb) {
+    const same = JSON.stringify(ea ? ea.value : null) === JSON.stringify(eb ? eb.value : null);
+    const na = entryNumber(ea), nb = entryNumber(eb);
+    const epoch = (ea && typeof ea.epoch === 'number') || (eb && typeof eb.epoch === 'number');
+    const delta = !same && !epoch && na !== null && nb !== null
+        ? `<span class="compare-delta">${nb >= na ? '+' : '−'}${formatMetric(Math.abs(nb - na))}</span>`
+        : '';
+    const cell = e => e === undefined ? '<span class="compare-missing">—</span>' : renderValue(e);
+    return `
+    <div class="compare-row ${same ? 'compare-same' : 'compare-diff'}">
+        <div class="metadata-key">${key}</div>
+        <div class="compare-vals">
+            <div class="compare-val">${cell(ea)}</div>
+            <div class="compare-val">${cell(eb)}${delta}</div>
+        </div>
+    </div>`;
+}
+
+// Aligned diff of two nodes: rows matched by key across both, identical
+// values greyed out, differences highlighted with a numeric delta (B − A)
+// where one is meaningful. Reached by cmd-clicking a second node.
 function triggerComparison(selectedIds) {
-    const sidebar = document.getElementById('details-pane');
-    const contentArea = document.getElementById('node-content');
+    const a = nodes.get(selectedIds[0]);
+    const b = nodes.get(selectedIds[1]);
 
-    const n1 = nodes.get(selectedIds[0]);
-    const n2 = nodes.get(selectedIds[1]);
+    // Union of keys grouped under their section headings, in first-seen order
+    const groups = new Map();
+    [a, b].forEach(n => Object.entries(n.entries || {}).forEach(([key, entry]) => {
+        if (key === 'node_id') return; // already in the column headers
+        const keys = groups.get(entry.group) || [];
+        if (!keys.includes(key)) keys.push(key);
+        groups.set(entry.group, keys);
+    }));
+    const ordered = [...groups.entries()].sort((x, y) =>
+        (x[0] === 'Provenance') - (y[0] === 'Provenance'));
 
-    contentArea.innerHTML = `
-    <div class="comapre-split" style="display:flex; gap: 15px;">
-    <div class="compare-col" style="flex: 1; min-width: 0;">
-    <div style="text-align:center; font-weight:bold; color:var(--accent);"></div>
-    ${generateNodeHtml(n1)}
+    const headCol = n => `
+        <div class="compare-head-col" title="${n.id}">
+            <span class="legend-dot" style="background:${stringToColor(n.group).node_colour}; border-color:${stringToColor(n.group).node_border_colour}"></span>
+            <span class="compare-head-type">${n.group}</span>
+            <span class="compare-head-id">${n.id}</span>
+        </div>`;
+
+    document.getElementById('node-content').innerHTML = `
+    <div class="node-info">
+    <div class="compare-head">${headCol(a)}${headCol(b)}</div>
+    ${ordered.map(([group, keys]) => `
+    <div class="section-card">
+    <div class="section-header">${group}</div>
+    <div class="section-body">
+    ${keys.map(key => compareRow(key, (a.entries || {})[key], (b.entries || {})[key])).join('')}
     </div>
-    <div class="compare-col" style="flex:1; min-width:0; border-left: 1px solid var(--border); padding-left:15px;">
-    <div style="text-align:center; font-weight:bold; color:var(--accent);"></div>
-    ${generateNodeHtml(n2)}
-    </div>
-    </div>
-    `;
+    </div>`).join('')}
+    </div>`;
 }
