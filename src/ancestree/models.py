@@ -1,9 +1,12 @@
+# Python packages
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List, Dict, Union, Optional
-from .utils import get_provenance, is_pandas
 from copy import deepcopy
+
+# Internal dependancies
+from .utils import get_provenance, is_pandas
 
 class Node:
     """
@@ -129,7 +132,29 @@ class Node:
         return node
 
 
-    def add_meta(self, key: str, value: Any, data_type: str = 'text', group: Optional[str] = None, searchable: bool = True) -> None:
+    #: Path suffixes rendered inline as images when the data_type is inferred.
+    IMAGE_SUFFIXES = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'}
+
+    @staticmethod
+    def _infer_data_type(value: Any) -> str:
+        """
+        Maps a value to its natural data_type for 'auto' mode. Only types
+        that are unambiguous signals are inferred: DataFrames, dicts/lists,
+        Path objects (a Path is a deliberate file reference, never prose),
+        and URL strings. Plain strings always stay 'text' — sniffing string
+        contents is how auto-detection produces surprises.
+        """
+        if is_pandas(value):
+            return 'table'
+        if isinstance(value, (dict, list)):
+            return 'json'
+        if isinstance(value, Path):
+            return 'image' if value.suffix.lower() in Node.IMAGE_SUFFIXES else 'link'
+        if isinstance(value, str) and value.startswith(('http://', 'https://')):
+            return 'link'
+        return 'text'
+
+    def add_meta(self, key: str, value: Any, group: Optional[str] = 'General', data_type: str = 'auto', searchable: bool = True) -> None:
         """
         Attaches a piece of metadata to the node.
 
@@ -138,17 +163,27 @@ class Node:
         Args:
             key (str): The name of the metadata entry.
             value (Any): The value to store. Must be JSON-serialisable.
-            data_type (str, optional): How the value is rendered in the web graph. Use 'image' for a path to an image file inside the node (the value is rewritten relative to the store root and displayed inline) or 'link' for a clickable file link. Any other value, e.g. the default 'text', renders as plain text. Defaults to 'text'.
-            group (str, optional): A heading to group related entries under in the web graph display. Defaults to None.
+            group (str, optional): A heading to group related entries under in the web graph display. Defaults to General.
+            data_type (str, optional): How the value is rendered in the web graph. The default 'auto' infers it from the value: pandas DataFrames render as tables, dicts and lists as formatted JSON, Path objects as inline images (image suffixes) or file links, http(s) strings as links, and everything else as plain text. Pass a type explicitly to override the inference: 'image' for a path to an image file inside the node (the value is rewritten relative to the store root), 'link' for a clickable link, 'table' for a pandas DataFrame (stored as columns/rows), 'json' for a dict or list, 'code' for a monospaced snippet (e.g. the SQL or shell command that produced the node), or 'text' for plain text.
             searchable (bool, optional): If True the entry is indexed and can be matched by the store's search methods. Set to False for display-only metadata. Defaults to True.
 
         Examples:
             >>> with store.create_node(step_type="model") as node:
             ...     node.add_meta("accuracy", 0.92, group="Metrics")
-            ...     node.add_meta("loss_curve", node / "loss.png", data_type="image", group="Metrics")
+            ...     node.add_meta("loss_curve", node / "loss.png", group="Metrics")   # auto: image
+            ...     node.add_meta("params", {"lr": 1e-3}, group="Config")             # auto: json
+            ...     node.add_meta("query", "SELECT * FROM runs", data_type="code")
         """
-        if data_type == 'image':
+        if data_type == 'auto':
+            data_type = self._infer_data_type(value)
+
+        if data_type in ('image', 'link') and not str(value).startswith(('http://', 'https://')):
+            # Store file references relative to the store root so they
+            # resolve from the generated HTML. URLs pass through untouched —
+            # Path() would collapse their double slash.
             value = str(Path(str(value).removeprefix(str(self.path.parent) + "/").removeprefix(str(self.path.parent))))
+            searchable = False
+
         if data_type == 'table':
             if not is_pandas(value):
                 raise TypeError(f"Expected a pandas DataFrame for 'table', got {type(value).__name__}")
@@ -157,12 +192,26 @@ class Node:
                 "columns": split['columns'],
                 "rows": split['data']
             }
+            searchable=False
+
+        if data_type == 'json':
+            if not isinstance(value, (dict, list)):
+                raise TypeError(f"Expected a dict or list for 'json', got {type(value).__name__}")
+            try:
+                json.dumps(value)
+                searchable = False
+            except (TypeError, ValueError) as e:
+                # Fail here, at the call site, rather than corrupting the
+                # node's whole meta.json write later.
+                raise TypeError(f"Value for 'json' is not JSON-serialisable: {e}") from None
+
         entry = {f'{key}': {
             'value': value,
             'data_type': data_type,
             'group': group,
             'searchable': searchable
         }}
+
         self._hydrate().update(entry)
 
     def _write_meta(self):

@@ -1,4 +1,4 @@
-from datetime import datetime
+# Python packages
 import subprocess
 import platform
 import getpass
@@ -65,11 +65,3 @@ def get_provenance():
     field can be stored as an individual metadata entry via add_meta.
     """
     return {**get_environment_provenance(), **get_git_provenance()}
-
-def parse_time(iso_str):
-    if not iso_str: return "N/A"
-    try:
-        dt=datetime.fromisoformat(iso_str)
-        return dt.strftime("%d %b %Y, %H:%M:%S")
-    except:
-        return iso_str

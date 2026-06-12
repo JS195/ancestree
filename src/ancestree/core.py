@@ -1,4 +1,4 @@
-# Internal packages
+# Python packages
 from pathlib import Path
 import json
 import time
@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional, Union, Iterator
 import shutil
 from contextlib import contextmanager
 
+# Internal dependancies
 from .database import lineage_database
 from .models import Node
 from .vis import run_web_generator
