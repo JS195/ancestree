@@ -1,0 +1,56 @@
+{
+  "node_id": {
+    "value": "b226ba09",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "parent_id": {
+    "value": "768a16ae",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "generation": {
+    "value": 2,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "step_type": {
+    "value": "embedding",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "timestamp": {
+    "value": "2026-06-12T14:17:13.655213+00:00",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "method": {
+    "value": "umap",
+    "type": "text",
+    "group": "Method",
+    "searchable": true
+  },
+  "healthy": {
+    "value": true,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "duration_s": {
+    "value": 3.918,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "size_mb": {
+    "value": 0.001328,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  }
+}

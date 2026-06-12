@@ -1,0 +1,50 @@
+{
+  "node_id": {
+    "value": "768a16ae",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "parent_id": {
+    "value": "6c0a8f1b",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "generation": {
+    "value": 1,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "step_type": {
+    "value": "scaling",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "timestamp": {
+    "value": "2026-06-12T14:17:13.620943+00:00",
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "healthy": {
+    "value": true,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "duration_s": {
+    "value": 4.602,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "size_mb": {
+    "value": 0.010744,
+    "type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  }
+}
