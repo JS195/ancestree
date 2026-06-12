@@ -324,9 +324,83 @@ button.theme-toggle:active {
     border-bottom: none;
 }
 
-.comapre-split {
+/* ---- Node comparison -------------------------------------------------------
+   Aligned diff: identical rows recede, differing rows carry the weight,
+   numeric changes get a delta badge. */
+.compare-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg-elevated);
+    border: 0.5px solid var(--border);
+    box-shadow: inset 0 1px 0 var(--card-highlight), var(--card-shadow);
+}
+.compare-head-col {
     display: flex;
-    flex-direction: row !important;
+    align-items: baseline;
+    gap: 7px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+}
+.compare-head-col .legend-dot {
+    align-self: center;
+}
+.compare-head-type {
+    text-transform: capitalize;
+}
+.compare-head-id {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.compare-row {
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13px;
+}
+.compare-row:last-child {
+    border-bottom: none;
+}
+.compare-row .metadata-key {
+    margin-bottom: 3px;
+}
+.compare-vals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.compare-val {
+    min-width: 0;
+    word-break: break-word;
+}
+.compare-same {
+    opacity: 0.5;
+}
+.compare-diff .compare-val {
+    font-weight: 600;
+}
+.compare-delta {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.compare-missing {
+    color: var(--text-secondary);
 }
 
 .metadata-img {
