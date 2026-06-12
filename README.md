@@ -122,15 +122,6 @@ Inside it:
 - **Rich metadata** — inline images, file links, and pandas DataFrames rendered as tables (`data_type="table"`), grouped into sections you define. Light and dark themes included.
 - **Runs table** — flip the graph into a sortable table of runs × metrics: the "pick the best run" view when decisions trade accuracy against runtime against data size.
 
----
-
-## Design principles
-
-1. **Files are the truth.** Nodes are directories; metadata is JSON inside the directory, next to your artifacts.
-2. **Zero dependencies.** Never have conflict headaches. The entire library is Python standard library. It installs anywhere Python 3.9+ runs.
-3. **Capture at the moment of creation.** Provenance, timing, and health are recorded automatically when work happens — the metadata you didn't think to keep is the metadata you'll need.
-4. **Stays out of the way.** Your pipeline code stays your pipeline code. One context manager and one method (`add_meta`).
-5. **Pick up where you left off.** The store persists its configuration, so in your next session `ancestree.LineageStore(root="./my_project")` picks up exactly where you left off, no need to re-supply rules.
 
 ---
 
