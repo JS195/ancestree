@@ -1,6 +1,7 @@
 # Internal packages
 from pathlib import Path
 import json
+import time
 import uuid
 from typing import List, Dict, Any, Optional, Union, Iterator
 import shutil
@@ -159,16 +160,17 @@ class LineageStore:
         parent_id = parent_node.node_id if parent_node else None
         new_node = Node._create(node_path, node_id, current_gen, parent_id, step_type=step_type)
 
+        start = time.monotonic()
         try:
             yield new_node
         except BaseException:
             # Keep partial work: anything written before the failure persists,
             # flagged as unhealthy. An untouched node leaves no trace.
-            if not self._persist_if_touched(new_node, healthy=False):
+            if not self._persist_if_touched(new_node, healthy=False, duration=time.monotonic() - start):
                 shutil.rmtree(new_node.path, ignore_errors=True)
             raise
 
-        if not self._persist_if_touched(new_node, healthy=True):
+        if not self._persist_if_touched(new_node, healthy=True, duration=time.monotonic() - start):
             shutil.rmtree(new_node.path, ignore_errors=True)
             import warnings
             warnings.warn(
@@ -179,17 +181,19 @@ class LineageStore:
                 stacklevel=2
             )
 
-    def _persist_if_touched(self, node: 'Node', healthy: bool) -> bool:
+    def _persist_if_touched(self, node: 'Node', healthy: bool, duration: float) -> bool:
         """
         Persists and indexes the node if the user wrote any artifact or
         metadata, recording whether its code block ran to completion in the
-        'healthy' flag. Returns True if the node was persisted.
+        'healthy' flag and how long the block took in 'duration_s'.
+        Returns True if the node was persisted.
         """
         has_artifacts = bool(node.artifacts())
         has_user_meta = bool(set(node._metadata) - node._system_keys)
         if not (has_artifacts or has_user_meta):
             return False
         node.add_meta('healthy', healthy, type='text', group='Structural Properties')
+        node.add_meta('duration_s', round(duration, 3), type='text', group='Structural Properties')
         node._write_meta()
         self.database.add(node.node_id, node.to_db())
         return True

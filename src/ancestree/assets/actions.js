@@ -3,6 +3,7 @@ let searchMatches = null; // Set of matched node ids, or null when no search is 
 let typeFilter = null;    // Set of step types to keep, or null when no filter is active
 let heatmap = null;       // {key, min, max} when colour-by-metric is active, or null
 let statusFilter = null;  // 'failed' | 'dirty' while a header status pill is active, or null
+let dayFilter = null;     // 'YYYY-MM-DD' while a timeline day is selected, or null
 
 const DIM_NODE = 'rgba(150, 150, 150, 0.1)';
 const DIM_EDGE = 'rgba(200, 200, 200, 0.05)';
@@ -61,7 +62,18 @@ function isDirty(node) {
     return String(metaValue(node, 'git_dirty')).toLowerCase() === 'true';
 }
 
+// Local calendar day ('YYYY-MM-DD') the node was created, from the epoch
+// the Python side attaches to timestamps; null when there is none.
+function nodeDay(node) {
+    const entry = (node.entries || {}).timestamp;
+    if (!entry || typeof entry.epoch !== 'number') return null;
+    const d = new Date(entry.epoch * 1000);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+         + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 function nodeFocused(node) {
+    if (dayFilter && nodeDay(node) !== dayFilter) return false;
     if (statusFilter === 'failed' && !isUnhealthy(node)) return false;
     if (statusFilter === 'dirty' && !isDirty(node)) return false;
     if (typeFilter && !typeFilter.has(node.group)) return false;
@@ -145,7 +157,8 @@ function applyHighlight() {
     const ctx = renderContext();
     const all = nodes.get();
     const focused = new Set(all.filter(nodeFocused).map(n => n.id));
-    const filtering = searchMatches !== null || typeFilter !== null || statusFilter !== null;
+    const filtering = searchMatches !== null || typeFilter !== null ||
+                      statusFilter !== null || dayFilter !== null;
 
     nodes.update(all.map(n => nodeVisual(n, focused.has(n.id), ctx)));
     edges.update(edges.get().map(edge => ({
@@ -154,9 +167,11 @@ function applyHighlight() {
     })));
 }
 
-// Strict numeric read of a metadata entry: hex ids, booleans, and
-// image/link entries never count as metrics.
+// Strict numeric read of a metadata entry: ids, booleans, and image/link
+// entries never count as metrics. The id check must be explicit — an
+// 8-char hex id made only of digits would otherwise parse as a number.
 function numericValue(node, key) {
+    if (key === 'node_id' || key === 'parent_id' || key === 'generation') return null;
     const entry = (node.entries || {})[key];
     if (!entry || entry.searchable === false) return null;
     if (entry.type === 'image' || entry.type === 'link') return null;
@@ -381,6 +396,58 @@ function buildStatusPills(allNodes) {
     });
 }
 
+// Floating activity strip: one bar per active day, sized by run count and
+// split into healthy/failed. Clicking a day filters the graph to it.
+function buildTimeline(allNodes) {
+    const container = document.getElementById('timeline');
+    if (!container) return;
+
+    const days = new Map(); // day -> {ok, failed}
+    allNodes.forEach(n => {
+        const day = nodeDay(n);
+        if (!day) return;
+        const bucket = days.get(day) || {ok: 0, failed: 0};
+        bucket[isUnhealthy(n) ? 'failed' : 'ok'] += 1;
+        days.set(day, bucket);
+    });
+    if (days.size === 0) return;
+
+    const sorted = [...days.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1);
+    const max = Math.max(...sorted.map(([, b]) => b.ok + b.failed));
+    const BAR_PX = 34; // tallest bar; counts scale within it
+
+    const dayLabel = day => {
+        const [y, m, d] = day.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString(undefined, {day: 'numeric', month: 'short'});
+    };
+    const seg = (cls, count) => count ? `
+        <span class="timeline-seg timeline-seg--${cls}"
+              style="height:${Math.max(BAR_PX * count / max, 3)}px"></span>` : '';
+
+    container.innerHTML = `
+    <div class="legend-title">Activity</div>
+    <div class="timeline-bars">
+    ${sorted.map(([day, b]) => `
+        <div class="timeline-bar" data-day="${day}"
+             title="${dayLabel(day)} — ${b.ok + b.failed} run${b.ok + b.failed === 1 ? '' : 's'}${b.failed ? `, ${b.failed} failed` : ''}">
+            ${seg('failed', b.failed)}${seg('ok', b.ok)}
+        </div>`).join('')}
+    </div>
+    <div class="timeline-range">
+        <span>${dayLabel(sorted[0][0])}</span>
+        <span>${sorted.length > 1 ? dayLabel(sorted[sorted.length - 1][0]) : ''}</span>
+    </div>`;
+
+    container.querySelectorAll('.timeline-bar').forEach(bar => {
+        bar.addEventListener('click', () => {
+            dayFilter = dayFilter === bar.dataset.day ? null : bar.dataset.day;
+            container.querySelectorAll('.timeline-bar').forEach(el =>
+                el.classList.toggle('active', el.dataset.day === dayFilter));
+            applyHighlight();
+        });
+    });
+}
+
 // Ranked list of nodes by the active heatmap metric — answers "which run is
 // best, and what were its params". Clicking a row selects that node in the
 // graph and opens its details.
@@ -589,6 +656,7 @@ window.onload = function() {
 
     buildLegend(nodes.get());
     buildStatusPills(nodes.get());
+    buildTimeline(nodes.get());
     applyHighlight(); // first paint: draws the failed/dirty markers
 
     const searchInput = document.getElementById('search-input');
