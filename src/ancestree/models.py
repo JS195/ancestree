@@ -1,10 +1,9 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Union, Optional
 from .utils import get_provenance, is_pandas
 from copy import deepcopy
-from typing import Union
 
 class Node:
     """
@@ -130,7 +129,7 @@ class Node:
         return node
 
 
-    def add_meta(self, key: str, value: Any, data_type: str = 'text', group: str | None = None, searchable: bool = True) -> None:
+    def add_meta(self, key: str, value: Any, data_type: str = 'text', group: Optional[str] = None, searchable: bool = True) -> None:
         """
         Attaches a piece of metadata to the node.
 
