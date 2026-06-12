@@ -90,7 +90,7 @@ class TestAddMeta:
         assert entry == {
             "value": 0.95,
             "data_type": "text",
-            "group": None,
+            "group": 'General',
             "searchable": True,
         }
 
