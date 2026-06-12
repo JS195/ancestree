@@ -1276,7 +1276,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="p">}</span>
 <span class="n">triggers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"scaling"</span><span class="p">,</span> <span class="s2">"embedding"</span><span class="p">,</span> <span class="s2">"clustering"</span><span class="p">]</span>
 
-<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"ML_pipeline"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"../assets/demo"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import pandas as pd
 import numpy as np
@@ -1298,7 +1298,7 @@ rules = {
 }
 triggers = ["scaling", "embedding", "clustering"]
 
-store = ancestree.LineageStore("ML_pipeline", rules=rules, gen_triggers=triggers)</div>
+store = ancestree.LineageStore("../assets/demo", rules=rules, gen_triggers=triggers)</div>
 </div>
 </div>
 </div>
@@ -1469,7 +1469,7 @@ with store.create_node("raw data") as root_node:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -1496,7 +1496,7 @@ with store.create_node("raw data") as root_node:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Graph generated at ML_pipeline/interactive_pipeline.html
+<pre>Graph generated at ../assets/demo/interactive_pipeline.html
 </pre>
 </div>
 </div>
