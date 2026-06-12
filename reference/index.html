@@ -1506,7 +1506,7 @@ Provides advanced searching capabilities across the node network.</p>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">        Args:</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">            root (Union[Path, str]): Root directory for data pipeline. This is where the nodes sit.</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">            rules (Dict, optional): A mapping defining the allowed transitions. Defaults to None.</span>
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">            gen_triggers (List, optional): List of step types that when reached increment the node&#39;s generation. Defaults to None.</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">            gen_triggers (List, optional): Step types that mark a new generation. When a node of this type is created, its generation number increments by one relative to its parent. Defaults to None.</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        Examples:</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">            &gt;&gt;&gt; rules = {&quot;clean&quot;: [&quot;ingest&quot;], &quot;model&quot;: [&quot;clean&quot;]}</span>
@@ -1922,7 +1922,7 @@ Provides advanced searching capabilities across the node network.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>List of step types that when reached increment the node's generation. Defaults to None.</p>
+                <p>Step types that mark a new generation. When a node of this type is created, its generation number increments by one relative to its parent. Defaults to None.</p>
               </div>
             </td>
             <td>
@@ -1972,7 +1972,7 @@ Provides advanced searching capabilities across the node network.</p>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    Args:</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        root (Union[Path, str]): Root directory for data pipeline. This is where the nodes sit.</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        rules (Dict, optional): A mapping defining the allowed transitions. Defaults to None.</span>
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        gen_triggers (List, optional): List of step types that when reached increment the node&#39;s generation. Defaults to None.</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        gen_triggers (List, optional): Step types that mark a new generation. When a node of this type is created, its generation number increments by one relative to its parent. Defaults to None.</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    Examples:</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        &gt;&gt;&gt; rules = {&quot;clean&quot;: [&quot;ingest&quot;], &quot;model&quot;: [&quot;clean&quot;]}</span>
