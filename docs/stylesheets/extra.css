@@ -1,21 +1,20 @@
 /* Ancestree brand — matches the interactive graph palette */
 [data-md-color-primary="custom"] {
-    --md-primary-fg-color: #0071e3;
-    --md-primary-fg-color--light: #4da3f0;
-    --md-primary-fg-color--dark: #0058b0;
-    --md-accent-fg-color: #5ac8fa;
-    --md-accent-fg-color--transparent: #5ac8fa1a;
-    --md-typeset-a-color: #0071e3;
+    --md-primary-fg-color: #34c759;
+    --md-primary-fg-color--light: #7dde96;
+    --md-primary-fg-color--dark: #248a3d;
+    --md-accent-fg-color: #30d158;
+    --md-accent-fg-color--transparent: #30d1581a;
+    --md-typeset-a-color: #34c759;
 }
-
 [data-md-color-scheme="slate"][data-md-color-primary="custom"] {
-    --md-hue: 210;
-    --md-primary-fg-color: #0a84ff;
-    --md-primary-fg-color--light: #409cff;
-    --md-primary-fg-color--dark: #0066cc;
-    --md-accent-fg-color: #64d2ff;
-    --md-accent-fg-color--transparent: #64d2ff1a;
-    --md-typeset-a-color: #64d2ff;
+    --md-hue: 140;
+    --md-primary-fg-color: #30d158;
+    --md-primary-fg-color--light: #7dde96;
+    --md-primary-fg-color--dark: #248a3d;
+    --md-accent-fg-color: #5de471;
+    --md-accent-fg-color--transparent: #5de4711a;
+    --md-typeset-a-color: #5de471;
 }
 
 .hero-buttons {
@@ -46,3 +45,6 @@
     border-top: 1px solid var(--md-default-fg-color--lightest);
     padding-top: 25px;
 }
+.md-grid {
+    max-width: 100%;
+  }
