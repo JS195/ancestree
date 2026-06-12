@@ -1,5 +1,4 @@
 name: Deploy MkDocs
-
 on:
   push:
     branches:
@@ -25,6 +24,18 @@ jobs:
         with:
           python-version: 3.x
 
-      - run: pip install mkdocs-material "mkdocstrings[python]" mkdocs-jupyter
-      - run: pip install -e .
-      - run: mkdocs gh-deploy --force
+      - name: Install system dependencies for social cards
+        run: sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev
+
+      - name: Install Python dependencies
+        run: |
+          pip install "mkdocs-material[imaging]" \
+                      "mkdocstrings[python]" \
+                      mkdocs-jupyter \
+                      mkdocs-git-revision-date-localized-plugin
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Deploy
+        run: mkdocs gh-deploy --force
