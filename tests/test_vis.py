@@ -66,7 +66,7 @@ class TestVisualiseNodes:
         graph = visualise_nodes(store)
         by_id = {n["id"]: n for n in graph["nodes"]}
         entries = by_id[nodes["ingest"].node_id]["entries"]
-        assert entries["data.csv"]["type"] == "link"
+        assert entries["data.csv"]["data_type"] == "link"
         assert entries["data.csv"]["group"] == "Artifacts"
         assert entries["data.csv"]["value"] == str(
             Path(nodes["ingest"].node_id) / "data.csv"

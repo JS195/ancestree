@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List, Dict
-from .utils import get_provenance
+from .utils import get_provenance, is_pandas
 from copy import deepcopy
 from typing import Union
 
@@ -119,18 +119,18 @@ class Node:
             Node: The new node. Nothing is written to disk until _write_meta().
         """
         node = cls(path, node_id, generation, parent_id, step_type=step_type)
-        node.add_meta('node_id', node_id, type='text', group='Structural Properties')
-        node.add_meta('parent_id', parent_id, type='text', group='Structural Properties')
-        node.add_meta('generation', generation, type='text', group='Structural Properties')
-        node.add_meta('step_type', step_type, type='text', group='Structural Properties')
-        node.add_meta('timestamp', datetime.now(timezone.utc).isoformat(), type='text', group='Structural Properties')
+        node.add_meta('node_id', node_id, data_type='text', group='Structural Properties')
+        node.add_meta('parent_id', parent_id, data_type='text', group='Structural Properties')
+        node.add_meta('generation', generation, data_type='text', group='Structural Properties')
+        node.add_meta('step_type', step_type, data_type='text', group='Structural Properties')
+        node.add_meta('timestamp', datetime.now(timezone.utc).isoformat(), data_type='text', group='Structural Properties')
         for key, value in get_provenance().items():
-            node.add_meta(key, value, type='text', group='Provenance', searchable=False)
+            node.add_meta(key, value, data_type='text', group='Provenance', searchable=False)
         node._system_keys = set(node._metadata)
         return node
 
 
-    def add_meta(self, key, value, type='text', group=None, searchable=True):
+    def add_meta(self, key: str, value: Any, data_type: str = 'text', group: str | None = None, searchable: bool = True) -> None:
         """
         Attaches a piece of metadata to the node.
 
@@ -139,20 +139,28 @@ class Node:
         Args:
             key (str): The name of the metadata entry.
             value (Any): The value to store. Must be JSON-serialisable.
-            type (str, optional): How the value is rendered in the web graph. Use 'image' for a path to an image file inside the node (the value is rewritten relative to the store root and displayed inline) or 'link' for a clickable file link. Any other value, e.g. the default 'text', renders as plain text. Defaults to 'text'.
+            data_type (str, optional): How the value is rendered in the web graph. Use 'image' for a path to an image file inside the node (the value is rewritten relative to the store root and displayed inline) or 'link' for a clickable file link. Any other value, e.g. the default 'text', renders as plain text. Defaults to 'text'.
             group (str, optional): A heading to group related entries under in the web graph display. Defaults to None.
             searchable (bool, optional): If True the entry is indexed and can be matched by the store's search methods. Set to False for display-only metadata. Defaults to True.
 
         Examples:
             >>> with store.create_node(step_type="model") as node:
             ...     node.add_meta("accuracy", 0.92, group="Metrics")
-            ...     node.add_meta("loss_curve", node / "loss.png", type="image", group="Metrics")
+            ...     node.add_meta("loss_curve", node / "loss.png", data_type="image", group="Metrics")
         """
-        if type == 'image':
+        if data_type == 'image':
             value = str(Path(str(value).removeprefix(str(self.path.parent) + "/").removeprefix(str(self.path.parent))))
+        if data_type == 'table':
+            if not is_pandas(value):
+                raise TypeError(f"Expected a pandas DataFrame for 'table', got {type(value).__name__}")
+            split = value.to_dict(orient='split')
+            value = {
+                "columns": split['columns'],
+                "rows": split['data']
+            }
         entry = {f'{key}': {
             'value': value,
-            'type': type,
+            'data_type': data_type,
             'group': group,
             'searchable': searchable
         }}

@@ -60,7 +60,24 @@ Install **Ancestree** directly via pip:
 pip install ancestree
 ```
 
-Then track, search, and visualise your pipeline:
+## How it works
+
+There is no hidden state: a `LineageStore` is just a root directory, and every node is a subdirectory holding your artifacts plus a `meta.json` describing where it came from.
+
+```
+my_store/
+├── 1f3a9c2e/                    # ingest
+│   ├── raw.csv
+│   └── meta.json
+├── 8b07d41a/                    # clean
+│   ├── cleaned.csv
+│   └── meta.json
+└── interactive_pipeline.html    # generated web graph
+```
+
+The store keeps a lightweight search index alongside, and because the directories are the source of truth, the index can always be rebuilt with `rebuild_db_from_disk()`. Delete a branch with `prune()`, hand the directory to a colleague, or version it — it's just files.
+
+## Track, search, and visualise your pipeline:
 
 === ":material-source-branch: Track"
 
@@ -76,10 +93,7 @@ Then track, search, and visualise your pipeline:
     with store.create_node(step_type="ingest") as node:
         node.add_meta("source", "warehouse")
 
-    with store.create_node(step_type="clean", parent=node) as child:
-        ...
-        df.to_csv(child / "cleaned.csv")
-        child.add_meta("rows", len(df), group="Metrics")
+
     ```
 
 === ":material-magnify: Search"
@@ -114,30 +128,15 @@ with store.create_node(step_type="model", parent=parent) as node:
     fig.savefig(node / "confusion.png")
 
     node.add_meta("accuracy", 0.94, group="Metrics")          # searchable, shown as text
+
     node.add_meta("confusion_matrix", node / "confusion.png", # rendered inline as a figure
                   type="image", group="Figures")
+
     node.add_meta("notes", "rerun after fix",                 # display-only, excluded from search
                   searchable=False)
 ```
 
 You don't need metadata to expose your files: every artifact a node contains automatically appears as a clickable link under its **Artifacts** heading. Use `type="image"` when you want a figure actually displayed inline — a confusion matrix, a loss curve, a sample plot — so the graph doubles as a visual report of your pipeline.
-
-## How it works
-
-There is no hidden state: a `LineageStore` is just a root directory, and every node is a subdirectory holding your artifacts plus a `meta.json` describing where it came from.
-
-```
-my_store/
-├── 1f3a9c2e/                    # ingest
-│   ├── raw.csv
-│   └── meta.json
-├── 8b07d41a/                    # clean
-│   ├── cleaned.csv
-│   └── meta.json
-└── interactive_pipeline.html    # generated web graph
-```
-
-The store keeps a lightweight search index alongside, and because the directories are the source of truth, the index can always be rebuilt with `rebuild_db_from_disk()`. Delete a branch with `prune()`, hand the directory to a colleague, or version it — it's just files.
 
 ## Next steps
 

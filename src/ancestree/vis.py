@@ -60,7 +60,7 @@ def visualise_nodes(store):
             path = Path(*item.parts[1:])
             entries[str(path)] = {
                 'value': str(item),
-                'type': 'link',
+                'data_type': 'link',
                 'group': 'Artifacts',
             }
         raw.append(entries)

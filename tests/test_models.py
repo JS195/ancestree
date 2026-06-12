@@ -89,7 +89,7 @@ class TestAddMeta:
         entry = node.metadata["accuracy"]
         assert entry == {
             "value": 0.95,
-            "type": "text",
+            "data_type": "text",
             "group": None,
             "searchable": True,
         }
@@ -107,11 +107,11 @@ class TestAddMeta:
 
     def test_image_value_is_relativised_to_store_root(self, node):
         absolute = node.path / "plots" / "fig.png"
-        node.add_meta("figure", str(absolute), type="image")
+        node.add_meta("figure", str(absolute), data_type="image")
         assert node.metadata["figure"]["value"] == str(Path("abcd1234/plots/fig.png"))
 
     def test_image_value_outside_store_is_unchanged(self, node):
-        node.add_meta("figure", "/elsewhere/fig.png", type="image")
+        node.add_meta("figure", "/elsewhere/fig.png", data_type="image")
         assert node.metadata["figure"]["value"] == str(Path("/elsewhere/fig.png"))
 
 

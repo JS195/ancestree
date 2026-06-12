@@ -180,7 +180,7 @@ function numericValue(node, key) {
     if (key === 'node_id' || key === 'parent_id' || key === 'generation') return null;
     const entry = (node.entries || {})[key];
     if (!entry || entry.searchable === false) return null;
-    if (entry.type === 'image' || entry.type === 'link') return null;
+    if (entry.data_type === 'image' || entry.data_type === 'link' || entry.data_type === 'table') return null;
     // Timestamps carry a pre-parsed epoch from the Python side
     if (typeof entry.epoch === 'number' && Number.isFinite(entry.epoch)) return entry.epoch;
     if (typeof entry.value === 'boolean' || entry.value == null || entry.value === '') return null;
@@ -846,7 +846,7 @@ function renderMetadata(entries) {
     <div class="section-header">${group}</div>
     <div class="section-body">
     ${items.map(([key,entry]) => `
-    <div class="metadata-row">
+    <div class="metadata-row${entry.data_type === 'table' ? ' metadata-row--block' : ''}">
     <div class="metadata-key">${entry.label || key}</div>
     <div class="metadata-value">${renderValue(entry)}</div>
     </div>`).join('')}
@@ -856,14 +856,36 @@ function renderMetadata(entries) {
 }
 
 function renderValue(entry) {
-    switch (entry.type) {
+    switch (entry.data_type) {
         case "link":
             return `<a href="${entry.value.path ?? entry.value}" target="_blank" class="report-link">${entry.label || 'View'}</a>`;
         case "image":
             return `<img src="${entry.value.path ?? entry.value}" style="max-width:100%">`;
+        case "table":
+            return renderTableValue(entry.value);
         default:
             return `<span>${entry.value ?? 'N/A'}</span>`;
     }
+}
+
+// A pandas DataFrame stored by add_meta(data_type='table'): the Python side
+// converts it to {columns: [...], rows: [[...]]} via to_dict(orient='split').
+function renderTableValue(value) {
+    if (typeof value === 'string') {
+        try { value = JSON.parse(value); } catch (e) { /* fall through to N/A */ }
+    }
+    if (!value || !Array.isArray(value.columns) || !Array.isArray(value.rows)) {
+        return '<span>N/A</span>';
+    }
+    const cell = v => typeof v === 'number' && Number.isFinite(v) ? formatMetric(v) : String(v ?? '');
+    return `
+    <div class="table-container">
+        <table class="metadata-table">
+            <thead><tr>${value.columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+            <tbody>${value.rows.map(row => `
+                <tr>${row.map(v => `<td>${cell(v)}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table>
+    </div>`;
 }
 
 // Status strip at the top of the details pane: run health, plus a
@@ -903,7 +925,7 @@ function generateNodeHtml(nodeData) {
 // Plain numeric read of an entry for delta display; unlike numericValue it
 // takes the entry directly and never treats timestamps as numbers.
 function entryNumber(entry) {
-    if (!entry || entry.type === 'image' || entry.type === 'link') return null;
+    if (!entry || entry.data_type === 'image' || entry.data_type === 'link' || entry.data_type === 'table') return null;
     if (typeof entry.value === 'boolean' || entry.value == null || entry.value === '') return null;
     const v = Number(entry.value);
     return Number.isFinite(v) ? v : null;
