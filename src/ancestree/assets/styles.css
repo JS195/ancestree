@@ -579,6 +579,77 @@ button.theme-toggle:active {
     font-variant-numeric: tabular-nums;
 }
 
+/* ---- Activity timeline -----------------------------------------------------
+   Runs per day, coloured by health, floating over the canvas like the
+   legend. Clicking a bar filters the graph to that day. */
+#timeline {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 5;
+    background: var(--bg-panel);
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow);
+    max-width: 320px;
+}
+#timeline:empty {
+    display: none;
+}
+.timeline-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 38px;
+    overflow-x: auto;
+}
+.timeline-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1px;
+    width: 10px;
+    height: 100%;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: 2px 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+.timeline-bar:hover {
+    background: var(--bg-glass-hover);
+}
+.timeline-bar.active {
+    background: var(--ring);
+}
+/* With a day selected, quieten the others */
+#timeline:has(.active) .timeline-bar:not(.active) {
+    opacity: 0.45;
+}
+.timeline-seg {
+    width: 100%;
+    border-radius: 2px;
+}
+.timeline-seg--ok {
+    background: var(--success);
+}
+.timeline-seg--failed {
+    background: var(--danger);
+}
+.timeline-range {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
 /* ---- Pipeline health -------------------------------------------------------
    Header pills summarise run health for the whole store; matching badges and
    tinted cards repeat the story per-node inside the details pane. */
