@@ -2,6 +2,7 @@ let nodes, edges, network;
 let searchMatches = null; // Set of matched node ids, or null when no search is active
 let typeFilter = null;    // Set of step types to keep, or null when no filter is active
 let heatmap = null;       // {key, min, max} when colour-by-metric is active, or null
+let statusFilter = null;  // 'failed' | 'dirty' while a header status pill is active, or null
 
 const DIM_NODE = 'rgba(150, 150, 150, 0.1)';
 const DIM_EDGE = 'rgba(200, 200, 200, 0.05)';
@@ -45,26 +46,108 @@ function nodeMatches(node, terms) {
     });
 }
 
+function metaValue(node, key) {
+    const entry = (node.entries || {})[key];
+    return entry ? entry.value : undefined;
+}
+
+// healthy=false is written by the store when a step raised mid-run
+function isUnhealthy(node) {
+    return String(metaValue(node, 'healthy')).toLowerCase() === 'false';
+}
+
+// git_dirty=true means the run was built from uncommitted code
+function isDirty(node) {
+    return String(metaValue(node, 'git_dirty')).toLowerCase() === 'true';
+}
+
 function nodeFocused(node) {
+    if (statusFilter === 'failed' && !isUnhealthy(node)) return false;
+    if (statusFilter === 'dirty' && !isDirty(node)) return false;
     if (typeFilter && !typeFilter.has(node.group)) return false;
     if (searchMatches && !searchMatches.has(node.id)) return false;
     return true;
 }
 
-// Single source of truth for node/edge colors: composes the search matches
-// and the legend's type filter, dimming everything out of focus.
+const DASH_PX = 4;            // on-screen dash/gap size the dirty ring holds
+const DASH_MIN_SCALE = 0.55;  // below this zoom a dash pattern reads as noise
+
+// vis-network keeps border thickness constant on screen (lineWidth is
+// divided by the view scale) but draws dash lengths in world units, so far
+// zoom-out degenerates the pattern into spikes. Counter-scale the dashes to
+// hold their on-screen size, and once the node is too small to carry a
+// pattern at all, fall back to a solid ring so it always reads as a circle.
+function dirtyDashesForScale(scale) {
+    if (scale < DASH_MIN_SCALE) return false;
+    const len = DASH_PX / Math.min(scale, 1);
+    return [len, len];
+}
+
+// Theme-, zoom- and selection-dependent values resolved once per repaint,
+// not per node
+function renderContext() {
+    return {
+        active: getStyle('--text-primary'),
+        dimmed: getStyle('--text-muted'),
+        danger: getStyle('--danger'),
+        accent: getStyle('--accent'),
+        dirtyDashes: dirtyDashesForScale(network.getScale()),
+        selected: new Set(network.getSelectedNodes())
+    };
+}
+
+// Full visual state for one node. On top of focus dimming and heat colour,
+// failed runs keep their identity colour but wear a red ring, and runs built
+// from a dirty worktree get a dashed border.
+function nodeVisual(n, focused, ctx) {
+    const update = {
+        id: n.id,
+        color: focused ? baseNodeColor(n) : DIM_NODE,
+        font: {color: focused ? ctx.active : ctx.dimmed},
+        borderWidth: 3,
+        // vis doubles the border on selection by default; the stroke is
+        // centred on the circle's edge, so a fatter border bulges outward
+        // and chops dashed rings into spikes. Hold the width steady and
+        // signal selection with a halo instead.
+        borderWidthSelected: 3,
+        shapeProperties: {borderDashes: false},
+        shadow: {enabled: false}
+    };
+    // Status markers only apply to nodes that are actually visible; a node
+    // faded out by the heatmap (no metric) stays uniformly dim.
+    const visible = focused && update.color !== DIM_NODE;
+    if (visible && isUnhealthy(n)) {
+        const bg = update.color ? update.color.background : stringToColor(n.group).node_colour;
+        update.color = {
+            background: bg, border: ctx.danger,
+            highlight: {background: bg, border: ctx.danger},
+            hover: {background: bg, border: ctx.danger}
+        };
+        update.borderWidth = 4;
+        update.borderWidthSelected = 4;
+    }
+    if (visible && isDirty(n)) {
+        update.shapeProperties = {borderDashes: ctx.dirtyDashes};
+    }
+    if (visible && ctx.selected.has(n.id)) {
+        // Soft selection halo, tinted by status. Canvas shadows ignore the
+        // view transform, so it keeps a constant screen size at any zoom.
+        const hue = isUnhealthy(n) ? ctx.danger : ctx.accent;
+        update.shadow = {enabled: true, color: hue + '66', size: 18, x: 0, y: 0};
+    }
+    return update;
+}
+
+// Single source of truth for node/edge colors: composes the search matches,
+// the legend's type filter and the header's status filter, dimming
+// everything out of focus.
 function applyHighlight() {
-    const activeColor = getStyle('--text-primary');
-    const dimmedColor = getStyle('--text-muted');
+    const ctx = renderContext();
     const all = nodes.get();
     const focused = new Set(all.filter(nodeFocused).map(n => n.id));
-    const filtering = searchMatches !== null || typeFilter !== null;
+    const filtering = searchMatches !== null || typeFilter !== null || statusFilter !== null;
 
-    nodes.update(all.map(n => ({
-        id: n.id,
-        color: focused.has(n.id) ? baseNodeColor(n) : DIM_NODE,
-        font: {color: focused.has(n.id) ? activeColor : dimmedColor}
-    })));
+    nodes.update(all.map(n => nodeVisual(n, focused.has(n.id), ctx)));
     edges.update(edges.get().map(edge => ({
         id: edge.id,
         color: (!filtering || (focused.has(edge.from) && focused.has(edge.to))) ? null : DIM_EDGE
@@ -254,6 +337,48 @@ function buildLegend(allNodes) {
             renderRanking(allNodes);
         });
     }
+}
+
+// Header pills summarising pipeline health: failed runs and runs built from
+// a dirty worktree. Each pill toggles a status filter on the graph; with
+// nothing to report, a quiet "all healthy" tick takes their place.
+function buildStatusPills(allNodes) {
+    const container = document.getElementById('status-pills');
+    if (!container) return;
+
+    const failed = allNodes.filter(isUnhealthy).length;
+    const dirty = allNodes.filter(isDirty).length;
+
+    if (failed === 0 && dirty === 0) {
+        container.innerHTML = `
+        <div class="status-pill status-pill--ok" title="Every run completed cleanly from a clean worktree">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2 6.5L4.8 9.2L10 3.5" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            All healthy
+        </div>`;
+        return;
+    }
+
+    container.innerHTML = `
+    ${failed ? `
+    <button class="status-pill status-pill--failed" data-filter="failed" title="Show only failed runs">
+        <span class="status-pill-dot"></span>${failed} failed
+    </button>` : ''}
+    ${dirty ? `
+    <button class="status-pill status-pill--dirty" data-filter="dirty" title="Show only runs built with uncommitted changes">
+        <span class="status-pill-dot"></span>${dirty} uncommitted
+    </button>` : ''}`;
+
+    container.querySelectorAll('[data-filter]').forEach(pill => {
+        pill.addEventListener('click', () => {
+            statusFilter = statusFilter === pill.dataset.filter ? null : pill.dataset.filter;
+            container.querySelectorAll('[data-filter]').forEach(el =>
+                el.classList.toggle('active', el.dataset.filter === statusFilter));
+            applyHighlight();
+        });
+    });
 }
 
 // Ranked list of nodes by the active heatmap metric — answers "which run is
@@ -463,6 +588,8 @@ window.onload = function() {
     network = new vis.Network(document.getElementById('mynetwork'), {nodes, edges}, options);
 
     buildLegend(nodes.get());
+    buildStatusPills(nodes.get());
+    applyHighlight(); // first paint: draws the failed/dirty markers
 
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
@@ -490,14 +617,8 @@ window.onload = function() {
             .filter(edge => lineageNodes.has(edge.from) && lineageNodes.has(edge.to))
             .map(edge => edge.id));
 
-        const activeColor = getStyle('--text-primary');
-        const dimmedColor = getStyle('--text-muted');
-
-        nodes.update(nodes.get().map(n => ({
-            id: n.id,
-            color: lineageNodes.has(n.id) ? baseNodeColor(n) : DIM_NODE,
-            font: { color: lineageNodes.has(n.id) ? activeColor : dimmedColor }
-        })));
+        const ctx = renderContext();
+        nodes.update(nodes.get().map(n => nodeVisual(n, lineageNodes.has(n.id), ctx)));
 
         edges.update(edges.getIds().map(id => ({
             id: id,
@@ -510,12 +631,31 @@ window.onload = function() {
         applyHighlight();
     });
 
+    // Keep the dirty rings' dash pattern at a constant on-screen size at any
+    // zoom level. The 'zoom' event only fires for user zooming, while the
+    // initial fit and network.focus() change the scale silently — so verify
+    // after every redraw instead: a cheap scale check per frame, repainting
+    // only when the pattern actually changes. The repaint must go through
+    // applyHighlight: vis re-applies a node's group colour on any update
+    // that omits 'color', so a minimal shapeProperties patch would wipe
+    // heatmap and dim colours.
+    let lastDashKey = null;
+    network.on('afterDrawing', () => {
+        const dashes = dirtyDashesForScale(network.getScale());
+        const dashKey = dashes === false ? 'solid' : dashes[0].toFixed(1);
+        if (dashKey === lastDashKey) return;
+        lastDashKey = dashKey;
+        applyHighlight();
+    });
+
     network.on('select', params => showSelection(params.nodes));
 };
 
 // Render the details pane for a selection: shared by the graph's select
 // event and programmatic selection from the ranking list.
 function showSelection(selectedIds) {
+    applyHighlight(); // repaint the selection halos
+
     const btn = document.getElementById('compare-btn');
     const contentArea = document.getElementById('node-content');
 
@@ -589,8 +729,36 @@ function renderValue(entry) {
     }
 }
 
+// Status strip at the top of the details pane: run health, plus a
+// reproducibility warning when the run came from a dirty worktree. Warning
+// states carry a one-line explanation; a clean run is just a quiet badge.
+function renderStatusBanner(node) {
+    const items = [];
+    if ('healthy' in (node.entries || {})) {
+        items.push(isUnhealthy(node)
+            ? {cls: 'failed', title: 'Run failed',
+               note: 'The step raised before completing — artifacts may be partial.'}
+            : {cls: 'ok', title: 'Completed', note: null});
+    }
+    if (isDirty(node)) {
+        items.push({cls: 'dirty', title: 'Uncommitted changes',
+                    note: 'Built from a dirty worktree — this result may not be reproducible.'});
+    }
+    if (items.length === 0) return '';
+
+    return `<div class="status-banner">
+    ${items.map(item => item.note ? `
+    <div class="status-card status-card--${item.cls}">
+        <div class="status-card-title"><span class="status-dot"></span>${item.title}</div>
+        <div class="status-card-note">${item.note}</div>
+    </div>` : `
+    <span class="status-badge status-badge--${item.cls}"><span class="status-dot"></span>${item.title}</span>`).join('')}
+    </div>`;
+}
+
 function generateNodeHtml(nodeData) {
     return `<div class="node-info">
+    ${renderStatusBanner(nodeData)}
     ${renderMetadata(nodeData.entries)}
     </div>`;
 }

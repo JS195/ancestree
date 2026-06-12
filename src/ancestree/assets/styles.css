@@ -32,6 +32,11 @@
     --strip: rgba(0,0,0,0.06);                  /* relative tint for card header bands */
 
     --node-color:#0071e3;
+
+    /* System status colors */
+    --success: #34c759;
+    --warning: #ff9500;
+    --danger: #ff3b30;
 }
 
 [data-theme="dark"] {
@@ -64,6 +69,11 @@
     --strip: rgba(255,255,255,0.05);
 
     --node-color:#0a84ff;
+
+    /* System status colors brighten slightly in the dark */
+    --success: #30d158;
+    --warning: #ff9f0a;
+    --danger: #ff453a;
 }
 body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
@@ -406,7 +416,7 @@ button.theme-toggle:active {
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
     }
-    .control-button, .search-wrapper { background: var(--bg-card); }
+    .control-button, .search-wrapper, .status-pill { background: var(--bg-card); }
 }
 /* Legend — floating glass panel over the graph canvas */
 #legend {
@@ -567,4 +577,162 @@ button.theme-toggle:active {
     flex-shrink: 0;
     font-size: 11px;
     font-variant-numeric: tabular-nums;
+}
+
+/* ---- Pipeline health -------------------------------------------------------
+   Header pills summarise run health for the whole store; matching badges and
+   tinted cards repeat the story per-node inside the details pane. */
+.status-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 20px;
+    box-sizing: border-box;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+    background: var(--bg-glass);
+    border: 0.5px solid var(--border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 2px rgba(0,0,0,0.04);
+    white-space: nowrap;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: transform 0.2s ease, background 0.2s ease,
+                box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+button.status-pill {
+    cursor: pointer;
+}
+button.status-pill:hover {
+    background: var(--bg-glass-hover);
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 14px rgba(0,0,0,0.10);
+}
+button.status-pill:active {
+    transform: translateY(0);
+}
+.status-pill--ok svg {
+    color: var(--success);
+}
+
+/* Status dots: a saturated core with a soft halo of the same hue */
+.status-pill-dot, .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.status-pill--failed .status-pill-dot {
+    background: var(--danger);
+    animation: status-pulse 2.6s ease-out infinite;
+}
+.status-pill--dirty .status-pill-dot {
+    background: var(--warning);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 18%, transparent);
+}
+@keyframes status-pulse {
+    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 45%, transparent); }
+    70%  { box-shadow: 0 0 0 5px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* Engaged filter: the pill fills with its own tint */
+button.status-pill--failed.active {
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 13%, transparent);
+    border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+    box-shadow: inset 0 1px 0 var(--glass-highlight),
+                0 0 0 3px color-mix(in srgb, var(--danger) 16%, transparent);
+}
+button.status-pill--dirty.active {
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 13%, transparent);
+    border-color: color-mix(in srgb, var(--warning) 45%, transparent);
+    box-shadow: inset 0 1px 0 var(--glass-highlight),
+                0 0 0 3px color-mix(in srgb, var(--warning) 16%, transparent);
+}
+
+/* Per-node status in the details pane */
+.status-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 16px;
+    animation: slideIn 0.3s ease-out;
+}
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    align-self: flex-start;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.status-badge--ok {
+    color: color-mix(in srgb, var(--success) 75%, var(--text-primary));
+    background: color-mix(in srgb, var(--success) 11%, transparent);
+    border: 0.5px solid color-mix(in srgb, var(--success) 32%, transparent);
+}
+.status-badge--ok .status-dot {
+    background: var(--success);
+}
+.status-card {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 0.5px solid;
+    box-shadow: inset 0 1px 0 var(--card-highlight);
+}
+.status-card--failed {
+    background: color-mix(in srgb, var(--danger) 9%, transparent);
+    border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+}
+.status-card--dirty {
+    background: color-mix(in srgb, var(--warning) 9%, transparent);
+    border-color: color-mix(in srgb, var(--warning) 32%, transparent);
+}
+.status-card-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.status-card--failed .status-card-title {
+    color: color-mix(in srgb, var(--danger) 85%, var(--text-primary));
+}
+.status-card--failed .status-dot {
+    background: var(--danger);
+}
+.status-card--dirty .status-card-title {
+    color: color-mix(in srgb, var(--warning) 80%, var(--text-primary));
+}
+.status-card--dirty .status-dot {
+    background: var(--warning);
+}
+.status-card-note {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .status-pill-dot {
+        animation: none;
+    }
+    .status-pill--failed .status-pill-dot {
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent);
+    }
 }
