@@ -40,7 +40,12 @@ class lineage_database:
     """In-memory index of node metadata, persisted as a disposable JSON
     snapshot in the store root. meta.json files remain the source of truth:
     the snapshot is reconciled against the directory listing on load and can
-    be rebuilt from disk at any time."""
+    be rebuilt from disk at any time.
+    
+    Process-safe via atomic snapshot replacement and mtime-based cache
+    invalidation. Not thread-safe — concurrent access from multiple threads
+    within the same process is not supported.    
+    """
 
     def __init__(self, root):
         self.root = Path(root)
@@ -53,7 +58,7 @@ class lineage_database:
             return True
         if self._loaded_at is None:
             return True
-        return self.snapshot_path.stat().st_mtime > self._loaded_at
+        return self.snapshot_path.stat().st_mtime_ns != self._loaded_at
 
     @property
     def cache(self):
@@ -63,11 +68,11 @@ class lineage_database:
 
     def _load(self):
         if self.snapshot_path.exists():
+            self._loaded_at = self.snapshot_path.stat().st_mtime_ns  # stat before read
             self._cache = json.loads(self.snapshot_path.read_text())
             self._reconcile()
         else:
             self.rebuild_from_disk()
-        self._loaded_at = self.snapshot_path.stat().st_mtime
 
     def _reconcile(self):
         on_disk = {d.name for d in self.root.iterdir() if (d / 'meta.json').exists()}
@@ -82,7 +87,7 @@ class lineage_database:
         tmp = self.root / '.index.json.tmp'
         tmp.write_text(json.dumps(self.cache))
         tmp.replace(self.snapshot_path)
-        self._loaded_at = self.snapshot_path.stat().st_mtime
+        self._loaded_at = self.snapshot_path.stat().st_mtime_ns
 
     def rebuild_from_disk(self):
         self._cache = {p.parent.name: _flatten(json.loads(p.read_text()))
@@ -94,11 +99,13 @@ class lineage_database:
             self._load()
 
     def add(self, node_id, meta):
+        self._refresh_if_stale()
         self.cache[node_id] = meta
         self._flush()
 
     def remove(self, node_id):
-        del self.cache[node_id]
+        self._refresh_if_stale()
+        self.cache.pop(node_id, None)
         self._flush()
 
     def find_matches(self, **kwargs):
@@ -106,7 +113,6 @@ class lineage_database:
         return [k for k, m in self.cache.items() if is_match(m, **kwargs)]
 
     def find_in_lineage(self, curr_node, **kwargs):
-        self._refresh_if_stale()
         return [k for k in self.get_lineage(curr_node)
                 if is_match(self.cache[k], **kwargs)]
 
@@ -130,7 +136,6 @@ class lineage_database:
         return history[::-1]
 
     def get_most_recent(self, **kwargs):
-        self._refresh_if_stale()
         matches = self.find_matches(**kwargs)
         return max(matches, default=None,
                    key=lambda k: parse_iso_utc(self.cache[k].get('timestamp')))
