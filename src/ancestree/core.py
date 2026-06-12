@@ -29,7 +29,7 @@ class LineageStore:
         Args:
             root (Union[Path, str]): Root directory for data pipeline. This is where the nodes sit.
             rules (Dict, optional): A mapping defining the allowed transitions. Defaults to None.
-            gen_triggers (List, optional): List of step types that when reached increment the node's generation. Defaults to None.
+            gen_triggers (List, optional): Step types that mark a new generation. When a node of this type is created, its generation number increments by one relative to its parent. Defaults to None.
         
         Examples:
             >>> rules = {"clean": ["ingest"], "model": ["clean"]}
