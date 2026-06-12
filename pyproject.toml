@@ -34,8 +34,9 @@ dev = [
 ]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/JS195/ancestree/issues"
 Homepage = "https://github.com/JS195/ancestree"
+Documentation = "https://js195.github.io/ancestree/"
+"Bug Tracker" = "https://github.com/JS195/ancestree/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
