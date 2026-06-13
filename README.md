@@ -9,15 +9,16 @@
 
 **Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform.**
 
-No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to — air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned.
+No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned.
 
-Pure Python standard library. Works with scripts and notebooks. Instantiate when you need it - nothing runs in the background. No new syntax — saving files remains the same calls you already write.
+Pure Python standard library. Works with scripts and notebooks. Instantiate when you need it, nothing runs in the background. No need to learn new syntax, saving files remains the same calls you already write.
 
 ---
 
 ## Contents
 
 - [Why Ancestree?](#why-ancestree)
+- [What makes it different](#what-makes-it-different)
 - [Installation](#installation)
 - [Quick start](#quick-start)
 - [What's recorded automatically](#whats-recorded-automatically)
@@ -32,11 +33,11 @@ Pure Python standard library. Works with scripts and notebooks. Instantiate when
 
 ## Why Ancestree?
 
-Iterative workflows are messy. You run ten variations, tweak parameters, rerun branches, and two weeks later you're staring at `final_v2_REAL.csv` wondering which preprocessing produced it — and whether the code that made it was even committed. When you want to explore two ideas in parallel, or branch off a promising result and try three different things with it, there's no simple way to represent this, let alone track it.
+Iterative workflows are messy. You run ten variations, tweak parameters, rerun branches, and two weeks later you're staring at `final_v2_REAL.csv` wondering which preprocessing produced it and whether the code that made it was even committed. When you want to explore two ideas in parallel, or branch off a promising result and try three different things with it, there's no simple way to represent this, let alone track it.
 
 This is a problem in machine learning, but it's just as common in simulation, optimisation, data engineering, document processing, or any workflow where steps build on each other and results branch. Tools like MLflow solve it well, but only if you're doing ML and willing to stand up a server. For everything else, the options are thin.
 
-Ancestree solves this with one idea: **every step of your pipeline is a local node folder**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable family tree of your work — durable on disk, reconstructable at any time, and visual when you want it to be.
+Ancestree solves this with one idea: **every step of your pipeline is a local node folder**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable family tree of your work that is durable on disk, reconstructable at any time, and visual when you want it to be.
 
 One of Ancestree's first production use cases was an iterative optimisation, with 10+ generations, 3 steps per generation, and dozens of branches.
 
@@ -74,6 +75,8 @@ pip install ancestree
 
 ## Quick Start
 
+Wrap your existing save calls inside a standard Python context manager.
+
 ```python
 import ancestree
 
@@ -99,16 +102,16 @@ store.generate_web_graph()
 
 ## What's recorded automatically
 
-Every node automatically records the things you'll wish you had written down:
+Every node silently captures critical operational metrics and system reproducibility context without a single line of configuration.
 
 
 | Captured     | Why it matters                                                                                                                |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `parent_id`  | Where did this step come from?                                                                                                |
-| `generation`  | What generation is this? Useful for iterative workflows if numerous steps happen in one generation.                          |
-| `step_type`  | What step is this performing?                                                                                                 |
+| `parent_id`  | Where the step came from                                                                                            |
+| `generation`  | What generation the step is. Useful for iterative workflows if numerous steps happen in one generation.                          |
+| `step_type`  | The pipeline step being performed                                                                                               |
 | `timestamp`  | When the step ran                                                                                                             |
-| `duration_s` | How long it took — find the slow step, see the pipeline getting slower                                                        |
+| `duration_s` | How long it took. Find slow steps, see the pipeline getting slower                                                        |
 | `size_mb`    | Total size of the node's artifacts                                                                                            |
 | `healthy`    | Whether the step completed, or raised mid-run                                                                                 |
 | `provenance`   | User, Python version, platform, git commit/branch, and a **dirty-worktree flag** so you know when a result isn't reproducible |
@@ -116,7 +119,7 @@ Every node automatically records the things you'll wish you had written down:
 
 ### Crash-safe by design
 
-If your code raises inside `create_node`, anything already written is kept and the node is flagged `healthy=False` — partial work is evidence, not garbage. If the step wrote nothing at all, the node silently vanishes: no ghost directories, ever.
+If your code raises inside `create_node`, anything already written is kept and the node is flagged `healthy=False`. Partial work is evidence, not garbage. If the step wrote nothing at all, the node silently vanishes: no ghost directories, ever.
 
 ---
 
