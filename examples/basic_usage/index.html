@@ -1337,34 +1337,34 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># We can call the store something. This can be either a str or a Path object.</span>
-<span class="n">folder_name</span> <span class="o">=</span> <span class="s1">'basic_usage'</span>
+<span class="n">folder_name</span> <span class="o">=</span> <span class="s2">"basic_usage"</span>
 
 <span class="c1"># Define a ruleset for the store (this needs only be done. It is written to the store in the .lineage_config.json file and found automatically even if the store does not stay in memory)</span>
-<span class="c1"># Rules define how steps progress and trigger defines which step triggers a new generation </span>
+<span class="c1"># Rules define how steps progress and trigger defines which step triggers a new generation</span>
 <span class="c1"># RULES = {"from this step":["To this step"]}</span>
 
 <span class="n">RULES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"import data"</span><span class="p">:[</span><span class="kc">None</span><span class="p">],</span> <span class="c1"># Start a fresh pipeline with an import data variable</span>
-    <span class="s2">"clean NaN"</span><span class="p">:[</span><span class="s2">"import data"</span><span class="p">],</span> <span class="c1"># Cleaning NaNs must follow importing data</span>
-    <span class="s2">"scale"</span><span class="p">:[</span><span class="s2">"clean NaN"</span><span class="p">],</span> <span class="c1"># Scaling step must follow cleaning NaNs</span>
-    <span class="s2">"train model"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"scale"</span><span class="p">]</span> <span class="c1"># Model training must follow a cleaning of Nans</span>
+    <span class="s2">"import data"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span>  <span class="c1"># Start a fresh pipeline with an import data variable</span>
+    <span class="s2">"clean NaN"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"import data"</span><span class="p">],</span>  <span class="c1"># Cleaning NaNs must follow importing data</span>
+    <span class="s2">"scale"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"clean NaN"</span><span class="p">],</span>  <span class="c1"># Scaling step must follow cleaning NaNs</span>
+    <span class="s2">"train model"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"scale"</span><span class="p">],</span>  <span class="c1"># Model training must follow a cleaning of Nans</span>
 <span class="p">}</span>
-<span class="n">trigger</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'train model'</span><span class="p">]</span> <span class="c1"># On which step do you want a new generation to begin</span>
+<span class="n">trigger</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"train model"</span><span class="p">]</span>  <span class="c1"># On which step do you want a new generation to begin</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2"># We can call the store something. This can be either a str or a Path object.
-folder_name = 'basic_usage'
+folder_name = "basic_usage"
 
 # Define a ruleset for the store (this needs only be done. It is written to the store in the .lineage_config.json file and found automatically even if the store does not stay in memory)
-# Rules define how steps progress and trigger defines which step triggers a new generation 
+# Rules define how steps progress and trigger defines which step triggers a new generation
 # RULES = {"from this step":["To this step"]}
 
 RULES = {
-    "import data":[None], # Start a fresh pipeline with an import data variable
-    "clean NaN":["import data"], # Cleaning NaNs must follow importing data
-    "scale":["clean NaN"], # Scaling step must follow cleaning NaNs
-    "train model": ["scale"] # Model training must follow a cleaning of Nans
+    "import data": [None],  # Start a fresh pipeline with an import data variable
+    "clean NaN": ["import data"],  # Cleaning NaNs must follow importing data
+    "scale": ["clean NaN"],  # Scaling step must follow cleaning NaNs
+    "train model": ["scale"],  # Model training must follow a cleaning of Nans
 }
-trigger = ['train model'] # On which step do you want a new generation to begin</div>
+trigger = ["train model"]  # On which step do you want a new generation to begin</div>
 </div>
 </div>
 </div>
@@ -1425,30 +1425,28 @@ store = ancestree.LineageStore(folder_name, rules=RULES, gen_triggers=trigger)</
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s1">'basic_usage'</span><span class="p">)</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"basic_usage"</span><span class="p">)</span>
 
 <span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"import data"</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 
-    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"something"</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"key"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">"other"</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]}))</span>
 
-    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'something'</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'key'</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="s1">'other'</span><span class="p">:[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]}))</span>
-
-    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span><span class="o">/</span><span class="s1">'samples.npy'</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span> <span class="o">/</span> <span class="s2">"samples.npy"</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4"># Lets write some data to this node. Writing follows familiar syntax but the store handles pathing for us.
 import ancestree
 import numpy as np
 import pandas as pd
 
-store = ancestree.LineageStore('basic_usage')
+store = ancestree.LineageStore("basic_usage")
 
 with store.create_node(step_type="import data") as node:
+    X = np.random.randint(0, 100, (5, 5))
 
-    X = np.random.randint(0, 100, (5,5))
+    node.add_meta("something", pd.DataFrame({"key": [1, 2, 3], "other": [4, 5, 6]}))
 
-    node.add_meta('something', pd.DataFrame({'key':[1,2,3], 'other':[4,5,6]}))
-
-    np.save(node/'samples.npy', X)</div>
+    np.save(node / "samples.npy", X)</div>
 </div>
 </div>
 </div>
@@ -1585,7 +1583,7 @@ with store.create_node(step_type="import data") as node:
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 12, 2026 20:11:52 UTC">June 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 13:26:14 UTC">June 13, 2026</span>
   </span>
 
     

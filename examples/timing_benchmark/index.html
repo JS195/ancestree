@@ -1550,7 +1550,11 @@ Re-run top to bottom; the store is wiped at the start of each run.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span><span class="o">,</span><span class="w"> </span><span class="nn">random</span><span class="o">,</span><span class="w"> </span><span class="nn">io</span><span class="o">,</span><span class="w"> </span><span class="nn">contextlib</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
 
@@ -1561,7 +1565,11 @@ Re-run top to bottom; the store is wiped at the start of each run.</p>
 <span class="n">rules</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"ingest"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="s2">"transform"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"ingest"</span><span class="p">,</span> <span class="s2">"transform"</span><span class="p">]}</span>
 <span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">ROOT</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="p">[</span><span class="s2">"ingest"</span><span class="p">])</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import shutil, time, random, io, contextlib
+<div class="clipboard-copy-txt" id="cell-1">import shutil
+import time
+import random
+import io
+import contextlib
 from pathlib import Path
 import ancestree
 
@@ -1597,6 +1605,7 @@ store = ancestree.LineageStore(ROOT, rules=rules, gen_triggers=["ingest"])</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">timed</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">reps</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="n">times</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="p">[],</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">reps</span><span class="p">):</span>
@@ -1610,6 +1619,7 @@ store = ancestree.LineageStore(ROOT, rules=rules, gen_triggers=["ingest"])</div>
     <span class="k">return</span> <span class="n">result</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">import numpy as np
+
 
 def timed(label, fn, reps=100):
     times, result = [], None
@@ -1688,14 +1698,16 @@ def timed(label, fn, reps=100):
     <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">children</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> nodes   </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="si">:</span><span class="s2">6.1f</span><span class="si">}</span><span class="s2">s elapsed"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> nodes   </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">6.1f</span><span class="si">}</span><span class="s2">s elapsed"</span><span class="p">)</span>
 
 <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 <span class="n">fanouts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">children</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">created </span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2"> nodes in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s  (</span><span class="si">{</span><span class="n">elapsed</span><span class="o">/</span><span class="n">N</span><span class="o">*</span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms/node)"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"tree shape: </span><span class="si">{</span><span class="n">N_ROOTS</span><span class="si">}</span><span class="s2"> roots, max depth </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">depth</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">, "</span>
-      <span class="sa">f</span><span class="s2">"max fan-out </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">fanouts</span><span class="p">)</span><span class="si">}</span><span class="s2">, "</span>
-      <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fanouts</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes with multiple children"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">created </span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2"> nodes in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s  (</span><span class="si">{</span><span class="n">elapsed</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms/node)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"tree shape: </span><span class="si">{</span><span class="n">N_ROOTS</span><span class="si">}</span><span class="s2"> roots, max depth </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">depth</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">, "</span>
+    <span class="sa">f</span><span class="s2">"max fan-out </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">fanouts</span><span class="p">)</span><span class="si">}</span><span class="s2">, "</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fanouts</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes with multiple children"</span>
+<span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">N = 10_000
 N_ROOTS = 5
@@ -1728,14 +1740,16 @@ for i in range(N):
     if parent is not None:
         children.setdefault(parent.node_id, []).append(node.node_id)
     if (i + 1) % 1000 == 0:
-        print(f"{i+1:&gt;6} nodes   {time.perf_counter()-t0:6.1f}s elapsed")
+        print(f"{i + 1:&gt;6} nodes   {time.perf_counter() - t0:6.1f}s elapsed")
 
 elapsed = time.perf_counter() - t0
 fanouts = [len(c) for c in children.values()]
-print(f"\ncreated {N} nodes in {elapsed:.1f}s  ({elapsed/N*1000:.2f} ms/node)")
-print(f"tree shape: {N_ROOTS} roots, max depth {max(depth.values())}, "
-      f"max fan-out {max(fanouts)}, "
-      f"{sum(1 for f in fanouts if f &gt; 1)} nodes with multiple children")</div>
+print(f"\ncreated {N} nodes in {elapsed:.1f}s  ({elapsed / N * 1000:.2f} ms/node)")
+print(
+    f"tree shape: {N_ROOTS} roots, max depth {max(depth.values())}, "
+    f"max fan-out {max(fanouts)}, "
+    f"{sum(1 for f in fanouts if f &gt; 1)} nodes with multiple children"
+)</div>
 </div>
 </div>
 </div>
@@ -1798,15 +1812,27 @@ tree shape: 5 roots, max depth 153, max fan-out 5, 2196 nodes with multiple chil
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(step_type='ingest')"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"ingest"</span><span class="p">))</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(batch=250)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(lambda accuracy &gt; 0.99)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="p">))</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"get_most_recent_node(step_type='transform')"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"transform"</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span>
+    <span class="s2">"find_node(lambda accuracy &gt; 0.99)"</span><span class="p">,</span>
+    <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span>
+    <span class="s2">"get_most_recent_node(step_type='transform')"</span><span class="p">,</span>
+    <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"transform"</span><span class="p">),</span>
+<span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"get_child_nodes(first root)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_child_nodes</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"get_most_recent_node()"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">())</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4">_ = timed("find_node(step_type='ingest')", lambda: store.find_node(step_type="ingest"))
 _ = timed("find_node(batch=250)", lambda: store.find_node(batch=20))
-_ = timed("find_node(lambda accuracy &gt; 0.99)", lambda: store.find_node(accuracy=lambda a: a is not None and a &gt; 0.99))
-_ = timed("get_most_recent_node(step_type='transform')", lambda: store.get_most_recent_node(step_type="transform"))
+_ = timed(
+    "find_node(lambda accuracy &gt; 0.99)",
+    lambda: store.find_node(accuracy=lambda a: a is not None and a &gt; 0.99),
+)
+_ = timed(
+    "get_most_recent_node(step_type='transform')",
+    lambda: store.get_most_recent_node(step_type="transform"),
+)
 _ = timed("get_child_nodes(first root)", lambda: store.get_child_nodes(ids[0]))
 _ = timed("get_most_recent_node()", lambda: store.get_most_recent_node())</div>
 </div>
@@ -1864,11 +1890,21 @@ get_most_recent_node()                             median of 100:     2.97 ms   
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">deepest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">depth</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>  <span class="c1"># tip of the longest exploration line</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="sa">f</span><span class="s2">"get_lineage (depth </span><span class="si">{</span><span class="n">depth</span><span class="p">[</span><span class="n">deepest</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_lineage</span><span class="p">(</span><span class="n">deepest</span><span class="p">))</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_in_lineage(lambda accuracy &gt; 0.5)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_in_lineage</span><span class="p">(</span><span class="n">deepest</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span>
+    <span class="s2">"find_in_lineage(lambda accuracy &gt; 0.5)"</span><span class="p">,</span>
+    <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_in_lineage</span><span class="p">(</span>
+        <span class="n">deepest</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+    <span class="p">),</span>
+<span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">deepest = max(depth, key=depth.get)  # tip of the longest exploration line
 _ = timed(f"get_lineage (depth {depth[deepest]})", lambda: store.get_lineage(deepest))
-_ = timed("find_in_lineage(lambda accuracy &gt; 0.5)", lambda: store.find_in_lineage(deepest, accuracy=lambda a: a is not None and a &gt; 0.5))</div>
+_ = timed(
+    "find_in_lineage(lambda accuracy &gt; 0.5)",
+    lambda: store.find_in_lineage(
+        deepest, accuracy=lambda a: a is not None and a &gt; 0.5
+    ),
+)</div>
 </div>
 </div>
 </div>
@@ -1921,13 +1957,17 @@ find_in_lineage(lambda accuracy &gt; 0.5)             median of 100:     2.29 ms
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 <span class="n">store2</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">ROOT</span><span class="p">)</span>
 <span class="n">first</span> <span class="o">=</span> <span class="n">store2</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cold start (init + load index + first query):    </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"cold start (init + load index + first query):    </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span>
+<span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"same query again (warm)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store2</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-6">t = time.perf_counter()
 store2 = ancestree.LineageStore(ROOT)
 first = store2.find_node(batch=0)
-print(f"cold start (init + load index + first query):    {(time.perf_counter()-t)*1000:8.2f} ms")
+print(
+    f"cold start (init + load index + first query):    {(time.perf_counter() - t) * 1000:8.2f} ms"
+)
 _ = timed("same query again (warm)", lambda: store2.find_node(batch=0))</div>
 </div>
 </div>
@@ -1980,11 +2020,11 @@ same query again (warm)                            median of 100:     4.78 ms   
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 <span class="n">store</span><span class="o">.</span><span class="n">rebuild_db_from_disk</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rebuild_db_from_disk (</span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2"> meta.json files): </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rebuild_db_from_disk (</span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2"> meta.json files): </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-7">t = time.perf_counter()
 store.rebuild_db_from_disk()
-print(f"rebuild_db_from_disk ({N} meta.json files): {time.perf_counter()-t:.2f} s")</div>
+print(f"rebuild_db_from_disk ({N} meta.json files): {time.perf_counter() - t:.2f} s")</div>
 </div>
 </div>
 </div>
@@ -2041,15 +2081,20 @@ print(f"rebuild_db_from_disk ({N} meta.json files): {time.perf_counter()-t:.2f} 
         <span class="n">stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">children</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">nid</span><span class="p">,</span> <span class="p">[]))</span>
     <span class="k">return</span> <span class="n">size</span>
 
+
 <span class="n">n_sub</span> <span class="o">=</span> <span class="n">subtree_size</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()):</span>
     <span class="n">store</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"prune dry-run (subtree of </span><span class="si">{</span><span class="n">n_sub</span><span class="si">}</span><span class="s2">):  </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"prune dry-run (subtree of </span><span class="si">{</span><span class="n">n_sub</span><span class="si">}</span><span class="s2">):  </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span>
+<span class="p">)</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 <span class="n">store</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"prune for real (subtree of </span><span class="si">{</span><span class="n">n_sub</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"prune for real (subtree of </span><span class="si">{</span><span class="n">n_sub</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span>
+<span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-8">def subtree_size(node_id):
     size, stack = 0, [node_id]
@@ -2059,15 +2104,20 @@ print(f"rebuild_db_from_disk ({N} meta.json files): {time.perf_counter()-t:.2f} 
         stack.extend(children.get(nid, []))
     return size
 
+
 n_sub = subtree_size(ids[0])
 t = time.perf_counter()
 with contextlib.redirect_stdout(io.StringIO()):
     store.prune(ids[0], dry_run=True)
-print(f"prune dry-run (subtree of {n_sub}):  {(time.perf_counter()-t)*1000:8.2f} ms")
+print(
+    f"prune dry-run (subtree of {n_sub}):  {(time.perf_counter() - t) * 1000:8.2f} ms"
+)
 
 t = time.perf_counter()
 store.prune(ids[0], recursive=True, dry_run=False)
-print(f"prune for real (subtree of {n_sub}): {(time.perf_counter()-t)*1000:8.2f} ms")</div>
+print(
+    f"prune for real (subtree of {n_sub}): {(time.perf_counter() - t) * 1000:8.2f} ms"
+)</div>
 </div>
 </div>
 </div>
@@ -2106,16 +2156,16 @@ print(f"prune for real (subtree of {n_sub}): {(time.perf_counter()-t)*1000:8.2f}
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()):</span>
     <span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"generate_web_graph: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="o">-</span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"generate_web_graph: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
 <span class="n">html</span> <span class="o">=</span> <span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"interactive_pipeline.html"</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"HTML size: </span><span class="si">{</span><span class="n">html</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"HTML size: </span><span class="si">{</span><span class="n">html</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-9">t = time.perf_counter()
 with contextlib.redirect_stdout(io.StringIO()):
     store.generate_web_graph()
-print(f"generate_web_graph: {time.perf_counter()-t:.2f} s")
+print(f"generate_web_graph: {time.perf_counter() - t:.2f} s")
 html = ROOT / "interactive_pipeline.html"
-print(f"HTML size: {html.stat().st_size/1e6:.1f} MB")</div>
+print(f"HTML size: {html.stat().st_size / 1e6:.1f} MB")</div>
 </div>
 </div>
 </div>
@@ -2167,13 +2217,17 @@ HTML size: 15.2 MB
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*"</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">()]</span>
 <span class="n">snap</span> <span class="o">=</span> <span class="n">ROOT</span> <span class="o">/</span> <span class="s2">".index.json"</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"snapshot (.index.json): </span><span class="si">{</span><span class="n">snap</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store total:            </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB across </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"snapshot (.index.json): </span><span class="si">{</span><span class="n">snap</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"store total:            </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB across </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files"</span>
+<span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-10">files = [f for f in ROOT.rglob("*") if f.is_file()]
 snap = ROOT / ".index.json"
-print(f"snapshot (.index.json): {snap.stat().st_size/1e6:.2f} MB")
-print(f"store total:            {sum(f.stat().st_size for f in files)/1e6:.1f} MB across {len(files)} files")</div>
+print(f"snapshot (.index.json): {snap.stat().st_size / 1e6:.2f} MB")
+print(
+    f"store total:            {sum(f.stat().st_size for f in files) / 1e6:.1f} MB across {len(files)} files"
+)</div>
 </div>
 </div>
 </div>
@@ -2221,7 +2275,7 @@ store total:            19.3 MB across 9983 files
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 11, 2026 16:20:02 UTC">June 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 13:26:14 UTC">June 13, 2026</span>
   </span>
 
     
