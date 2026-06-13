@@ -46,10 +46,17 @@ class LineageStore:
 
     def _do_config(self, supplied_rules: Optional[Dict], supplied_triggers: Optional[List]) -> Dict[str, Any]:
         if not self.config_path.exists():
-            self.config_path.write_text(json.dumps({
-                "rules": supplied_rules,
-                "triggers": supplied_triggers
-            }, indent=2))
+            # Atomic create: a concurrent reader must never see a partially
+            # written config, and the temp name must be unique per writer.
+            tmp = self.root / f'.lineage_config.{uuid.uuid4().hex}.tmp'
+            try:
+                tmp.write_text(json.dumps({
+                    "rules": supplied_rules,
+                    "triggers": supplied_triggers
+                }, indent=2))
+                tmp.replace(self.config_path)
+            finally:
+                tmp.unlink(missing_ok=True)
 
         config = json.loads(self.config_path.read_text())
         return {
