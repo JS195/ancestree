@@ -92,6 +92,7 @@ nav:
       - Timing Benchmark: examples/timing_benchmark.ipynb
   - Live Demo: demo.md
   - API Reference: reference.md
+  - Caveats & Limitations: caveats.md
 
 extra_css:
   - stylesheets/extra.css

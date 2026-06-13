@@ -4,6 +4,7 @@ from datetime import datetime
 from importlib import resources
 from pathlib import Path
 from collections import defaultdict
+import warnings
 
 from .utils import parse_time, get_meta_val
 
@@ -39,6 +40,15 @@ def visualise_nodes(store):
             continue
         node_obj = store.get_node(str(node_dir.name))
         if node_obj is None:
+            if (node_dir / "meta.json").exists():
+                warnings.warn(
+                    f"Node '{node_dir.name}' could not be read and will be excluded "
+                    "from the web graph. Its meta.json may be corrupt — call "
+                    "store.rebuild_db_from_disk() to resync the index.",
+                    UserWarning,
+                    # 1=here, 2=run_web_generator, 3=store.generate_web_graph, 4=user.
+                    stacklevel=4,
+                )
             continue
         entries = dict(node_obj.metadata)
 
