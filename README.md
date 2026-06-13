@@ -149,8 +149,6 @@ Inside it:
 ---
 
 ## Development
-Built to be resilient. The test suite includes 158 verified tests protecting against file corruption, multi-threaded write races, and adversarial edge cases.
-
 Issues and PRs welcome.
 
 Have a feature request or found a bug? Open an issue or reach out directly at [josh.smith195@outlook.com](mailto:josh.smith195@outlook.com).

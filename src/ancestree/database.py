@@ -2,8 +2,12 @@
 import json
 import uuid
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 from .utils import parse_iso_utc, is_match, flatten_meta
+
+# A flat index entry: searchable metadata key -> value.
+IndexEntry = Dict[str, Any]
 
 
 class lineage_database:
@@ -31,18 +35,18 @@ class lineage_database:
     # schedule and the amortised cost of an append stays O(1).
     _COMPACT_MIN = 128
 
-    def __init__(self, root):
+    def __init__(self, root: Union[str, Path]) -> None:
         self.root = Path(root)
         self.snapshot_path = self.root / ".index.json"
         self.log_path = self.root / ".index.log"
-        self._cache = None
-        self._snapshot_mtime = None
-        self._log_mtime = None
+        self._cache: Optional[Dict[str, IndexEntry]] = None
+        self._snapshot_mtime: Optional[int] = None
+        self._log_mtime: Optional[int] = None
         self._since_compact = 0
         self._compacted_size = 0
 
     @staticmethod
-    def _mtime_ns(path):
+    def _mtime_ns(path: Path) -> Optional[int]:
         # No exists() guard: the journal can be unlinked by a concurrent
         # compaction between the check and the stat, so swallow the race.
         try:
@@ -50,7 +54,7 @@ class lineage_database:
         except FileNotFoundError:
             return None
 
-    def _is_stale(self):
+    def _is_stale(self) -> bool:
         if self._cache is None:
             return True
         return (
@@ -59,12 +63,13 @@ class lineage_database:
         )
 
     @property
-    def cache(self):
+    def cache(self) -> Dict[str, IndexEntry]:
         if self._cache is None:
             self._load()
+        assert self._cache is not None
         return self._cache
 
-    def _load(self):
+    def _load(self) -> None:
         if not self.snapshot_path.exists():
             self.rebuild_from_disk()
             return
@@ -76,13 +81,15 @@ class lineage_database:
                 "The index snapshot (.index.json) is corrupt. "
                 "Call store.rebuild_db_from_disk() to recover."
             ) from None
+        assert self._cache is not None
         self._snapshot_mtime = snap_mtime
         self._compacted_size = len(self._cache)
         self._replay_log()
         self._reconcile()
 
-    def _replay_log(self):
+    def _replay_log(self) -> None:
         """Applies the append-only journal on top of the loaded snapshot."""
+        assert self._cache is not None
         try:
             self._log_mtime = self.log_path.stat().st_mtime_ns  # stat before read
             raw = self.log_path.read_text()
@@ -110,7 +117,8 @@ class lineage_database:
                 self._cache[record["id"]] = record["meta"]
         self._since_compact = applied
 
-    def _reconcile(self):
+    def _reconcile(self) -> None:
+        assert self._cache is not None
         on_disk = {d.name for d in self.root.iterdir() if (d / "meta.json").exists()}
         if on_disk != set(self._cache):
             for node_id in set(self._cache) - on_disk:
@@ -121,7 +129,7 @@ class lineage_database:
                 )
             self._write_snapshot()
 
-    def _append_log(self, record):
+    def _append_log(self, record: Dict[str, Any]) -> None:
         line = json.dumps(record, separators=(",", ":")) + "\n"
         # O_APPEND keeps concurrent writers from clobbering each other's lines.
         with self.log_path.open("a", encoding="utf-8") as f:
@@ -131,9 +139,10 @@ class lineage_database:
         if self._since_compact >= max(self._COMPACT_MIN, self._compacted_size):
             self._write_snapshot()
 
-    def _write_snapshot(self):
+    def _write_snapshot(self) -> None:
         """Compacts the journal into the snapshot: writes the full cache out
         atomically and clears the log."""
+        assert self._cache is not None
         # The temp name must be unique per writer: a shared name lets one
         # concurrent flush replace another's temp file out from under it.
         tmp = self.root / f".index.{uuid.uuid4().hex}.tmp"
@@ -151,39 +160,40 @@ class lineage_database:
         self._since_compact = 0
         self._compacted_size = len(self._cache)
 
-    def rebuild_from_disk(self):
+    def rebuild_from_disk(self) -> None:
         self._cache = {
             p.parent.name: flatten_meta(json.loads(p.read_text()))
             for p in self.root.glob("*/meta.json")
         }
         self._write_snapshot()
 
-    def _refresh_if_stale(self):
+    def _refresh_if_stale(self) -> None:
         if self._is_stale():
             self._load()
 
-    def add(self, node_id, meta):
+    def add(self, node_id: str, meta: IndexEntry) -> None:
         self._refresh_if_stale()
         self.cache[node_id] = meta
         self._append_log({"id": node_id, "meta": meta})
 
-    def remove(self, node_id):
+    def remove(self, node_id: str) -> None:
         self._refresh_if_stale()
         self.cache.pop(node_id, None)
         self._append_log({"_op": "del", "id": node_id})
 
-    def find_matches(self, **kwargs):
+    def find_matches(self, **kwargs: Any) -> List[str]:
         self._refresh_if_stale()
         return [k for k, m in self.cache.items() if is_match(m, **kwargs)]
 
-    def find_in_lineage(self, curr_node, **kwargs):
+    def find_in_lineage(self, curr_node: str, **kwargs: Any) -> List[str]:
         return [
             k for k in self.get_lineage(curr_node) if is_match(self.cache[k], **kwargs)
         ]
 
-    def get_lineage(self, curr_node):
+    def get_lineage(self, curr_node: Optional[str]) -> List[str]:
         self._refresh_if_stale()
-        history, visited = [], set()
+        history: List[str] = []
+        visited: set[str] = set()
         while curr_node:
             if curr_node in visited:
                 raise ValueError(
@@ -200,7 +210,7 @@ class lineage_database:
             curr_node = self.cache[curr_node].get("parent_id")
         return history[::-1]
 
-    def most_recent(self, node_ids):
+    def most_recent(self, node_ids: List[str]) -> Optional[str]:
         # Takes an already-matched id list rather than calling find_matches
         # itself: that keeps the caller (get_most_recent_node) at the same call
         # depth from is_match as find_node, so a raising predicate's warning
@@ -208,5 +218,5 @@ class lineage_database:
         return max(
             node_ids,
             default=None,
-            key=lambda k: parse_iso_utc(self.cache[k].get("timestamp")),
+            key=lambda k: parse_iso_utc(self.cache[k]["timestamp"]),
         )

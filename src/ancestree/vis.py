@@ -1,25 +1,33 @@
 # Python packages
+from __future__ import annotations
+
 import json
 from datetime import datetime
 from importlib import resources
 from pathlib import Path
 from collections import defaultdict
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 import warnings
 
 from .utils import parse_time, get_meta_val
 
+if TYPE_CHECKING:
+    from .core import LineageStore
 
-def assign_levels(node_ids, edges):
-    children = defaultdict(list)
 
-    indeg = {n: 0 for n in node_ids}
+def assign_levels(
+    node_ids: List[str], edges: List[Tuple[str, str]]
+) -> Dict[str, int]:
+    children: Dict[str, List[str]] = defaultdict(list)
+
+    indeg: Dict[str, int] = {n: 0 for n in node_ids}
     for parent, child in edges:
         children[parent].append(child)
         indeg[child] = indeg.get(child, 0) + 1
         indeg.setdefault(parent, 0)
 
-    level = {n: 0 for n in indeg}
-    queue = [n for n, d in indeg.items() if d == 0]
+    level: Dict[str, int] = {n: 0 for n in indeg}
+    queue: List[str] = [n for n, d in indeg.items() if d == 0]
 
     while queue:
         n = queue.pop()
@@ -33,8 +41,8 @@ def assign_levels(node_ids, edges):
 
 
 # Get the nodes and edges to use in the webapp
-def visualise_nodes(store):
-    raw = []
+def visualise_nodes(store: LineageStore) -> Dict[str, Any]:
+    raw: List[Dict[str, Any]] = []
     for node_dir in store.root.iterdir():
         if not node_dir.is_dir():
             continue
@@ -98,7 +106,7 @@ def visualise_nodes(store):
     return {"nodes": nodes, "edges": [{"from": p, "to": c} for p, c in edges]}
 
 
-def run_web_generator(store):
+def run_web_generator(store: LineageStore) -> Path:
     graph_data = visualise_nodes(store)
 
     source = resources.files("ancestree.assets").joinpath("template_new.html")
@@ -129,7 +137,7 @@ def run_web_generator(store):
         f"<script>{custom_js}</script>",
     )
 
-    location = f"{store.root}/interactive_pipeline.html"
+    location = store.root / "interactive_pipeline.html"
     with open(location, "w") as f:
         f.write(final_html)
 
