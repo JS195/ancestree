@@ -6,11 +6,10 @@ Genuine gaps found by these attacks are encoded as xfail(strict=True): they
 document today's behaviour and fail loudly the day the gap is fixed, so the
 marker can be removed.
 """
+
 import json
 import shutil
 import threading
-import time
-from pathlib import Path
 
 import pytest
 
@@ -24,7 +23,9 @@ class TestHostileMetadataValues:
         with bare_store.create_node(step_type="ingest") as node:
             yield node
 
-    @pytest.mark.parametrize("key", ["", " ", "key with spaces", "ключ", "🔥", "a.b[c]", "x" * 500])
+    @pytest.mark.parametrize(
+        "key", ["", " ", "key with spaces", "ключ", "🔥", "a.b[c]", "x" * 500]
+    )
     def test_weird_keys_round_trip(self, bare_store, key):
         with bare_store.create_node(step_type="ingest") as node:
             node.add_meta(key, "v")
@@ -82,14 +83,18 @@ class TestPathTricks:
         names = {p.name for p in bare_store.get_node(node.node_id).artifacts()}
         assert "escaped.txt" not in names
 
-    @pytest.mark.xfail(strict=True, reason="node / '../x' currently writes outside the node directory")
+    @pytest.mark.xfail(
+        strict=True, reason="node / '../x' currently writes outside the node directory"
+    )
     def test_writes_outside_node_directory_are_refused(self, bare_store):
         with bare_store.create_node(step_type="ingest") as node:
             (node / "legit.txt").write_text("ok")
             (node / "../escaped.txt").write_text("outside")
         assert not (bare_store.root / "escaped.txt").exists()
 
-    @pytest.mark.xfail(strict=True, reason="get_node on a path to a file raises NotADirectoryError")
+    @pytest.mark.xfail(
+        strict=True, reason="get_node on a path to a file raises NotADirectoryError"
+    )
     def test_get_node_on_file_path_returns_none(self, chain_store):
         store, nodes = chain_store
         assert store.get_node(f"{nodes['ingest'].node_id}/data.csv") is None
@@ -109,7 +114,9 @@ class TestFilesystemSabotage:
         reopened.rebuild_db_from_disk()
         assert len(reopened.find_node()) == len(nodes)
 
-    @pytest.mark.xfail(strict=True, reason="corrupt .index.json is not yet self-healed on load")
+    @pytest.mark.xfail(
+        strict=True, reason="corrupt .index.json is not yet self-healed on load"
+    )
     def test_corrupt_snapshot_self_heals_on_query(self, chain_store):
         store, nodes = chain_store
         (store.root / ".index.json").write_text("{ this is not json")
@@ -124,7 +131,10 @@ class TestFilesystemSabotage:
         assert len(reopened.find_node(step_type="clean")) == 1
         assert reopened.get_node(nodes["clean"].node_id) is None
 
-    @pytest.mark.xfail(strict=True, reason="rebuild_from_disk crashes on a corrupt meta.json instead of skipping it")
+    @pytest.mark.xfail(
+        strict=True,
+        reason="rebuild_from_disk crashes on a corrupt meta.json instead of skipping it",
+    )
     def test_rebuild_skips_corrupt_meta(self, chain_store):
         store, nodes = chain_store
         (nodes["clean"].path / "meta.json").write_text("{ garbage")

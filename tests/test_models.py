@@ -1,4 +1,5 @@
 """Tests for ancestree.models.Node."""
+
 import json
 from datetime import datetime
 from pathlib import Path
@@ -30,7 +31,14 @@ class TestCreateAndLoad:
 
     def test_fresh_node_captures_provenance(self, node):
         meta = node.metadata
-        for key in ("user", "python_version", "platform", "git_commit", "git_dirty", "git_branch"):
+        for key in (
+            "user",
+            "python_version",
+            "platform",
+            "git_commit",
+            "git_dirty",
+            "git_branch",
+        ):
             assert meta[key]["group"] == "Provenance"
             assert meta[key]["searchable"] is False
 
@@ -63,7 +71,12 @@ class TestCreateAndLoad:
 
 class TestFromIndex:
     def test_attributes_come_from_index_without_disk(self, tmp_path):
-        flat = {"node_id": "abcd1234", "generation": 2, "parent_id": "ffff0000", "step_type": "clean"}
+        flat = {
+            "node_id": "abcd1234",
+            "generation": 2,
+            "parent_id": "ffff0000",
+            "step_type": "clean",
+        }
         lazy = Node._from_index(tmp_path / "abcd1234", flat)  # path doesn't exist
 
         assert lazy.node_id == "abcd1234"
@@ -90,7 +103,7 @@ class TestAddMeta:
         assert entry == {
             "value": 0.95,
             "data_type": "text",
-            "group": 'General',
+            "group": "General",
             "searchable": True,
         }
 

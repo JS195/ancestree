@@ -13,6 +13,7 @@ Pins the persistence contract of LineageStore.create_node:
 
 Run with: pytest tests/test_node_creation_edge_cases.py
 """
+
 import json
 from unittest import mock
 
@@ -34,12 +35,15 @@ def node_dirs(store):
 def assert_no_orphan_dirs(store):
     """Invariant: any node directory on disk must contain a meta.json."""
     for d in node_dirs(store):
-        assert (d / "meta.json").exists(), f"orphan node dir without meta.json: {d.name}"
+        assert (d / "meta.json").exists(), (
+            f"orphan node dir without meta.json: {d.name}"
+        )
 
 
 # ---------------------------------------------------------------------------
 # 1. Persistence requires a write
 # ---------------------------------------------------------------------------
+
 
 class TestPersistenceRequiresWrite:
     def test_artifact_write_persists_node(self, store):
@@ -53,7 +57,9 @@ class TestPersistenceRequiresWrite:
         with store.create_node(step_type="ingest") as node:
             node.add_meta("note", "metrics only")
         assert (store.root / node.node_id / "meta.json").exists()
-        assert [n.node_id for n in store.find_node(note="metrics only")] == [node.node_id]
+        assert [n.node_id for n in store.find_node(note="metrics only")] == [
+            node.node_id
+        ]
 
     def test_deeply_nested_artifact_persists_node(self, store):
         with store.create_node(step_type="ingest") as node:
@@ -71,6 +77,7 @@ class TestPersistenceRequiresWrite:
 # ---------------------------------------------------------------------------
 # 2. Empty nodes never exist
 # ---------------------------------------------------------------------------
+
 
 class TestEmptyNodesNeverExist:
     def test_untouched_node_leaves_no_trace(self, store):
@@ -108,6 +115,7 @@ class TestEmptyNodesNeverExist:
 # ---------------------------------------------------------------------------
 # 3. Failure midway: prior work survives, flagged unhealthy
 # ---------------------------------------------------------------------------
+
 
 class TestFailureMidway:
     def test_artifact_written_before_failure_survives(self, store):
@@ -177,12 +185,13 @@ class TestFailureMidway:
 
         found = store.find_node(step_type="ingest")
         assert len(found) == 1
-        assert found[0].metadata["healthy"]["value"] == False
+        assert not found[0].metadata["healthy"]["value"]
 
 
 # ---------------------------------------------------------------------------
 # 4. Cross-cutting invariant: no orphan directories, ever
 # ---------------------------------------------------------------------------
+
 
 class TestNoOrphans:
     def test_mixed_workload_leaves_only_valid_nodes(self, store):

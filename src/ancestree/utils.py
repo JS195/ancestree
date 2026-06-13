@@ -4,18 +4,94 @@ import platform
 import getpass
 import sys
 import os
+from datetime import datetime
+
+
+# ---------------------------------------------------------------------------
+# Metadata access & querying
+#
+# Reading, filtering and matching against the {kind, group, label, value}
+# metadata envelopes attached to nodes.
+# ---------------------------------------------------------------------------
+
+
+def get_meta_val(entries, key, default=None):
+    e = entries.get(key)
+    return e.get("value") if e else default
+
+
+def is_match(meta, **kwargs):
+    """Flat key lookup against an index entry: every kwarg must equal the
+    stored value, or — for callable values — return truthy when applied to it."""
+    for key, value in kwargs.items():
+        stored = meta.get(key)
+        if callable(value):
+            try:
+                if not value(stored):
+                    return False
+            except Exception:
+                return False
+        elif stored != value:
+            return False
+    return True
+
+
+def flatten_meta(meta):
+    return {
+        k: v.get("value")
+        for k, v in meta.items()
+        if isinstance(v, dict) and v.get("searchable", True)
+    }
+
 
 def is_pandas(obj):
     """
     Sniffs an object's metadata to determine if it is a pandas DataFrame instance.
 
     Args:
-        obj: Any python object. 
+        obj: Any python object.
 
     Returns:
         bool: Returns True if the object is a pandas DataFrame.
     """
-    return type(obj).__name__ == 'DataFrame' and hasattr(obj, 'to_dict')
+    return type(obj).__name__ == "DataFrame" and hasattr(obj, "to_dict")
+
+
+# ---------------------------------------------------------------------------
+# Time formatting & parsing
+#
+# Turning ISO timestamp strings into display text or datetime objects.
+# ---------------------------------------------------------------------------
+
+
+def parse_time(iso_str):
+    if not iso_str:
+        return "N/A"
+    try:
+        dt = datetime.fromisoformat(iso_str)
+        return dt.strftime("%d %b %Y, %H:%M:%S")
+    except ValueError:
+        return iso_str
+
+
+def parse_iso_utc(s: str) -> datetime:
+    """
+    Returns a datetime from a string.
+
+    Args:
+        s (str): String object representing a datetime.
+
+    Returns:
+        datetime: A datetime object.
+    """
+    return datetime.fromisoformat(s)
+
+
+# ---------------------------------------------------------------------------
+# Provenance capture
+#
+# Recording who / what / how produced a node: user, environment and git state.
+# ---------------------------------------------------------------------------
 
 
 def safe_get_user():
@@ -27,6 +103,7 @@ def safe_get_user():
     except Exception:
         return os.environ.get("USER", "unknown")
 
+
 def get_environment_provenance():
     """
     Track who and what produced the node.
@@ -37,16 +114,16 @@ def get_environment_provenance():
         "platform": platform.platform(),
     }
 
+
 def _git_output(*args):
     try:
         return subprocess.check_output(
-            ["git", *args],
-            stderr=subprocess.DEVNULL,
-            encoding="utf-8"
+            ["git", *args], stderr=subprocess.DEVNULL, encoding="utf-8"
         ).strip()
     except Exception:
         # Not a git repo or git not installed
         return None
+
 
 def get_git_provenance():
     """
@@ -58,6 +135,7 @@ def get_git_provenance():
         "git_dirty": bool(status),
         "git_branch": _git_output("rev-parse", "--abbrev-ref", "HEAD"),
     }
+
 
 def get_provenance():
     """

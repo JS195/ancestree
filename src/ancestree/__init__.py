@@ -1,4 +1,5 @@
 """Top-level package for ancestree."""
+
 from importlib.metadata import version, PackageNotFoundError
 
 __author__ = """Joshua Smith"""

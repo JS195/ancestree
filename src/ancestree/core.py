@@ -12,6 +12,7 @@ from .database import lineage_database
 from .models import Node
 from .vis import run_web_generator
 
+
 class LineageStore:
     """
     Orchestrates the lineage and interactions of a data pipeline.
@@ -20,17 +21,23 @@ class LineageStore:
     The rules need only be specified once as configurations persist. The LineageStore does not need to exist in memory. It can be recreated any time it is required.
     Provides advanced searching capabilities across the node network.
     """
-    def __init__(self, root: Union[Path, str], rules: Union[Dict, None] = None, gen_triggers: Union[List, None] = None):
+
+    def __init__(
+        self,
+        root: Union[Path, str],
+        rules: Union[Dict, None] = None,
+        gen_triggers: Union[List, None] = None,
+    ):
         """
         Initialises the LineageStore, ensures its directory exists, and loads or creates the ruleset configuration.
 
-        On creation the LineageStore saves a .lineage_config.json file. On subsequent re-creation, the store reads from this file. There is no need to resupply rules or gen_triggers at any point after initial creation even if the store no longer exists in memory. The rules and gen_triggers cannot be changed after initial creation. 
+        On creation the LineageStore saves a .lineage_config.json file. On subsequent re-creation, the store reads from this file. There is no need to resupply rules or gen_triggers at any point after initial creation even if the store no longer exists in memory. The rules and gen_triggers cannot be changed after initial creation.
 
         Args:
             root (Union[Path, str]): Root directory for data pipeline. This is where the nodes sit.
             rules (Dict, optional): A mapping defining the allowed transitions. Defaults to None.
             gen_triggers (List, optional): Step types that mark a new generation. When a node of this type is created, its generation number increments by one relative to its parent. Defaults to None.
-        
+
         Examples:
             >>> rules = {"clean": ["ingest"], "model": ["clean"]}
             >>> store = LineageStore("my_project", rules=rules, gen_triggers=["ingest"])
@@ -38,22 +45,26 @@ class LineageStore:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
 
-        self.config_path = self.root/".lineage_config.json"
+        self.config_path = self.root / ".lineage_config.json"
         config = self._do_config(rules, gen_triggers)
         self.rules = config["rules"]
         self.triggers = config["triggers"]
         self.database = lineage_database(self.root)
 
-    def _do_config(self, supplied_rules: Optional[Dict], supplied_triggers: Optional[List]) -> Dict[str, Any]:
+    def _do_config(
+        self, supplied_rules: Optional[Dict], supplied_triggers: Optional[List]
+    ) -> Dict[str, Any]:
         if not self.config_path.exists():
             # Atomic create: a concurrent reader must never see a partially
             # written config, and the temp name must be unique per writer.
-            tmp = self.root / f'.lineage_config.{uuid.uuid4().hex}.tmp'
+            tmp = self.root / f".lineage_config.{uuid.uuid4().hex}.tmp"
             try:
-                tmp.write_text(json.dumps({
-                    "rules": supplied_rules,
-                    "triggers": supplied_triggers
-                }, indent=2))
+                tmp.write_text(
+                    json.dumps(
+                        {"rules": supplied_rules, "triggers": supplied_triggers},
+                        indent=2,
+                    )
+                )
                 tmp.replace(self.config_path)
             finally:
                 tmp.unlink(missing_ok=True)
@@ -61,10 +72,10 @@ class LineageStore:
         config = json.loads(self.config_path.read_text())
         return {
             "rules": config.get("rules") or {},
-            "triggers": config.get("triggers") or []
+            "triggers": config.get("triggers") or [],
         }
 
-    def find_node(self, **kwargs: Any) -> List['Node']:
+    def find_node(self, **kwargs: Any) -> List["Node"]:
         """
         Search for nodes based on metadata key values. Values are matched by
         equality against the searchable metadata; pass a callable to express
@@ -80,10 +91,12 @@ class LineageStore:
             >>> store.find_node(step_type="ingest")
             >>> store.find_node(accuracy=lambda a: a is not None and a > 0.8)
         """
-        return [self._node_from_index(node_id)
-                for node_id in self.database.find_matches(**kwargs)]
+        return [
+            self._node_from_index(node_id)
+            for node_id in self.database.find_matches(**kwargs)
+        ]
 
-    def _node_from_index(self, node_id: str) -> 'Node':
+    def _node_from_index(self, node_id: str) -> "Node":
         """
         Builds a Node from the in-memory index without touching disk; the
         full metadata is hydrated lazily on first access. Only valid for ids
@@ -91,7 +104,7 @@ class LineageStore:
         """
         return Node._from_index(self.root / node_id, self.database.cache[node_id])
 
-    def get_node(self, node: Union[str, 'Node', None] = None) -> Optional['Node']:
+    def get_node(self, node: Union[str, "Node", None] = None) -> Optional["Node"]:
         """
         Resolves a node_id string into a Node object, loading it from disk.
 
@@ -119,7 +132,9 @@ class LineageStore:
             return None
 
     @contextmanager
-    def create_node(self, step_type:str, parent: Union['Node', str, None] = None) -> Iterator['Node']:
+    def create_node(
+        self, step_type: str, parent: Union["Node", str, None] = None
+    ) -> Iterator["Node"]:
         """Creates a new node while enforcing lineage rules.
 
         The node only materialises on disk once the user writes an artifact or
@@ -156,9 +171,9 @@ class LineageStore:
 
         parent_gen = parent_node.generation if parent_node else 0
         if parent_node and (step_type in self.triggers):
-            current_gen = parent_gen+1
+            current_gen = parent_gen + 1
         else:
-            current_gen=parent_gen
+            current_gen = parent_gen
 
         node_id = uuid.uuid4().hex[:8]
         while node_id in self.database.cache or (self.root / node_id).exists():
@@ -166,7 +181,9 @@ class LineageStore:
         node_path = self.root / node_id
 
         parent_id = parent_node.node_id if parent_node else None
-        new_node = Node._create(node_path, node_id, current_gen, parent_id, step_type=step_type)
+        new_node = Node._create(
+            node_path, node_id, current_gen, parent_id, step_type=step_type
+        )
 
         start = time.monotonic()
         try:
@@ -174,22 +191,27 @@ class LineageStore:
         except BaseException:
             # Keep partial work: anything written before the failure persists,
             # flagged as unhealthy. An untouched node leaves no trace.
-            if not self._persist_if_touched(new_node, healthy=False, duration=time.monotonic() - start):
+            if not self._persist_if_touched(
+                new_node, healthy=False, duration=time.monotonic() - start
+            ):
                 shutil.rmtree(new_node.path, ignore_errors=True)
             raise
 
-        if not self._persist_if_touched(new_node, healthy=True, duration=time.monotonic() - start):
+        if not self._persist_if_touched(
+            new_node, healthy=True, duration=time.monotonic() - start
+        ):
             shutil.rmtree(new_node.path, ignore_errors=True)
             import warnings
+
             warnings.warn(
                 f"Node '{new_node.node_id}' (step_type='{step_type}') was discarded: "
                 "no artifacts were written and no metadata was added. "
                 "Write at least one file or call node.add_meta() to persist the node.",
                 UserWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
-    def _persist_if_touched(self, node: 'Node', healthy: bool, duration: float) -> bool:
+    def _persist_if_touched(self, node: "Node", healthy: bool, duration: float) -> bool:
         """
         Persists and indexes the node if the user wrote any artifact or
         metadata, recording whether its code block ran to completion in the
@@ -201,10 +223,22 @@ class LineageStore:
         has_user_meta = bool(set(node._metadata) - node._system_keys)
         if not (has_artifacts or has_user_meta):
             return False
-        size = sum(f.stat().st_size for f in node.path.rglob('*') if f.is_file())
-        node.add_meta('healthy', healthy, data_type='text', group='Structural Properties')
-        node.add_meta('duration_s', round(duration, 3), data_type='text', group='Structural Properties')
-        node.add_meta('size_mb', round(size / 1e6, 6), data_type='text', group='Structural Properties')
+        size = sum(f.stat().st_size for f in node.path.rglob("*") if f.is_file())
+        node.add_meta(
+            "healthy", healthy, data_type="text", group="Structural Properties"
+        )
+        node.add_meta(
+            "duration_s",
+            round(duration, 3),
+            data_type="text",
+            group="Structural Properties",
+        )
+        node.add_meta(
+            "size_mb",
+            round(size / 1e6, 6),
+            data_type="text",
+            group="Structural Properties",
+        )
         node._write_meta()
         self.database.add(node.node_id, node.to_db())
         return True
@@ -222,7 +256,7 @@ class LineageStore:
         """
         self.database.rebuild_from_disk()
 
-    def get_lineage(self, node: Union[str, 'Node']) -> List['Node']:
+    def get_lineage(self, node: Union[str, "Node"]) -> List["Node"]:
         """
         Traces the ancestry of the node.
 
@@ -239,10 +273,12 @@ class LineageStore:
         """
         if isinstance(node, Node):
             node = node.node_id
-        return [self._node_from_index(node_id)
-                for node_id in self.database.get_lineage(node)]
+        return [
+            self._node_from_index(node_id)
+            for node_id in self.database.get_lineage(node)
+        ]
 
-    def find_in_lineage(self, node: Union[str, 'Node'], **kwargs: Any)-> List['Node']:
+    def find_in_lineage(self, node: Union[str, "Node"], **kwargs: Any) -> List["Node"]:
         """
         Searches a node's ancestry for nodes matching specified search parameters.
 
@@ -260,10 +296,12 @@ class LineageStore:
         """
         if isinstance(node, Node):
             node = node.node_id
-        return [self._node_from_index(node_id)
-                for node_id in self.database.find_in_lineage(node, **kwargs)]
+        return [
+            self._node_from_index(node_id)
+            for node_id in self.database.find_in_lineage(node, **kwargs)
+        ]
 
-    def get_most_recent_node(self, **kwargs: Any) -> Optional['Node']:
+    def get_most_recent_node(self, **kwargs: Any) -> Optional["Node"]:
         """
         Finds the single most recently created node that matches the given search parameters.
 
@@ -280,8 +318,8 @@ class LineageStore:
         """
         str_id = self.database.get_most_recent(**kwargs)
         return self._node_from_index(str_id) if str_id else None
-    
-    def from_parent(self, node: Union[str, 'Node'], filename: str) -> List[Path]:
+
+    def from_parent(self, node: Union[str, "Node"], filename: str) -> List[Path]:
         """
         Shortcut to get specific file(s) from the parent node of the specified node.
 
@@ -303,8 +341,8 @@ class LineageStore:
             return []
         parent_node = self.get_node(node.parent_id)
         return parent_node.artifacts(filename) if parent_node else []
-    
-    def get_child_nodes(self, node: Union[str, 'Node']) -> List['Node']:
+
+    def get_child_nodes(self, node: Union[str, "Node"]) -> List["Node"]:
         """
         Returns the direct children of the specified node.
 
@@ -319,7 +357,7 @@ class LineageStore:
         target = self.get_node(node)
         return self.find_node(parent_id=target.node_id) if target else []
 
-    def prune(self, node: Union[str, 'Node'], dry_run: bool = True) -> List['Node']:
+    def prune(self, node: Union[str, "Node"], dry_run: bool = True) -> List["Node"]:
         """
         Deletes a node and all of its descendants, purging the entire branch.
 
@@ -367,6 +405,6 @@ class LineageStore:
         """
         path = run_web_generator(self)
         print(f"Graph generated at {path}")
-        
+
     # def host_live_graph(self):
     #     start_ui(self)
