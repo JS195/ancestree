@@ -115,6 +115,8 @@ ancestree-venv/
 # Examples
 docs/examples/**
 !docs/examples/*.ipynb
+docs/assets/demo/**
+!docs/assets/demo/*.html
 
 .ipynb_checkpoints/
 .DS_Store
