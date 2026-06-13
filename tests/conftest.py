@@ -5,6 +5,7 @@ filesystem. Where a test needs a specific internal state (shelf contents,
 config file, broken meta.json) it builds that state directly rather than
 going through the full public API.
 """
+
 import time
 
 import pytest
@@ -53,8 +54,8 @@ def chain_store(bare_store):
 def branch_store(bare_store):
     """A store with a branching lineage:
 
-        root(ingest) -> left(clean)  -> leaf(model)
-                     -> right(clean)
+    root(ingest) -> left(clean)  -> leaf(model)
+                 -> right(clean)
     """
     root = _make_node(bare_store, "ingest")
     left = _make_node(bare_store, "clean", parent=root, files=("left.csv",))

@@ -8,6 +8,7 @@ from copy import deepcopy
 # Internal dependancies
 from .utils import get_provenance, is_pandas
 
+
 class Node:
     """
     Represents a single step in the pipeline: a directory on disk holding the step's artifacts and a meta.json describing it.
@@ -21,7 +22,15 @@ class Node:
         parent_id (str): The node_id of the parent node, or None for a root node.
         step_type (str): The type of pipeline step this node represents.
     """
-    def __init__(self, path: Path, node_id: str, generation: int, parent_id: str, step_type:str=None):
+
+    def __init__(
+        self,
+        path: Path,
+        node_id: str,
+        generation: int,
+        parent_id: str,
+        step_type: str = None,
+    ):
         """
         Initialises a node instance. Performs no I/O: use Node._load() to read
         an existing node from disk or Node._create() to initialise a new one.
@@ -66,7 +75,7 @@ class Node:
         return self._metadata
 
     @classmethod
-    def _from_index(cls, path: Path, flat: dict) -> 'Node':
+    def _from_index(cls, path: Path, flat: dict) -> "Node":
         """
         Builds a node from the database's flattened index entry without
         touching disk. The full metadata is hydrated lazily from meta.json
@@ -79,13 +88,18 @@ class Node:
         Returns:
             Node: The index-backed node.
         """
-        node = cls(path, flat.get('node_id'), flat.get('generation'),
-                   flat.get('parent_id'), step_type=flat.get('step_type'))
+        node = cls(
+            path,
+            flat.get("node_id"),
+            flat.get("generation"),
+            flat.get("parent_id"),
+            step_type=flat.get("step_type"),
+        )
         node._metadata = None
         return node
 
     @classmethod
-    def _load(cls, path: Path) -> 'Node':
+    def _load(cls, path: Path) -> "Node":
         """
         Loads an existing node from its meta.json, which is the single source
         of truth for the structural attributes.
@@ -97,15 +111,29 @@ class Node:
             Node: The loaded node.
         """
         meta = json.loads((path / "meta.json").read_text())
+
         def _value(key):
-            return meta.get(key).get('value')
-        node = cls(path, _value('node_id'), _value('generation'),
-                   _value('parent_id'), step_type=_value('step_type'))
+            return meta.get(key).get("value")
+
+        node = cls(
+            path,
+            _value("node_id"),
+            _value("generation"),
+            _value("parent_id"),
+            step_type=_value("step_type"),
+        )
         node._metadata = meta
         return node
 
     @classmethod
-    def _create(cls, path: Path, node_id: str, generation: int, parent_id: str, step_type:str=None) -> 'Node':
+    def _create(
+        cls,
+        path: Path,
+        node_id: str,
+        generation: int,
+        parent_id: str,
+        step_type: str = None,
+    ) -> "Node":
         """
         Initialises a brand new node with its structural and provenance
         metadata. The initial keys are recorded in _system_keys so the store
@@ -121,19 +149,33 @@ class Node:
             Node: The new node. Nothing is written to disk until _write_meta().
         """
         node = cls(path, node_id, generation, parent_id, step_type=step_type)
-        node.add_meta('node_id', node_id, data_type='text', group='Structural Properties')
-        node.add_meta('parent_id', parent_id, data_type='text', group='Structural Properties')
-        node.add_meta('generation', generation, data_type='text', group='Structural Properties')
-        node.add_meta('step_type', step_type, data_type='text', group='Structural Properties')
-        node.add_meta('timestamp', datetime.now(timezone.utc).isoformat(), data_type='text', group='Structural Properties')
+        node.add_meta(
+            "node_id", node_id, data_type="text", group="Structural Properties"
+        )
+        node.add_meta(
+            "parent_id", parent_id, data_type="text", group="Structural Properties"
+        )
+        node.add_meta(
+            "generation", generation, data_type="text", group="Structural Properties"
+        )
+        node.add_meta(
+            "step_type", step_type, data_type="text", group="Structural Properties"
+        )
+        node.add_meta(
+            "timestamp",
+            datetime.now(timezone.utc).isoformat(),
+            data_type="text",
+            group="Structural Properties",
+        )
         for key, value in get_provenance().items():
-            node.add_meta(key, value, data_type='text', group='Provenance', searchable=False)
+            node.add_meta(
+                key, value, data_type="text", group="Provenance", searchable=False
+            )
         node._system_keys = set(node._metadata)
         return node
 
-
     #: Path suffixes rendered inline as images when the data_type is inferred.
-    IMAGE_SUFFIXES = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'}
+    IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
 
     @staticmethod
     def _infer_data_type(value: Any) -> str:
@@ -145,16 +187,23 @@ class Node:
         contents is how auto-detection produces surprises.
         """
         if is_pandas(value):
-            return 'table'
+            return "table"
         if isinstance(value, (dict, list)):
-            return 'json'
+            return "json"
         if isinstance(value, Path):
-            return 'image' if value.suffix.lower() in Node.IMAGE_SUFFIXES else 'link'
-        if isinstance(value, str) and value.startswith(('http://', 'https://')):
-            return 'link'
-        return 'text'
+            return "image" if value.suffix.lower() in Node.IMAGE_SUFFIXES else "link"
+        if isinstance(value, str) and value.startswith(("http://", "https://")):
+            return "link"
+        return "text"
 
-    def add_meta(self, key: str, value: Any, group: Optional[str] = 'General', data_type: str = 'auto', searchable: bool = True) -> None:
+    def add_meta(
+        self,
+        key: str,
+        value: Any,
+        group: Optional[str] = "General",
+        data_type: str = "auto",
+        searchable: bool = True,
+    ) -> None:
         """
         Attaches a piece of metadata to the node.
 
@@ -174,43 +223,56 @@ class Node:
             ...     node.add_meta("params", {"lr": 1e-3}, group="Config")             # auto: json
             ...     node.add_meta("query", "SELECT * FROM runs", data_type="code")
         """
-        if data_type == 'auto':
+        if data_type == "auto":
             data_type = self._infer_data_type(value)
 
-        if data_type in ('image', 'link') and not str(value).startswith(('http://', 'https://')):
+        if data_type in ("image", "link") and not str(value).startswith(
+            ("http://", "https://")
+        ):
             # Store file references relative to the store root so they
             # resolve from the generated HTML. URLs pass through untouched —
             # Path() would collapse their double slash.
-            value = str(Path(str(value).removeprefix(str(self.path.parent) + "/").removeprefix(str(self.path.parent))))
+            value = str(
+                Path(
+                    str(value)
+                    .removeprefix(str(self.path.parent) + "/")
+                    .removeprefix(str(self.path.parent))
+                )
+            )
             searchable = False
 
-        if data_type == 'table':
+        if data_type == "table":
             if not is_pandas(value):
-                raise TypeError(f"Expected a pandas DataFrame for 'table', got {type(value).__name__}")
-            split = value.to_dict(orient='split')
-            value = {
-                "columns": split['columns'],
-                "rows": split['data']
-            }
-            searchable=False
+                raise TypeError(
+                    f"Expected a pandas DataFrame for 'table', got {type(value).__name__}"
+                )
+            split = value.to_dict(orient="split")
+            value = {"columns": split["columns"], "rows": split["data"]}
+            searchable = False
 
-        if data_type == 'json':
+        if data_type == "json":
             if not isinstance(value, (dict, list)):
-                raise TypeError(f"Expected a dict or list for 'json', got {type(value).__name__}")
+                raise TypeError(
+                    f"Expected a dict or list for 'json', got {type(value).__name__}"
+                )
             try:
                 json.dumps(value)
                 searchable = False
             except (TypeError, ValueError) as e:
                 # Fail here, at the call site, rather than corrupting the
                 # node's whole meta.json write later.
-                raise TypeError(f"Value for 'json' is not JSON-serialisable: {e}") from None
+                raise TypeError(
+                    f"Value for 'json' is not JSON-serialisable: {e}"
+                ) from None
 
-        entry = {f'{key}': {
-            'value': value,
-            'data_type': data_type,
-            'group': group,
-            'searchable': searchable
-        }}
+        entry = {
+            f"{key}": {
+                "value": value,
+                "data_type": data_type,
+                "group": group,
+                "searchable": searchable,
+            }
+        }
 
         self._hydrate().update(entry)
 
@@ -232,13 +294,12 @@ class Node:
         # This is a flat key value dict for easy searching and indexing
         entries = {}
         for key, properties in self._hydrate().items():
-            if properties.get('searchable', True):
-                entries[key] = properties.get('value')
+            if properties.get("searchable", True):
+                entries[key] = properties.get("value")
 
         return entries
 
-
-    def artifacts(self, contains:str = "*") -> List[Path]:
+    def artifacts(self, contains: str = "*") -> List[Path]:
         """
         Searches this node's directory returning all files excluding internal metadata.
         Recursively finds all artifacts regardless of storage depth.
@@ -260,13 +321,16 @@ class Node:
         search_pattern = contains
         if "*" not in contains and "?" not in contains:
             search_pattern = f"*{contains}*"
-        
+
         for f in self.path.rglob("*"):
             if f.is_file() and f.name != "meta.json":
-                if f.match(search_pattern) or f.name.lower().find(contains.lower()) != -1:
+                if (
+                    f.match(search_pattern)
+                    or f.name.lower().find(contains.lower()) != -1
+                ):
                     artifacts.append(f.relative_to(self.path.parent))
         return artifacts
-            
+
     def __truediv__(self, relative_loc: Union[Path, str]) -> Path:
         """
         Allows the use of the '/' operator to create paths inside the node's directory, mirroring pathlib.
@@ -283,7 +347,7 @@ class Node:
             >>> with store.create_node(step_type="clean") as node:
             ...     df.to_csv(node / "results/cleaned.csv")
         """
-        target_path = self.path/relative_loc
+        target_path = self.path / relative_loc
         target_path.parent.mkdir(parents=True, exist_ok=True)
         return target_path
 

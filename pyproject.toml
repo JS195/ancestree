@@ -31,6 +31,8 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
     "pytest",  # testing
+    "ruff",    # linting and formatting
+    "mypy",    # type checking
 ]
 
 [project.urls]
@@ -44,3 +46,13 @@ packages = ["ancestree", "ancestree.assets"]
 
 [tool.setuptools.package-data]
 "ancestree.assets" = ["*"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+strict = true

@@ -4,15 +4,14 @@ Complements test_node_creation_edge_cases.py (persistence semantics) with
 the store-level behaviours: rules, config persistence, generations, search,
 lineage, pruning, automatic capture, and data_type inference.
 """
-import json
+
 import time
-import warnings
 from pathlib import Path
 
 import pytest
 
 from ancestree import LineageStore
-from tests.conftest import RULES, TRIGGERS, _make_node
+from tests.conftest import RULES, TRIGGERS
 
 
 class TestConfigPersistence:
@@ -58,7 +57,9 @@ class TestRules:
             with bare_store.create_node(step_type="clean", parent="zzzzzzzz"):
                 pass
 
-    def test_unrestricted_type_with_unknown_parent_becomes_root(self, bare_store, make_node):
+    def test_unrestricted_type_with_unknown_parent_becomes_root(
+        self, bare_store, make_node
+    ):
         # Sharp edge, pinned: for a type with no rule, a bad parent id
         # silently produces a root node rather than raising.
         node = make_node(bare_store, "freeform", parent="zzzzzzzz")
@@ -76,8 +77,8 @@ class TestGenerations:
     def test_trigger_step_increments_generation(self, chain_store):
         store, nodes = chain_store
         assert nodes["ingest"].generation == 0
-        assert nodes["clean"].generation == 1   # "clean" is a gen trigger
-        assert nodes["model"].generation == 1   # non-trigger inherits
+        assert nodes["clean"].generation == 1  # "clean" is a gen trigger
+        assert nodes["model"].generation == 1  # non-trigger inherits
 
     def test_trigger_as_root_stays_generation_zero(self, tmp_path, make_node):
         store = LineageStore(root=tmp_path / "s", gen_triggers=["clean"])
@@ -142,7 +143,10 @@ class TestGetMostRecent:
     def test_returns_latest_match(self, bare_store, make_node):
         make_node(bare_store, "ingest")
         newest = make_node(bare_store, "ingest")
-        assert bare_store.get_most_recent_node(step_type="ingest").node_id == newest.node_id
+        assert (
+            bare_store.get_most_recent_node(step_type="ingest").node_id
+            == newest.node_id
+        )
 
     def test_no_match_returns_none(self, bare_store):
         assert bare_store.get_most_recent_node(step_type="model") is None
@@ -191,6 +195,7 @@ class TestFromParent:
 
     def test_parent_missing_from_disk_returns_empty(self, chain_store):
         import shutil
+
         store, nodes = chain_store
         shutil.rmtree(nodes["clean"].path)
         assert store.from_parent(nodes["model"], "clean.csv") == []
@@ -220,7 +225,10 @@ class TestPrune:
     def test_dry_run_deletes_nothing(self, branch_store):
         store, nodes = branch_store
         preview = store.prune(nodes["left"])
-        assert {n.node_id for n in preview} == {nodes["left"].node_id, nodes["leaf"].node_id}
+        assert {n.node_id for n in preview} == {
+            nodes["left"].node_id,
+            nodes["leaf"].node_id,
+        }
         assert nodes["left"].path.exists()
         assert nodes["leaf"].node_id in store.database.cache
 
@@ -237,7 +245,10 @@ class TestPrune:
         store, nodes = chain_store
         deleted = store.prune(nodes["ingest"])
         assert [n.node_id for n in deleted] == [
-            nodes["model"].node_id, nodes["clean"].node_id, nodes["ingest"].node_id]
+            nodes["model"].node_id,
+            nodes["clean"].node_id,
+            nodes["ingest"].node_id,
+        ]
 
     def test_unknown_node_returns_empty(self, chain_store):
         store, _ = chain_store
@@ -245,6 +256,7 @@ class TestPrune:
 
     def test_pruning_store_root_is_refused(self, bare_store):
         from ancestree.models import Node
+
         impostor = Node(bare_store.root, "fake", 0, None, step_type="x")
         with pytest.raises(PermissionError):
             bare_store.prune(impostor, dry_run=False)
@@ -318,6 +330,7 @@ class TestAutoDataType:
         class DataFrame:  # is_pandas sniffs the type name + to_dict
             def to_dict(self, orient):
                 return {"columns": ["a"], "index": [0], "data": [[1]]}
+
         node.add_meta("summary", DataFrame())
         entry = node.metadata["summary"]
         assert entry["data_type"] == "table"
@@ -382,6 +395,7 @@ class TestWebGraph:
     def test_dangling_parent_edge_does_not_crash(self, chain_store, capsys):
         # Parent manually deleted: the child's parent_id now dangles
         import shutil
+
         store, nodes = chain_store
         shutil.rmtree(nodes["clean"].path)
         reopened = LineageStore(root=store.root)  # reconcile drops the parent

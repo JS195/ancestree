@@ -1,4 +1,5 @@
 """Tests for ancestree.vis (graph data extraction and HTML generation)."""
+
 from pathlib import Path
 
 from ancestree.vis import assign_levels, run_web_generator, visualise_nodes
