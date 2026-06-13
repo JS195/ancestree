@@ -12,13 +12,11 @@
         <meta name="author" content="Joshua Smith">
       
       
-        <link rel="canonical" href="https://js195.github.io/ancestree/demo/">
+        <link rel="canonical" href="https://js195.github.io/ancestree/caveats/">
       
       
-        <link rel="prev" href="../examples/timing_benchmark/">
+        <link rel="prev" href="../reference/">
       
-      
-        <link rel="next" href="../reference/">
       
       
         
@@ -29,7 +27,7 @@
     
     
       
-        <title>Live Demo - Ancestree Documentation</title>
+        <title>Caveats & Limitations - Ancestree Documentation</title>
       
     
     
@@ -67,17 +65,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Live Demo - Ancestree Documentation" />
+<meta property="og:title" content="Caveats & Limitations - Ancestree Documentation" />
 <meta property="og:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/demo.png" />
+<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/caveats.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://js195.github.io/ancestree/demo/" />
+<meta property="og:url" content="https://js195.github.io/ancestree/caveats/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="Live Demo - Ancestree Documentation" />
+<meta property="twitter:title" content="Caveats & Limitations - Ancestree Documentation" />
 <meta property="twitter:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/demo.png" />
+<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/caveats.png" />
 </head>
   
   
@@ -97,7 +95,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#live-demo" class="md-skip">
+        <a href="#caveats-limitations" class="md-skip">
           Skip to content
         </a>
       
@@ -133,7 +131,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Live Demo
+              Caveats & Limitations
             
           </span>
         </div>
@@ -246,8 +244,6 @@
         <div class="md-main__inner md-grid">
           
             
-              
-                
               
               <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
                 <div class="md-sidebar__scrollwrap">
@@ -480,19 +476,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../demo/" class="md-nav__link">
         
   
   
@@ -508,7 +495,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -544,10 +530,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../caveats/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caveats & Limitations
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -563,6 +576,147 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#rules-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules &amp; configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nodes-can-vanish-by-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes can vanish by design
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-web-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The web graph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nfs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#index-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Index behaviour
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-coercion-and-overwrites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata coercion and overwrites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paths-and-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paths and artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automatic-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic provenance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#search-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search semantics
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -575,9 +729,7 @@
             
             
               
-                
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -588,6 +740,135 @@
   
     
   
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#rules-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules &amp; configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nodes-can-vanish-by-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes can vanish by design
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-web-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The web graph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nfs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#index-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Index behaviour
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-coercion-and-overwrites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata coercion and overwrites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paths-and-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paths and artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automatic-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic provenance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#search-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search semantics
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -601,27 +882,64 @@
               <article class="md-content__inner md-typeset">
                 
                   
-  
-
 
 
   
   
 
 
-<h1 id="live-demo">Live Demo</h1>
-<p>This is a real, unmodified <code>interactive_pipeline.html</code> produced by the <a href="../examples/ML_pipeline/">Machine Learning Pipeline example</a> — the iris dataset run through two scalers, three embedding methods, and two clustering algorithms, tracked as 21 nodes across four generations.</p>
-<p>Explore it exactly as you would on your own machine: drag to pan, scroll to zoom, and <strong>click any node</strong> to inspect its metadata — hyperparameters, scores, the cluster plots rendered inline as figures, and links to every artifact the node produced.</p>
-<p><a class="md-button" href="../assets/demo/interactive_pipeline.html" target="_blank"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2z"/></svg></span> Open full screen</a></p>
-<iframe src="../assets/demo/interactive_pipeline.html"
-        width="100%" height="720"
-        style="border: 1px solid var(--md-default-fg-color--lightest); border-radius: 4px;"
-        title="Ancestree interactive pipeline demo"></iframe>
-
-<div class="admonition tip">
-<p class="admonition-title">Generate your own</p>
-<p>This file is the output of a single call — <code>store.generate_web_graph()</code> — and is fully self-contained: no server, no dependencies, just open it in a browser or share it as-is.</p>
+<h1 id="caveats-limitations">Caveats &amp; Limitations</h1>
+<p>Ancestree is deliberately small: a store is just a directory of nodes, and the search index is a cache layered over them. That design buys simplicity and crash-safety, but it also has sharp edges worth knowing before you lean on it. This page collects the behaviours that surprise people.</p>
+<h2 id="rules-configuration">Rules &amp; configuration</h2>
+<p>Rules and generation triggers are written to <code>.lineage_config.json</code> the first time a store is created, and read back on every subsequent open. <strong>They cannot be changed afterwards.</strong> Passing different <code>rules</code> or <code>gen_triggers</code> to an existing store is gives a warning if the rules or gen_triggers differ from the ones on disk. The values on disk then win. To change them, start a new store or edit the config file directly.</p>
+<p>Rules are also only as strict as you make them. A <code>step_type</code> that does not appear in <code>rules</code> has <em>no</em> transition constraint and can be created under any parent; rules only restrict the step types you actually list. A store created with no rules permits every transition.</p>
+<h2 id="nodes-can-vanish-by-design">Nodes can vanish by design</h2>
+<p><code>create_node</code> only persists a node if you write at least one artifact or add your own metadata inside the block. An untouched node is deleted when the context manager exits, with a <code>UserWarning</code> rather than an exception.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The structural keys the store writes for you (<code>node_id</code>, <code>timestamp</code>, provenance, and so on) do not count as "touched". Overwriting only those still leaves the node empty, so it is still discarded.</p>
 </div>
+<p>If your code raises inside the <code>create_node</code> block, any partial work is kept and the node is flagged <code>healthy=False</code> before the exception re-raises. A node existing on disk therefore does not mean its block ran to completion — check the <code>healthy</code> flag, which is searchable via <code>find_node(healthy=False)</code>.</p>
+<h2 id="the-web-graph">The web graph</h2>
+<p><code>generate_web_graph()</code> scans the node directories directly rather than the index, reads each <code>meta.json</code>, and writes a single self-contained <code>interactive_pipeline.html</code> at the store root, <strong>overwriting any existing one</strong>. Nodes whose <code>meta.json</code> cannot be read are skipped but print a warning. Because everything is inlined into one file, very large stores produce very large HTML.</p>
+<h2 id="concurrency">Concurrency</h2>
+<p>A single <code>LineageStore</code> instance is <strong>not thread-safe</strong>. The in-memory index is a plain dict mutated without locks, so sharing one instance across threads will corrupt it. Give each thread its own instance pointed at the same root instead.</p>
+<p>Sequential multi-session use is safe. You can open a store, do some work, let the process exit, and reopen it later in a fresh process — the configuration and index persist, and the index is reconciled against the directories on load.</p>
+<p>Parallel multiprocessing writes are safe <em>except during compaction</em>. Each process appends to the journal independently, but when one process folds the journal into the snapshot while another is mid-write, the concurrent writer's just-appended entry can be dropped from the snapshot.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>No node is ever lost this way — it is recovered from its <code>meta.json</code> on the next load — but the index can under-report until that reconciliation happens. If you fan writes out across processes, do it against the directories (which are the source of truth) and treat the index as eventually consistent.</p>
+</div>
+<h2 id="nfs">NFS</h2>
+<p>Ancestree is safe on <strong>NFSv4</strong> for normal use: it relies on atomic rename and append semantics, which NFSv4 honours, and the directories remain the source of truth regardless.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Avoid triggering compaction from multiple processes simultaneously on NFS. NFS close-to-open consistency widens the compaction race described above, making a stale index more likely. Let one process own compaction, or compact only when no other process is writing.</p>
+</div>
+<h2 id="index-behaviour">Index behaviour</h2>
+<p>The index lives in two files at the store root: <code>.index.json</code> (a compacted snapshot) and <code>.index.log</code> (an append-only journal of changes since the last snapshot). <strong>Together</strong> they are the index. <code>.index.json</code> on its own is not complete until compaction fires, so a new store, or one with only a handful of nodes, keeps its recent nodes only in the journal. Don't read <code>.index.json</code> directly and assume it is the full picture — the library always reads both and replays one over the other.</p>
+<p>Because the directories are authoritative, a damaged or stale index is always recoverable. <code>store.rebuild_db_from_disk()</code> rescans every <code>meta.json</code> and rebuilds the index from scratch.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>A corrupt <code>.index.json</code> raises a <code>RuntimeError</code> on load with a message directing you to <code>store.rebuild_db_from_disk()</code> — corruption is loud rather than hidden. A single corrupt <code>meta.json</code> on an already-indexed node degrades gracefully instead: searches still answer from the index, but <code>get_node()</code> returns <code>None</code> for that node.</p>
+</div>
+<h2 id="scale">Scale</h2>
+<p>Ancestree is built for <strong>hundreds to low thousands of nodes</strong>, not as a replacement for a proper database. Every search is a linear scan of the in-memory index, opening a store loads and reconciles the whole index, and <code>generate_web_graph()</code> reads every node's <code>meta.json</code> and inlines everything into one self-contained HTML file. None of this is a problem at the intended scale; all of it degrades linearly beyond it.</p>
+<p>Compaction only fires once the journal has grown to roughly the snapshot's size, with a floor of 128 entries. A workflow that writes a single node per session will never reach that threshold, so the journal grows unbounded across sessions and store-open time creeps up as the whole journal is replayed each time.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you write very few nodes per session over many sessions, call <code>store.rebuild_db_from_disk()</code> periodically. It rewrites a clean snapshot from the directories and clears the journal.</p>
+</div>
+<h2 id="metadata-coercion-and-overwrites">Metadata coercion and overwrites</h2>
+<p><code>table</code> and <code>json</code> entries are always stored non-searchable, and <code>image</code>/<code>link</code> entries that point at files (rather than URLs) are rewritten relative to the store root and also forced non-searchable. They render in the web graph but cannot be matched by <code>find_node</code>.</p>
+<p>The default <code>auto</code> data type never inspects string <em>contents</em>. A string that looks like a file path or filename stays plain text. If you want it treated as an image or link, pass <code>data_type</code> explicitly. Images or links are inferred only if they are Pathlib objects.</p>
+<h2 id="paths-and-artifacts">Paths and artifacts</h2>
+<p><code>artifacts(contains=...)</code> matches both as a glob and as a case-insensitive substring anywhere in the filename, and always excludes <code>meta.json</code>.</p>
+<h2 id="automatic-provenance">Automatic provenance</h2>
+<p>Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to <code>git</code>, which means a few subprocesses per node, and means your identity and repository state are recorded by default. Provenance entries are display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply <code>None</code>.</p>
+<h2 id="search-semantics">Search semantics</h2>
+<p>A predicate passed to <code>find_node</code> receives <code>None</code> for any key the node lacks, so a blanket-true predicate such as <code>lambda v: True</code> matches <em>every</em> node, including ones missing that key. A predicate that raises is treated as "no match" but provides a warning to the user that an error was raised.</p>
+<p><code>get_most_recent_node</code> ranks by the stored ISO timestamp. Nodes created in the same instant tie, and which one is returned is arbitrary. ISO timestamps give microsecond precision, so this is highly unlikely but worth noting as an extremely rare edge case.</p>
 
 
 
@@ -642,7 +960,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 11, 2026 16:07:00 UTC">June 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 19:18:53 UTC">June 13, 2026</span>
   </span>
 
     
@@ -652,8 +970,6 @@
   </aside>
 
 
-
-  
 
 
 

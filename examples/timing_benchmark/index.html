@@ -663,6 +663,33 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../caveats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caveats & Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1537,7 +1564,7 @@ Re-run top to bottom; the store is wiped at the start of each run.</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -1605,6 +1632,7 @@ store = ancestree.LineageStore(ROOT, rules=rules, gen_triggers=["ingest"])</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">timed</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">reps</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="n">times</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="p">[],</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">reps</span><span class="p">):</span>
@@ -1618,6 +1646,7 @@ store = ancestree.LineageStore(ROOT, rules=rules, gen_triggers=["ingest"])</div>
     <span class="k">return</span> <span class="n">result</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">import numpy as np
+
 
 def timed(label, fn, reps=100):
     times, result = [], None
@@ -1759,18 +1788,18 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>  1000 nodes     18.2s elapsed
-  2000 nodes     39.0s elapsed
-  3000 nodes     61.5s elapsed
-  4000 nodes     86.1s elapsed
-  5000 nodes    112.8s elapsed
-  6000 nodes    141.0s elapsed
-  7000 nodes    171.5s elapsed
-  8000 nodes    203.6s elapsed
-  9000 nodes    237.5s elapsed
- 10000 nodes    274.0s elapsed
+<pre>  1000 nodes     16.5s elapsed
+  2000 nodes     33.2s elapsed
+  3000 nodes     50.3s elapsed
+  4000 nodes     67.2s elapsed
+  5000 nodes     84.9s elapsed
+  6000 nodes    102.3s elapsed
+  7000 nodes    120.0s elapsed
+  8000 nodes    137.6s elapsed
+  9000 nodes    155.5s elapsed
+ 10000 nodes    173.3s elapsed
 
-created 10000 nodes in 274.0s  (27.40 ms/node)
+created 10000 nodes in 173.3s  (17.33 ms/node)
 tree shape: 5 roots, max depth 153, max fan-out 5, 2196 nodes with multiple children
 </pre>
 </div>
@@ -1795,7 +1824,7 @@ tree shape: 5 roots, max depth 153, max fan-out 5, 2196 nodes with multiple chil
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -1809,7 +1838,7 @@ tree shape: 5 roots, max depth 153, max fan-out 5, 2196 nodes with multiple chil
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(step_type='ingest')"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"ingest"</span><span class="p">))</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(batch=250)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"find_node(batch=20)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span>
     <span class="s2">"find_node(lambda accuracy &gt; 0.99)"</span><span class="p">,</span>
     <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="p">),</span>
@@ -1822,7 +1851,7 @@ tree shape: 5 roots, max depth 153, max fan-out 5, 2196 nodes with multiple chil
 <span class="n">_</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"get_most_recent_node()"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">())</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4">_ = timed("find_node(step_type='ingest')", lambda: store.find_node(step_type="ingest"))
-_ = timed("find_node(batch=250)", lambda: store.find_node(batch=20))
+_ = timed("find_node(batch=20)", lambda: store.find_node(batch=20))
 _ = timed(
     "find_node(lambda accuracy &gt; 0.99)",
     lambda: store.find_node(accuracy=lambda a: a is not None and a &gt; 0.99),
@@ -1844,12 +1873,12 @@ _ = timed("get_most_recent_node()", lambda: store.get_most_recent_node())</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>find_node(step_type='ingest')                      median of 100 trials:     1.78 ms   (5 hits)
-find_node(batch=250)                               median of 100 trials:     1.93 ms   (100 hits)
-find_node(lambda accuracy &gt; 0.99)                  median of 100 trials:     2.21 ms   (97 hits)
-get_most_recent_node(step_type='transform')        median of 100 trials:     3.81 ms   (Node)
-get_child_nodes(first root)                        median of 100 trials:     1.81 ms   (1 hits)
-get_most_recent_node()                             median of 100 trials:     3.20 ms   (Node)
+<pre>find_node(step_type='ingest')                      median of 100 trials:     1.78 ms   (4 hits)
+find_node(batch=250)                               median of 100 trials:     1.90 ms   (100 hits)
+find_node(lambda accuracy &gt; 0.99)                  median of 100 trials:     2.20 ms   (97 hits)
+get_most_recent_node(step_type='transform')        median of 100 trials:     3.70 ms   (Node)
+get_child_nodes(first root)                        median of 100 trials:     0.00 ms   (0 hits)
+get_most_recent_node()                             median of 100 trials:     2.76 ms   (Node)
 </pre>
 </div>
 </div>
@@ -1978,8 +2007,8 @@ _ = timed("same query again (warm)", lambda: store2.find_node(batch=0))</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>cold start (init + load index + first query):       65.85 ms
-same query again (warm)                            median of 100 trials:     1.89 ms   (100 hits)
+<pre>cold start (init + load index + first query):       65.19 ms
+same query again (warm)                            median of 100 trials:     1.93 ms   (100 hits)
 </pre>
 </div>
 </div>
@@ -2034,7 +2063,7 @@ print(f"rebuild_db_from_disk ({N} meta.json files): {time.perf_counter() - t:.2f
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>rebuild_db_from_disk (10000 meta.json files): 0.39 s
+<pre>rebuild_db_from_disk (10000 meta.json files): 0.40 s
 </pre>
 </div>
 </div>
@@ -2058,7 +2087,7 @@ print(f"rebuild_db_from_disk ({N} meta.json files): {time.perf_counter() - t:.2f
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
@@ -2089,7 +2118,7 @@ print(f"rebuild_db_from_disk ({N} meta.json files): {time.perf_counter() - t:.2f
 <span class="p">)</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
-<span class="n">store</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">store</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
     <span class="sa">f</span><span class="s2">"prune for real (subtree of </span><span class="si">{</span><span class="n">n_sub</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span>
 <span class="p">)</span>
@@ -2112,7 +2141,7 @@ print(
 )
 
 t = time.perf_counter()
-store.prune(ids[0], recursive=True, dry_run=False)
+store.prune(ids[0], dry_run=False)
 print(
     f"prune for real (subtree of {n_sub}): {(time.perf_counter() - t) * 1000:8.2f} ms"
 )</div>
@@ -2127,27 +2156,9 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>prune dry-run (subtree of 2):      5.21 ms
+<pre>prune dry-run (subtree of 2):      6.05 ms
+prune for real (subtree of 2):     5.82 ms
 </pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[8]</span><span class="ansi-green-fg">, line 19</span>
-<span class="ansi-green-fg">     15</span>     <span class="ansi-yellow-fg">f"prune dry-run (subtree of {n_sub}):  {(time.perf_counter() - t) * 1000:8.2f} ms"</span>
-<span class="ansi-green-fg">     16</span> )
-<span class="ansi-green-fg">     17</span> 
-<span class="ansi-green-fg">     18</span> t = time.perf_counter()
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">19</span> store.prune(ids[<span class="ansi-green-fg">0</span>], recursive=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>, dry_run=<span class="ansi-bold" style="color: rgb(0,135,0)">False</span>)
-<span class="ansi-green-fg">     20</span> print(
-<span class="ansi-green-fg">     21</span>     <span class="ansi-yellow-fg">f"prune for real (subtree of {n_sub}): {(time.perf_counter() - t) * 1000:8.2f} ms"</span>
-<span class="ansi-green-fg">     22</span> )
-
-<span class="ansi-red-fg">TypeError</span>: LineageStore.prune() got an unexpected keyword argument 'recursive'</pre>
 </div>
 </div>
 </div>
@@ -2170,7 +2181,7 @@ print(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
@@ -2207,8 +2218,8 @@ print(f"HTML size: {html.stat().st_size / 1e6:.1f} MB")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>generate_web_graph: 1.27 s
-HTML size: 15.2 MB
+<pre>generate_web_graph: 1.42 s
+HTML size: 19.1 MB
 </pre>
 </div>
 </div>
@@ -2232,7 +2243,7 @@ HTML size: 15.2 MB
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
@@ -2269,8 +2280,8 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>snapshot (.index.json): 1.87 MB
-store total:            19.3 MB across 9983 files
+<pre>snapshot (.index.json): 2.39 MB
+store total:            42.0 MB across 10002 files
 </pre>
 </div>
 </div>
@@ -2305,7 +2316,7 @@ store total:            19.3 MB across 9983 files
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 15:41:14 UTC">June 13, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 19:18:53 UTC">June 13, 2026</span>
   </span>
 
     
