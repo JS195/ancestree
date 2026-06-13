@@ -40,8 +40,8 @@ class Node:
         path: Path,
         node_id: str,
         generation: int,
-        parent_id: str,
-        step_type: str = None,
+        parent_id: Optional[str] = None,
+        step_type: Optional[str] = None,
     ):
         """
         Initialises a node instance. Performs no I/O: use Node._load() to read
@@ -58,8 +58,8 @@ class Node:
         self.generation = generation
         self.parent_id = parent_id
         self.step_type = step_type
-        self._metadata = {}
-        self._system_keys = set[Any]()
+        self._metadata: Optional[Dict[str, Any]] = {}
+        self._system_keys: set[Any] = set()
 
     @property
     def metadata(self) -> Dict[str, Dict[str, Any]]:
@@ -79,15 +79,16 @@ class Node:
         """
         return deepcopy(self._hydrate())
 
-    def _hydrate(self):
+    def _hydrate(self) -> Dict[str, Any]:
         # Index-backed nodes (_from_index) defer reading meta.json until the
         # full metadata is actually needed.
         if self._metadata is None:
             self._metadata = json.loads((self.path / "meta.json").read_text())
+        assert self._metadata is not None
         return self._metadata
 
     @classmethod
-    def _from_index(cls, path: Path, flat: dict) -> "Node":
+    def _from_index(cls, path: Path, flat: Dict[str, Any]) -> "Node":
         """
         Builds a node from the database's flattened index entry without
         touching disk. The full metadata is hydrated lazily from meta.json
@@ -102,8 +103,8 @@ class Node:
         """
         node = cls(
             path,
-            flat.get("node_id"),
-            flat.get("generation"),
+            flat.get("node_id", ""),
+            flat.get("generation", 0),
             flat.get("parent_id"),
             step_type=flat.get("step_type"),
         )
@@ -124,7 +125,7 @@ class Node:
         """
         meta = json.loads((path / "meta.json").read_text())
 
-        def _value(key):
+        def _value(key: str) -> Any:
             return meta.get(key).get("value")
 
         node = cls(
@@ -143,8 +144,8 @@ class Node:
         path: Path,
         node_id: str,
         generation: int,
-        parent_id: str,
-        step_type: str = None,
+        parent_id: Optional[str] = None,
+        step_type: Optional[str] = None,
     ) -> "Node":
         """
         Initialises a brand new node with its structural and provenance
@@ -183,14 +184,14 @@ class Node:
             node._set_meta(
                 key, value, data_type="text", group="Provenance", searchable=False
             )
-        node._system_keys = set(node._metadata)
+        node._system_keys = set(node._hydrate())
         return node
 
     #: Path suffixes rendered inline as images when the data_type is inferred.
     IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
 
     @staticmethod
-    def _infer_data_type(value: Any) -> str:
+    def _infer_data_type(value: Any) -> _DataType:
         """
         Maps a value to its natural data_type for 'auto' mode. Only types
         that are unambiguous signals are inferred: DataFrames, dicts/lists,
@@ -336,7 +337,7 @@ class Node:
 
         self._hydrate().update(entry)
 
-    def _write_meta(self):
+    def _write_meta(self) -> None:
         """
         Internal helper for creating and writing metadata atomically to prevent corruption during crashes.
         """
@@ -350,9 +351,9 @@ class Node:
             if temp_file.exists():
                 temp_file.unlink()
 
-    def to_db(self):
+    def to_db(self) -> Dict[str, Any]:
         # This is a flat key value dict for easy searching and indexing
-        entries = {}
+        entries: Dict[str, Any] = {}
         for key, properties in self._hydrate().items():
             if properties.get("searchable", True):
                 entries[key] = properties.get("value")
@@ -418,7 +419,7 @@ class Node:
         target_path.parent.mkdir(parents=True, exist_ok=True)
         return target_path
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Returns a developer friendly string representation of the node.
 

@@ -26,8 +26,8 @@ class LineageStore:
     def __init__(
         self,
         root: Union[Path, str],
-        rules: Union[Dict, None] = None,
-        gen_triggers: Union[List, None] = None,
+        rules: Optional[Dict[str, Any]] = None,
+        gen_triggers: Optional[List[str]] = None,
     ):
         """
         Initialises the LineageStore, ensures its directory exists, and loads or creates the ruleset configuration.
@@ -53,7 +53,9 @@ class LineageStore:
         self.database = lineage_database(self.root)
 
     def _do_config(
-        self, supplied_rules: Optional[Dict], supplied_triggers: Optional[List]
+        self,
+        supplied_rules: Optional[Dict[str, Any]],
+        supplied_triggers: Optional[List[str]],
     ) -> Dict[str, Any]:
         is_new = not self.config_path.exists()
 
@@ -188,7 +190,7 @@ class LineageStore:
         persisted.
         """
         has_artifacts = bool(node.artifacts())
-        has_user_meta = bool(set(node._metadata) - node._system_keys)
+        has_user_meta = bool(set(node._hydrate()) - node._system_keys)
         if not (has_artifacts or has_user_meta):
             return False
         size = sum(f.stat().st_size for f in node.path.rglob("*") if f.is_file())
@@ -280,10 +282,10 @@ class LineageStore:
             >>> with store.create_node(step_type="model", parent=clean_node) as node:
             ...     [training_data] = store.from_parent(node, "cleaned.csv")
         """
-        node = self.get_node(node)
-        if node is None or node.parent_id is None:
+        resolved = self.get_node(node)
+        if resolved is None or resolved.parent_id is None:
             return []
-        parent_node = self.get_node(node.parent_id)
+        parent_node = self.get_node(resolved.parent_id)
         return parent_node.artifacts(filename) if parent_node else []
 
     def find_node(self, **kwargs: Any) -> List["Node"]:

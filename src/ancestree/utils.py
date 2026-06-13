@@ -5,6 +5,7 @@ import getpass
 import sys
 import os
 from datetime import datetime
+from typing import Any, Dict, Optional
 import warnings
 
 
@@ -16,12 +17,14 @@ import warnings
 # ---------------------------------------------------------------------------
 
 
-def get_meta_val(entries, key, default=None):
+def get_meta_val(
+    entries: Dict[str, Any], key: str, default: Any = None
+) -> Any:
     e = entries.get(key)
     return e.get("value") if e else default
 
 
-def is_match(meta, **kwargs):
+def is_match(meta: Dict[str, Any], **kwargs: Any) -> bool:
     """Flat key lookup against an index entry: every kwarg must equal the
     stored value, or — for callable values — return truthy when applied to it."""
     for key, value in kwargs.items():
@@ -43,7 +46,7 @@ def is_match(meta, **kwargs):
     return True
 
 
-def flatten_meta(meta):
+def flatten_meta(meta: Dict[str, Any]) -> Dict[str, Any]:
     return {
         k: v.get("value")
         for k, v in meta.items()
@@ -51,7 +54,7 @@ def flatten_meta(meta):
     }
 
 
-def is_pandas(obj):
+def is_pandas(obj: Any) -> bool:
     """
     Sniffs an object's metadata to determine if it is a pandas DataFrame instance.
 
@@ -71,7 +74,7 @@ def is_pandas(obj):
 # ---------------------------------------------------------------------------
 
 
-def parse_time(iso_str):
+def parse_time(iso_str: Optional[str]) -> str:
     if not iso_str:
         return "N/A"
     try:
@@ -101,7 +104,7 @@ def parse_iso_utc(s: str) -> datetime:
 # ---------------------------------------------------------------------------
 
 
-def safe_get_user():
+def safe_get_user() -> str:
     """
     Attempt to retrieve the users credentials
     """
@@ -111,7 +114,7 @@ def safe_get_user():
         return os.environ.get("USER", "unknown")
 
 
-def get_environment_provenance():
+def get_environment_provenance() -> Dict[str, str]:
     """
     Track who and what produced the node.
     """
@@ -122,7 +125,7 @@ def get_environment_provenance():
     }
 
 
-def _git_output(*args):
+def _git_output(*args: str) -> Optional[str]:
     try:
         return subprocess.check_output(
             ["git", *args], stderr=subprocess.DEVNULL, encoding="utf-8"
@@ -132,7 +135,7 @@ def _git_output(*args):
         return None
 
 
-def get_git_provenance():
+def get_git_provenance() -> Dict[str, Any]:
     """
     Track the git state the node was produced under.
     """
@@ -144,7 +147,7 @@ def get_git_provenance():
     }
 
 
-def get_provenance():
+def get_provenance() -> Dict[str, Any]:
     """
     Track who/ what/ how produced the node. Returns a flat dict so each
     field can be stored as an individual metadata entry via add_meta.

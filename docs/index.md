@@ -136,7 +136,7 @@ with store.create_node(step_type="model", parent=parent) as node:
                   searchable=False)
 ```
 
-You don't need metadata to expose your files: every artifact a node contains automatically appears as a clickable link under its **Artifacts** heading. Use `type="image"` when you want a figure actually displayed inline — a confusion matrix, a loss curve, a sample plot — so the graph doubles as a visual report of your pipeline.
+You don't need metadata to expose your files: every artifact a node contains automatically appears as a clickable link under its **Artifacts** heading. Use `data_type="image"` when you want a figure actually displayed inline — a confusion matrix, a loss curve, a sample plot — so the graph doubles as a visual report of your pipeline.
 
 ## Next steps
 

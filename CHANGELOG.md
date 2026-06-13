@@ -8,7 +8,7 @@
 - Automatic provenance capture — user, platform, Python version, git commit, branch, and dirty-worktree flag recorded on every node
 - Automatic timing and size capture — `duration_s` and `size_mb` recorded on every node
 - Crash-safe context manager — failed nodes flagged `healthy=False`; empty nodes removed silently with a warning
-- `add_meta()` — attach searchable, typed metadata to any node; supports `text`, `number`, `image`, `link`, `table`, `json`, and `code` types with auto-inference
+- `add_meta()` — attach searchable, typed metadata to any node; supports `text`, `image`, `link`, `table`, `json`, and `code` types with auto-inference
 - `get_node()` — resolve a node_id string into a Node object
 - `find_node()` — search the store by metadata value or predicate
 - `find_in_lineage()` — search within a node's ancestry

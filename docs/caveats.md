@@ -59,9 +59,11 @@ Compaction only fires once the journal has grown to roughly the snapshot's size,
 
 ## Metadata coercion and overwrites
 
+A handful of keys are reserved by the store — `parent_id`, `step_type`, `generation`, `timestamp`, `healthy`, `duration_s`, and `size_mb`. `add_meta` raises `ValueError` if you try to set one, so you cannot accidentally overwrite the structural metadata the store depends on for lineage, recency, and health.
+
 `table` and `json` entries are always stored non-searchable, and `image`/`link` entries that point at files (rather than URLs) are rewritten relative to the store root and also forced non-searchable. They render in the web graph but cannot be matched by `find_node`.
 
-The default `auto` data type never inspects string *contents*. A string that looks like a file path or filename stays plain text. If you want it treated as an image or link, pass `data_type` explicitly. Images or links are inferred only if they are Pathlib objects.
+The default `auto` data type infers the rendering from the value's *type*, not by sniffing string contents: a `Path` becomes an image (by file suffix) or a file link, a `dict`/`list` becomes JSON, a DataFrame becomes a table, and an `http(s)://` string becomes a link. Any other string stays plain `text` — a string that merely looks like a file path or filename is not treated as one. Pass `data_type` explicitly to override.
 
 ## Paths and artifacts
 
