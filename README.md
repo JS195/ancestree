@@ -11,8 +11,6 @@
 
 No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned.
 
-Pure Python standard library. Works with scripts and notebooks. Instantiate when you need it, nothing runs in the background. No need to learn new syntax, saving files remains the same calls you already write.
-
 ---
 
 ## Contents
@@ -33,11 +31,11 @@ Pure Python standard library. Works with scripts and notebooks. Instantiate when
 
 ## Why Ancestree?
 
-Iterative workflows are messy. You run ten variations, tweak parameters, rerun branches, and two weeks later you're staring at `final_v2_REAL.csv` wondering which preprocessing produced it and whether the code that made it was even committed. When you want to explore two ideas in parallel, or branch off a promising result and try three different things with it, there's no simple way to represent this, let alone track it.
+Iterative workflows are messy. You run ten variations, tweak parameters, rerun branches, and two weeks later you're staring at `final_v2_REAL.csv` wondering which preprocessing produced it and whether the code that made it was even committed. As your project grows, and you want to explore many ideas in parallel, or branch off a promising result and try multiple different things with it, a 'good folder naming convention' isn't going to cut it.
 
-This is a problem in machine learning, but it's just as common in simulation, optimisation, data engineering, document processing, or any workflow where steps build on each other and results branch. Tools like MLflow solve it well, but only if you're doing ML and willing to stand up a server. For everything else, the options are thin.
+This is a problem in machine learning, but it's just as common in simulation, optimisation, data engineering, and document processing; any workflow where steps build on each other and results branch. Tools like MLflow solve it well, but only if you're doing ML and willing to stand up a server, otherwise the options are thin.
 
-Ancestree solves this with one idea: **every step of your pipeline is a local node folder**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable family tree of your work that is durable on disk, reconstructable at any time, and visual when you want it to be.
+Ancestree solves this modelling the pipeline as a directed acyclic graph. **Every step of your pipeline is a local node folder**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable family tree of your work that is durable on disk, reconstructable at any time, and visual when you want it to be.
 
 One of Ancestree's first production use cases was an iterative optimisation, with 10+ generations, 3 steps per generation, and dozens of branches.
 
