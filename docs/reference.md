@@ -6,6 +6,7 @@ Technical documentation for the **Ancestree** lineage system. The `LineageStore`
 The `LineageStore` is the prime entry point for managing your pipeline.
 
 ::: ancestree.LineageStore
+    handler: python
     options:
         show_root_heading: true
         heading_level: 3
@@ -17,9 +18,11 @@ The `LineageStore` is the prime entry point for managing your pipeline.
 You never construct a `Node` yourself — they are created by `LineageStore.create_node` and returned by the store's search and lineage methods. You will interact with them to read and attach metadata, locate artifacts, and build paths inside a node's directory.
 
 ::: ancestree.models.Node
+    handler: python
     options:
         show_root_heading: true
         heading_level: 3
+        unwrap_annotated: false
         members:
             - metadata
             - add_meta

@@ -24,19 +24,19 @@
 
     ---
 
-    Declare which step types may follow which. Invalid transitions raise immediately, so your pipeline can't drift into impossible states.
+    Rules are optional. But if you declare them, invalid transitions raise immediately so your pipeline can't drift into impossible states.
 
-- :material-database-search:{ .lg .middle } **Metadata that works twice**
+- :material-database-search:{ .lg .middle } **Metadata works twice**
 
     ---
 
-    Every entry is searchable — match by exact value or arbitrary predicate — and the same entries drive how each node is rendered in the web graph.
+    Metadata entries are searchable by exact value or predicate, whilst also used as instructions to render the entry in the explorer.
 
 - :material-feather:{ .lg .middle } **Zero dependencies**
 
     ---
 
-    Pure Python standard library. Nothing to pin, nothing to conflict with — it runs anywhere Python 3.9+ runs.
+    Pure Python standard library. Nothing to pin, nothing to conflict with, it runs anywhere Python 3.9+ runs.
 
 - :material-restore:{ .lg .middle } **Crash-safe by design**
 
@@ -48,7 +48,7 @@
 
     ---
 
-    Every node is a plain directory with a `meta.json`. No server, no database — your lineage survives restarts and can always be rebuilt from disk.
+    Every node is a plain directory with a `meta.json`. No server, no database. Lineage survives restarts, is evaluated lazily, and can always be rebuilt from disk.
 
 </div>
 
@@ -121,7 +121,7 @@ The store keeps a lightweight search index alongside, and because the directorie
 
 ## Metadata does double duty
 
-Metadata isn't just a search index — it's also the instruction set for how each node is displayed in the web graph. Every entry you add appears in the node's panel, organised under its `group` heading, and its `type` controls how the value is rendered:
+Metadata isn't just a search index — it's also the instruction set for how each node is displayed in the web graph. Every entry you add appears in the node's panel, organised under its `group` heading, and its `data_type` controls how the value is rendered. `data_type` defaults to `auto` and the store will infer the correct data_type but this can be manually overridden offering flexibiliy. 
 
 ```python
 with store.create_node(step_type="model", parent=parent) as node:
@@ -130,7 +130,7 @@ with store.create_node(step_type="model", parent=parent) as node:
     node.add_meta("accuracy", 0.94, group="Metrics")          # searchable, shown as text
 
     node.add_meta("confusion_matrix", node / "confusion.png", # rendered inline as a figure
-                  type="image", group="Figures")
+                  data_type="auto", group="Figures")
 
     node.add_meta("notes", "rerun after fix",                 # display-only, excluded from search
                   searchable=False)

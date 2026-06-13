@@ -6,6 +6,7 @@ import uuid
 from typing import List, Dict, Any, Optional, Union, Iterator
 import shutil
 from contextlib import contextmanager
+import warnings
 
 # Internal dependancies
 from .database import lineage_database
@@ -75,61 +76,9 @@ class LineageStore:
             "triggers": config.get("triggers") or [],
         }
 
-    def find_node(self, **kwargs: Any) -> List["Node"]:
-        """
-        Search for nodes based on metadata key values. Values are matched by
-        equality against the searchable metadata; pass a callable to express
-        a predicate instead.
-
-        Args:
-            **kwargs (Any): Key-value pairs to match against the node's searchable metadata keys.
-
-        Returns:
-            List['Node']: A list of node objects that match all provided criteria.
-
-        Examples:
-            >>> store.find_node(step_type="ingest")
-            >>> store.find_node(accuracy=lambda a: a is not None and a > 0.8)
-        """
-        return [
-            self._node_from_index(node_id)
-            for node_id in self.database.find_matches(**kwargs)
-        ]
-
-    def _node_from_index(self, node_id: str) -> "Node":
-        """
-        Builds a Node from the in-memory index without touching disk; the
-        full metadata is hydrated lazily on first access. Only valid for ids
-        present in the index.
-        """
-        return Node._from_index(self.root / node_id, self.database.cache[node_id])
-
-    def get_node(self, node: Union[str, "Node", None] = None) -> Optional["Node"]:
-        """
-        Resolves a node_id string into a Node object, loading it from disk.
-
-        Accepts a Node as well (returned unchanged), so it can be used to normalise any "node or id" argument. Returns None rather than raising if the node does not exist or its metadata cannot be read.
-
-        Args:
-            node (Union[str, Node, None]): A node_id string, an existing Node instance, or None.
-
-        Returns:
-            Optional[Node]: The resolved Node, or None if the input is None, invalid, or not found.
-
-        Examples:
-            >>> node = store.get_node("abc12345")
-        """
-        if not node or str(node).lower() == "none":
-            return None
-        if isinstance(node, Node):
-            return node
-        node_path = self.root / node
-        if not node_path.exists():
-            return None
-        try:
-            return Node._load(node_path)
-        except (FileNotFoundError, json.JSONDecodeError, AttributeError):
-            return None
+    # ---------------------------------------------------------------------------
+    # Node creation
+    # ---------------------------------------------------------------------------
 
     @contextmanager
     def create_node(
@@ -201,7 +150,6 @@ class LineageStore:
             new_node, healthy=True, duration=time.monotonic() - start
         ):
             shutil.rmtree(new_node.path, ignore_errors=True)
-            import warnings
 
             warnings.warn(
                 f"Node '{new_node.node_id}' (step_type='{step_type}') was discarded: "
@@ -243,18 +191,98 @@ class LineageStore:
         self.database.add(node.node_id, node.to_db())
         return True
 
-    def rebuild_db_from_disk(self) -> None:
-        """
-        Rebuilds the search index by scanning all node directories on disk.
+    # ---------------------------------------------------------------------------
+    # Searching and Querying
+    # ---------------------------------------------------------------------------
 
-        Use this as a recovery step if the index becomes stale or corrupt —
-        for example after a crash mid-write, manual filesystem changes, or a
-        KeyError from get_lineage suggesting a missing index entry.
-
-        Note: only nodes with a valid meta.json are re-indexed. Directories
-        without one are silently skipped.
+    def get_node(self, node: Union[str, "Node", None] = None) -> Optional["Node"]:
         """
-        self.database.rebuild_from_disk()
+        Resolves a node_id string into a Node object, loading it from disk.
+
+        Accepts a Node as well (returned unchanged), so it can be used to normalise any "node or id" argument. Returns None rather than raising if the node does not exist or its metadata cannot be read.
+
+        Args:
+            node (Union[str, Node, None]): A node_id string, an existing Node instance, or None.
+
+        Returns:
+            Optional[Node]: The resolved Node, or None if the input is None, invalid, or not found.
+
+        Examples:
+            >>> node = store.get_node("abc12345")
+        """
+        if not node or str(node).lower() == "none":
+            return None
+        if isinstance(node, Node):
+            return node
+        node_path = self.root / node
+        if not node_path.exists():
+            return None
+        try:
+            return Node._load(node_path)
+        except (FileNotFoundError, json.JSONDecodeError, AttributeError):
+            return None
+
+    def get_most_recent_node(self, **kwargs: Any) -> Optional["Node"]:
+        """
+        Finds the single most recently created node that matches the given search parameters.
+
+        Recency is determined by the timestamp recorded when each node was created. Useful for picking up a pipeline where it left off, e.g. fetching the latest cleaned dataset.
+
+        Args:
+            **kwargs (Any): Key-value pairs to match against the nodes' searchable metadata keys, as in `find_node`.
+
+        Returns:
+            Optional[Node]: The most recent matching node, or None if nothing matches.
+
+        Examples:
+            >>> latest = store.get_most_recent_node(step_type="clean")
+        """
+        str_id = self.database.get_most_recent(**kwargs)
+        return self._node_from_index(str_id) if str_id else None
+
+    def from_parent(self, node: Union[str, "Node"], filename: str) -> List[Path]:
+        """
+        Shortcut to get specific file(s) from the parent node of the specified node.
+
+        Equivalent to looking up the node's parent and calling `artifacts` on it. The typical use is reading the previous step's output as the current step's input.
+
+        Args:
+            node (Union[str, Node]): The Node or node_id whose parent to search.
+            filename (str): A glob pattern or substring to match against the parent's files, as in `Node.artifacts`.
+
+        Returns:
+            List[Path]: The matching file paths from the parent node, relative to the store root. Empty if the node or its parent cannot be found, the node has no parent, or nothing matches.
+
+        Examples:
+            >>> with store.create_node(step_type="model", parent=clean_node) as node:
+            ...     [training_data] = store.from_parent(node, "cleaned.csv")
+        """
+        node = self.get_node(node)
+        if node is None or node.parent_id is None:
+            return []
+        parent_node = self.get_node(node.parent_id)
+        return parent_node.artifacts(filename) if parent_node else []
+
+    def find_node(self, **kwargs: Any) -> List["Node"]:
+        """
+        Search for nodes based on metadata key values. Values are matched by
+        equality against the searchable metadata; pass a callable to express
+        a predicate instead.
+
+        Args:
+            **kwargs (Any): Key-value pairs to match against the node's searchable metadata keys.
+
+        Returns:
+            List['Node']: A list of node objects that match all provided criteria.
+
+        Examples:
+            >>> store.find_node(step_type="ingest")
+            >>> store.find_node(accuracy=lambda a: a is not None and a > 0.8)
+        """
+        return [
+            self._node_from_index(node_id)
+            for node_id in self.database.find_matches(**kwargs)
+        ]
 
     def get_lineage(self, node: Union[str, "Node"]) -> List["Node"]:
         """
@@ -301,47 +329,6 @@ class LineageStore:
             for node_id in self.database.find_in_lineage(node, **kwargs)
         ]
 
-    def get_most_recent_node(self, **kwargs: Any) -> Optional["Node"]:
-        """
-        Finds the single most recently created node that matches the given search parameters.
-
-        Recency is determined by the timestamp recorded when each node was created. Useful for picking up a pipeline where it left off, e.g. fetching the latest cleaned dataset.
-
-        Args:
-            **kwargs (Any): Key-value pairs to match against the nodes' searchable metadata keys, as in `find_node`.
-
-        Returns:
-            Optional[Node]: The most recent matching node, or None if nothing matches.
-
-        Examples:
-            >>> latest = store.get_most_recent_node(step_type="clean")
-        """
-        str_id = self.database.get_most_recent(**kwargs)
-        return self._node_from_index(str_id) if str_id else None
-
-    def from_parent(self, node: Union[str, "Node"], filename: str) -> List[Path]:
-        """
-        Shortcut to get specific file(s) from the parent node of the specified node.
-
-        Equivalent to looking up the node's parent and calling `artifacts` on it. The typical use is reading the previous step's output as the current step's input.
-
-        Args:
-            node (Union[str, Node]): The Node or node_id whose parent to search.
-            filename (str): A glob pattern or substring to match against the parent's files, as in `Node.artifacts`.
-
-        Returns:
-            List[Path]: The matching file paths from the parent node, relative to the store root. Empty if the node or its parent cannot be found, the node has no parent, or nothing matches.
-
-        Examples:
-            >>> with store.create_node(step_type="model", parent=clean_node) as node:
-            ...     [training_data] = store.from_parent(node, "cleaned.csv")
-        """
-        node = self.get_node(node)
-        if node is None or node.parent_id is None:
-            return []
-        parent_node = self.get_node(node.parent_id)
-        return parent_node.artifacts(filename) if parent_node else []
-
     def get_child_nodes(self, node: Union[str, "Node"]) -> List["Node"]:
         """
         Returns the direct children of the specified node.
@@ -356,6 +343,31 @@ class LineageStore:
         """
         target = self.get_node(node)
         return self.find_node(parent_id=target.node_id) if target else []
+
+    def _node_from_index(self, node_id: str) -> "Node":
+        """
+        Builds a Node from the in-memory index without touching disk; the
+        full metadata is hydrated lazily on first access. Only valid for ids
+        present in the index.
+        """
+        return Node._from_index(self.root / node_id, self.database.cache[node_id])
+
+    # ---------------------------------------------------------------------------
+    # Maintenance
+    # ---------------------------------------------------------------------------
+
+    def rebuild_db_from_disk(self) -> None:
+        """
+        Rebuilds the search index by scanning all node directories on disk.
+
+        Use this as a recovery step if the index becomes stale or corrupt —
+        for example after a crash mid-write, manual filesystem changes, or a
+        KeyError from get_lineage suggesting a missing index entry.
+
+        Note: only nodes with a valid meta.json are re-indexed. Directories
+        without one are silently skipped.
+        """
+        self.database.rebuild_from_disk()
 
     def prune(self, node: Union[str, "Node"], dry_run: bool = True) -> List["Node"]:
         """
@@ -395,7 +407,11 @@ class LineageStore:
         deleted.append(target)
         return deleted
 
-    def generate_web_graph(self):
+    # ---------------------------------------------------------------------------
+    # Visualisation
+    # ---------------------------------------------------------------------------
+
+    def generate_web_graph(self) -> Path:
         """
         Creates an interactive web graph of node hierarchies and lineage.
 
@@ -405,6 +421,7 @@ class LineageStore:
         """
         path = run_web_generator(self)
         print(f"Graph generated at {path}")
+        return path
 
     # def host_live_graph(self):
     #     start_ui(self)
