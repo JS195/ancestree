@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
-from importlib import resources
 from pathlib import Path
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
@@ -107,38 +106,34 @@ def visualise_nodes(store: LineageStore) -> Dict[str, Any]:
 
 
 def run_web_generator(store: LineageStore) -> Path:
+    assets = Path(__file__).parent / "assets"
     graph_data = visualise_nodes(store)
 
-    source = resources.files("ancestree.assets").joinpath("template_new.html")
-    with source.open("r", encoding="utf-8") as f:
-        template_content = f.read()
+    template_content = (assets / "template_new.html").read_text(encoding="utf-8")
 
     final_html = template_content.replace(
         "{{PYTHON_NODES}}", json.dumps(graph_data["nodes"])
     )
     final_html = final_html.replace("{{PYTHON_EDGES}}", json.dumps(graph_data["edges"]))
 
-    vis_network = (
-        resources.files("ancestree.assets").joinpath("vis-network.min.js")
-    ).read_text()
+    vis_network = (assets / "vis-network.min.js").read_text(encoding="utf-8")
     final_html = final_html.replace(
         '<script type="text/javascript" src="../../web_app/vis-network.min.js"></script>',
         f'<script type="text/javascript">{vis_network}</script>',
     )
 
-    css = (resources.files("ancestree.assets").joinpath("styles.css")).read_text()
+    css = (assets / "styles.css").read_text(encoding="utf-8")
     final_html = final_html.replace(
         '<link rel="stylesheet" href ="../../web_app/styles.css">',
         f"<style>{css}</style>",
     )
-    custom_js = (resources.files("ancestree.assets").joinpath("actions.js")).read_text()
+
+    custom_js = (assets / "actions.js").read_text(encoding="utf-8")
     final_html = final_html.replace(
         '<script src="../../web_app/actions.js"></script>',
         f"<script>{custom_js}</script>",
     )
 
     location = store.root / "interactive_pipeline.html"
-    with open(location, "w") as f:
-        f.write(final_html)
-
+    location.write_text(final_html, encoding="utf-8")
     return location
