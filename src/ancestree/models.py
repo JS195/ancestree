@@ -10,6 +10,15 @@ from .utils import get_provenance, is_pandas
 
 _DataType = Literal["auto", "image", "link", "table", "json", "code", "text"]
 _VALID_DATA_TYPES = {"auto", "image", "link", "table", "json", "code", "text"}
+_RESERVED_KEYS = {
+    "parent_id",
+    "step_type",
+    "generation",
+    "healthy",
+    "timestamp",
+    "duration_s",
+    "size_mb",
+}
 
 
 class Node:
@@ -152,26 +161,26 @@ class Node:
             Node: The new node. Nothing is written to disk until _write_meta().
         """
         node = cls(path, node_id, generation, parent_id, step_type=step_type)
-        node.add_meta(
+        node._set_meta(
             "node_id", node_id, data_type="text", group="Structural Properties"
         )
-        node.add_meta(
+        node._set_meta(
             "parent_id", parent_id, data_type="text", group="Structural Properties"
         )
-        node.add_meta(
+        node._set_meta(
             "generation", generation, data_type="text", group="Structural Properties"
         )
-        node.add_meta(
+        node._set_meta(
             "step_type", step_type, data_type="text", group="Structural Properties"
         )
-        node.add_meta(
+        node._set_meta(
             "timestamp",
             datetime.now(timezone.utc).isoformat(),
             data_type="text",
             group="Structural Properties",
         )
         for key, value in get_provenance().items():
-            node.add_meta(
+            node._set_meta(
                 key, value, data_type="text", group="Provenance", searchable=False
             )
         node._system_keys = set(node._metadata)
@@ -244,6 +253,29 @@ class Node:
             ...
             ...     # External link — rendered as a clickable URL
             ...     node.add_meta("wandb_run", "https://wandb.ai/my-org/run/abc123", group="Links")
+        """
+        if key in _RESERVED_KEYS:
+            raise ValueError(
+                f"{key!r} is a reserved key set by the store and cannot be "
+                "set via add_meta."
+            )
+        self._set_meta(
+            key, value, group=group, data_type=data_type, searchable=searchable
+        )
+
+    def _set_meta(
+        self,
+        key: str,
+        value: Any,
+        group: Optional[str] = "General",
+        data_type: _DataType = "auto",
+        searchable: bool = True,
+    ) -> None:
+        """Write a metadata entry, bypassing the reserved-key guard.
+
+        The store calls this to set its own structural and provenance keys —
+        the ones `add_meta` refuses from users. Validation, type inference and
+        coercion are shared; only the guard is not.
         """
         if data_type not in _VALID_DATA_TYPES:
             raise ValueError(
@@ -362,7 +394,6 @@ class Node:
     def __truediv__(self, relative_loc: Union[Path, str]) -> Path:
         """
         Allows the use of the '/' operator to create paths inside the node's directory, mirroring pathlib.
-
         This is the idiomatic way to choose where to write an artifact. Any intermediate directories in the path are created automatically, so the returned path is always ready to write to.
 
         Args:
@@ -371,11 +402,19 @@ class Node:
         Returns:
             Path: The resolved destination inside the node's directory.
 
+        Raises:
+            ValueError: If the path escapes the node's directory.
+
         Examples:
             >>> with store.create_node(step_type="clean") as node:
             ...     df.to_csv(node / "results/cleaned.csv")
         """
-        target_path = self.path / relative_loc
+        target_path = (self.path / relative_loc).resolve()
+        if not target_path.is_relative_to(self.path.resolve()):
+            raise ValueError(
+                f"Artifact path {relative_loc!r} escapes the node directory. "
+                "Keep all artifact paths inside the node."
+            )
         target_path.parent.mkdir(parents=True, exist_ok=True)
         return target_path
 

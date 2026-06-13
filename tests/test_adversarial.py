@@ -7,7 +7,6 @@ document today's behaviour and fail loudly the day the gap is fixed, so the
 marker can be removed.
 """
 
-import json
 import shutil
 import threading
 
@@ -64,33 +63,28 @@ class TestSystemKeyHijacking:
                 node.add_meta("node_id", "hijacked")
         assert not node.path.exists()
 
-    def test_overwriting_parent_id_corrupts_own_lineage(self, bare_store):
-        # Pinned sharp edge: the store trusts metadata, so a user who
-        # overwrites parent_id breaks their own lineage queries with the
-        # documented KeyError rather than silently wrong answers.
+    def test_overwriting_reserved_key_is_rejected(self, bare_store):
+        # Reserved structural keys cannot be hijacked: add_meta refuses them,
+        # so a user can't corrupt their own lineage or the health flags the
+        # store relies on.
         with bare_store.create_node(step_type="ingest") as node:
             (node / "x.txt").write_text("x")
-            node.add_meta("parent_id", "zzzzzzzz")
-        with pytest.raises(KeyError):
-            bare_store.get_lineage(node.node_id)
+            with pytest.raises(ValueError, match="reserved key"):
+                node.add_meta("parent_id", "zzzzzzzz")
 
 
 class TestPathTricks:
-    def test_escaped_file_is_not_an_artifact(self, bare_store):
-        with bare_store.create_node(step_type="ingest") as node:
-            (node / "legit.txt").write_text("ok")
-            (node / "../escaped.txt").write_text("outside")
-        names = {p.name for p in bare_store.get_node(node.node_id).artifacts()}
-        assert "escaped.txt" not in names
-
-    @pytest.mark.xfail(
-        strict=True, reason="node / '../x' currently writes outside the node directory"
-    )
     def test_writes_outside_node_directory_are_refused(self, bare_store):
+        # __truediv__ refuses any path that escapes the node directory, so the
+        # escaping write never happens and nothing lands in the store root. A
+        # path that stays inside the node is still fine.
         with bare_store.create_node(step_type="ingest") as node:
             (node / "legit.txt").write_text("ok")
-            (node / "../escaped.txt").write_text("outside")
+            with pytest.raises(ValueError, match="escapes the node"):
+                _ = node / "../escaped.txt"
         assert not (bare_store.root / "escaped.txt").exists()
+        names = {p.name for p in bare_store.get_node(node.node_id).artifacts()}
+        assert names == {"legit.txt"}
 
     @pytest.mark.xfail(
         strict=True, reason="get_node on a path to a file raises NotADirectoryError"
@@ -170,8 +164,10 @@ class TestConcurrentInstances:
         made = {_make_node(s, "ingest").node_id for s in (a, b, a, b)}
         for store in (a, b):
             assert {n.node_id for n in store.find_node(step_type="ingest")} == made
-        snapshot = json.loads((tmp_path / "shared" / ".index.json").read_text())
-        assert set(snapshot) == made
+        # The on-disk index (snapshot + journal) is durable and complete: a
+        # brand-new instance reconstructs every node without touching meta.json.
+        fresh = LineageStore(root=tmp_path / "shared")
+        assert set(fresh.database.cache) == made
 
     def test_prune_in_one_instance_visible_in_other(self, tmp_path):
         a = LineageStore(root=tmp_path / "shared")

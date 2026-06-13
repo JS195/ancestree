@@ -5,6 +5,7 @@ import getpass
 import sys
 import os
 from datetime import datetime
+import warnings
 
 
 # ---------------------------------------------------------------------------
@@ -29,7 +30,13 @@ def is_match(meta, **kwargs):
             try:
                 if not value(stored):
                     return False
-            except Exception:
+            except Exception as e:
+                warnings.warn(
+                    f"Predicate for {key!r} raised {type(e).__name__}: {e}. "
+                    "Node treated as non-matching.",
+                    UserWarning,
+                    stacklevel=5,
+                )
                 return False
         elif stored != value:
             return False

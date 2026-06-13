@@ -48,7 +48,7 @@
 
     ---
 
-    Every node is a plain directory with a `meta.json`. No server, no database. Lineage survives restarts, is evaluated lazily, and can always be rebuilt from disk.
+    Every node is a plain directory with a `meta.json`. No server, no database. Lineage survives restarts, is evaluated lazily, and can always be rebuilt from disk. Safe on NFS.
 
 </div>
 

@@ -11,7 +11,7 @@
 
 ![Pipeline Explorer](docs/assets/preview.png)
 
-No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned.
+No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned. Safe on NFS.
 
 ---
 
@@ -47,7 +47,7 @@ One of Ancestree's first production use cases was an iterative optimisation, wit
 Rules are optional, but if you declare them: `rules={"model": ["clean"]}`, illegal transitions raise a `ValueError` at creation time. Every other tracker is a passive logbook. This is active grammar for your pipeline.
 
 **Files are the database. There is no lock-in.**
-Every node is a plain directory. Every record is a human-readable `meta.json` sitting next to the artifacts it describes. You can `grep` it, `rsync` it, zip it, commit it. Uninstall Ancestree tomorrow — your lineage is still legible. The index is a disposable cache; delete it and it rebuilds from disk.
+Every node is a plain directory. Every record is a human-readable `meta.json` sitting next to the artifacts it describes. You can `grep` it, `rsync` it, zip it, commit it. Uninstall Ancestree tomorrow — your lineage is still legible. The index is a disposable cache; delete it and it rebuilds from disk. Safe on NFS.
 
 **Forensic crash semantics.**
 A step that dies mid-run keeps its partial output, flagged `healthy=False` and searchable. A step that wrote nothing vanishes without a trace. Partial work is evidence, not garbage.

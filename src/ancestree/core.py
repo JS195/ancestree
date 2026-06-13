@@ -55,9 +55,9 @@ class LineageStore:
     def _do_config(
         self, supplied_rules: Optional[Dict], supplied_triggers: Optional[List]
     ) -> Dict[str, Any]:
-        if not self.config_path.exists():
-            # Atomic create: a concurrent reader must never see a partially
-            # written config, and the temp name must be unique per writer.
+        is_new = not self.config_path.exists()
+
+        if is_new:
             tmp = self.root / f".lineage_config.{uuid.uuid4().hex}.tmp"
             try:
                 tmp.write_text(
@@ -71,6 +71,25 @@ class LineageStore:
                 tmp.unlink(missing_ok=True)
 
         config = json.loads(self.config_path.read_text())
+
+        if not is_new:
+            stored_rules = config.get("rules") or {}
+            stored_triggers = config.get("triggers") or []
+            if supplied_rules and supplied_rules != stored_rules:
+                warnings.warn(
+                    "Supplied rules differ from the stored configuration and have been ignored. "
+                    "Rules cannot be changed after a store is created.",
+                    UserWarning,
+                    stacklevel=3,
+                )
+            if supplied_triggers and supplied_triggers != stored_triggers:
+                warnings.warn(
+                    "Supplied gen_triggers differ from the stored configuration and have been ignored. "
+                    "gen_triggers cannot be changed after a store is created.",
+                    UserWarning,
+                    stacklevel=3,
+                )
+
         return {
             "rules": config.get("rules") or {},
             "triggers": config.get("triggers") or [],
@@ -156,7 +175,8 @@ class LineageStore:
                 "no artifacts were written and no metadata was added. "
                 "Write at least one file or call node.add_meta() to persist the node.",
                 UserWarning,
-                stacklevel=2,
+                # 1=here, 2=contextlib.__exit__ (next(self.gen)), 3=user `with`.
+                stacklevel=3,
             )
 
     def _persist_if_touched(self, node: "Node", healthy: bool, duration: float) -> bool:
@@ -172,16 +192,16 @@ class LineageStore:
         if not (has_artifacts or has_user_meta):
             return False
         size = sum(f.stat().st_size for f in node.path.rglob("*") if f.is_file())
-        node.add_meta(
+        node._set_meta(
             "healthy", healthy, data_type="text", group="Structural Properties"
         )
-        node.add_meta(
+        node._set_meta(
             "duration_s",
             round(duration, 3),
             data_type="text",
             group="Structural Properties",
         )
-        node.add_meta(
+        node._set_meta(
             "size_mb",
             round(size / 1e6, 6),
             data_type="text",
@@ -237,7 +257,10 @@ class LineageStore:
         Examples:
             >>> latest = store.get_most_recent_node(step_type="clean")
         """
-        str_id = self.database.get_most_recent(**kwargs)
+        # find_matches is called here (not nested inside a database helper) so
+        # a raising predicate warns at the same stacklevel as find_node.
+        matches = self.database.find_matches(**kwargs)
+        str_id = self.database.most_recent(matches)
         return self._node_from_index(str_id) if str_id else None
 
     def from_parent(self, node: Union[str, "Node"], filename: str) -> List[Path]:
