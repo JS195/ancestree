@@ -14,9 +14,7 @@ if TYPE_CHECKING:
     from .core import LineageStore
 
 
-def assign_levels(
-    node_ids: List[str], edges: List[Tuple[str, str]]
-) -> Dict[str, int]:
+def assign_levels(node_ids: List[str], edges: List[Tuple[str, str]]) -> Dict[str, int]:
     children: Dict[str, List[str]] = defaultdict(list)
 
     indeg: Dict[str, int] = {n: 0 for n in node_ids}
