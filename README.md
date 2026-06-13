@@ -4,12 +4,14 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Docs](https://github.com/JS195/ancestree/actions/workflows/deploy.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
+[![Build Status](https://github.com/JS195/ancestree/actions/workflows/pytest.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
+[![codecov](https://codecov.io/gh/JS195/ancestree/graph/badge.svg)](https://codecov.io/gh/JS195/ancestree)
 
-**A second brain for your data pipelines.** Track the full ancestry of every artifact you produce — who made it, from what, how long it took, and whether you can trust it — then explore the whole story in an interactive map.
+**Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform.**
 
-No database server. No cloud infrastructure. No daemon. No dependencies. Pure Python standard library on top of your filesystem. Works with plain Python scripts and Jupyter notebooks. Instantiate only when you need it, nothing runs in the background.
+No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to — air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned.
 
-Designed to fit seamlessly around your code. One context manager and one method (`add_meta`) covers the core usage. No need to learn new syntax, saving files remains the same calls you already write.
+Pure Python standard library. Works with scripts and notebooks. Instantiate when you need it - nothing runs in the background. No new syntax — saving files remains the same calls you already write.
 
 ---
 
@@ -30,9 +32,35 @@ Designed to fit seamlessly around your code. One context manager and one method 
 
 ## Why Ancestree?
 
-Exploratory research is messy. You clean a dataset three different ways, train ten models, overwrite half your outputs, and two weeks later you're staring at `final_v2_REAL.csv` wondering which preprocessing produced it — and whether the code that made it was even committed.
+Iterative workflows are messy. You run ten variations, tweak parameters, rerun branches, and two weeks later you're staring at `final_v2_REAL.csv` wondering which preprocessing produced it — and whether the code that made it was even committed. When you want to explore two ideas in parallel, or branch off a promising result and try three different things with it, there's no simple way to represent this, let alone track it.
 
-Ancestree solves this with one idea: **every step of your pipeline is a node**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable family tree of your data — durable on disk, reconstructable at any time, and visual when you want it to be.
+This is a problem in machine learning, but it's just as common in simulation, optimisation, data engineering, document processing, or any workflow where steps build on each other and results branch. Tools like MLflow solve it well, but only if you're doing ML and willing to stand up a server. For everything else, the options are thin.
+
+Ancestree solves this with one idea: **every step of your pipeline is a local node folder**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable family tree of your work — durable on disk, reconstructable at any time, and visual when you want it to be.
+
+One of Ancestree's first production use cases was an iterative optimisation, with 10+ generations, 3 steps per generation, and dozens of branches.
+
+---
+
+## What makes it different
+
+**It enforces lineage — it doesn't just record it.**
+`rules={"model": ["clean"]}` makes an illegal pipeline transition a `ValueError` at creation time. Every other tracker is a passive logbook. This is an active grammar for your pipeline.
+
+**Files are the database. There is no lock-in.**
+Every node is a plain directory. Every record is a human-readable `meta.json` sitting next to the artifacts it describes. You can `grep` it, `rsync` it, zip it, commit it. Uninstall Ancestree tomorrow — your lineage is still legible. The index is a disposable cache; delete it and it rebuilds from disk.
+
+**Forensic crash semantics.**
+A step that dies mid-run keeps its partial output, flagged `healthy=False` and searchable. A step that wrote nothing vanishes without a trace. Partial work is evidence, not garbage.
+
+**Reproducibility honesty, zero config.**
+Every node captures who ran it, on what platform, with what Python, at which git commit — and a dirty-worktree flag surfaced as a first-class warning in the UI.
+
+**The UI is one file you can email.**
+The entire explorer — lineage graph, metadata search, health indicators, metric heatmap, sortable runs table, cmd-click diff, activity timeline, dark mode — is a single self-contained HTML file that opens from `file://`. Attach it to a PR, a paper, a Slack message. No login. No server. No link that expires.
+
+**Not ML-shaped.**
+Step types are your vocabulary — ETL, simulation, lab protocol, report generation, image processing. The "runs/experiments/models" ontology that ML tools impose isn't here.
 
 ---
 
@@ -94,7 +122,7 @@ If your code raises inside `create_node`, anything already written is kept and t
 
 ## Searching and Querying
 
-The store indexes every searchable metadata key, so questions become one-liners:
+Because your execution history is structured as a proper lineage Directed Acyclic Graph (DAG) instead of a flat list of independent runs, you can ask your codebase complex ancestral questions using plain Python and native lambdas.
 
 ```python
 store.find_node(step_type="model")                          # all model runs
@@ -133,6 +161,8 @@ Inside it:
 ---
 
 ## Development
+Built to be resilient. The test suite includes 158 verified tests protecting against file corruption, multi-threaded write races, and adversarial edge cases.
+
 Issues and PRs welcome.
 
 ```bash
