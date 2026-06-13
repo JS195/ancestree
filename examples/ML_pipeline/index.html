@@ -1325,7 +1325,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     <span class="s2">"raw data"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span>
     <span class="s2">"scaling"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"raw data"</span><span class="p">],</span>
     <span class="s2">"embedding"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"scaling"</span><span class="p">],</span>
-    <span class="s2">"clustering"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"embedding"</span><span class="p">]</span>
+    <span class="s2">"clustering"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"embedding"</span><span class="p">],</span>
 <span class="p">}</span>
 <span class="n">triggers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"scaling"</span><span class="p">,</span> <span class="s2">"embedding"</span><span class="p">,</span> <span class="s2">"clustering"</span><span class="p">]</span>
 
@@ -1347,7 +1347,7 @@ rules = {
     "raw data": [None],
     "scaling": ["raw data"],
     "embedding": ["scaling"],
-    "clustering": ["embedding"]
+    "clustering": ["embedding"],
 }
 triggers = ["scaling", "embedding", "clustering"]
 
@@ -1390,20 +1390,20 @@ store = ancestree.LineageStore("ML_pipeline", rules=rules, gen_triggers=triggers
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">scalers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"robust"</span><span class="p">:</span> <span class="n">RobustScaler</span><span class="p">(),</span> <span class="s2">"standard"</span><span class="p">:</span><span class="n">StandardScaler</span><span class="p">()}</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">scalers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"robust"</span><span class="p">:</span> <span class="n">RobustScaler</span><span class="p">(),</span> <span class="s2">"standard"</span><span class="p">:</span> <span class="n">StandardScaler</span><span class="p">()}</span>
 <span class="n">embedders</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"umap"</span><span class="p">,</span> <span class="s2">"tsne"</span><span class="p">,</span> <span class="s2">"pca"</span><span class="p">]</span>
 <span class="n">clusterers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"kmeans"</span><span class="p">,</span> <span class="s2">"hdbscan"</span><span class="p">]</span>
 
 <span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s2">"raw data"</span><span class="p">)</span> <span class="k">as</span> <span class="n">root_node</span><span class="p">:</span>
     <span class="n">iris</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
-    <span class="n">df_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">feature_names</span><span class="p">)</span>
-    <span class="n">df_raw</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">root_node</span><span class="o">/</span><span class="s2">"data.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">df_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">iris</span><span class="o">.</span><span class="n">feature_names</span><span class="p">)</span>
+    <span class="n">df_raw</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">root_node</span> <span class="o">/</span> <span class="s2">"data.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># Scaling</span>
     <span class="k">for</span> <span class="n">s_name</span><span class="p">,</span> <span class="n">s_obj</span> <span class="ow">in</span> <span class="n">scalers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s2">"scaling"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_node</span><span class="p">)</span> <span class="k">as</span> <span class="n">s_node</span><span class="p">:</span>
             <span class="n">scaled_data</span> <span class="o">=</span> <span class="n">s_obj</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df_raw</span><span class="p">)</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">scaled_data</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">s_node</span><span class="o">/</span><span class="s2">"scaled.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">scaled_data</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">s_node</span> <span class="o">/</span> <span class="s2">"scaled.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="c1"># Dim reduction</span>
             <span class="k">for</span> <span class="n">e_type</span> <span class="ow">in</span> <span class="n">embedders</span><span class="p">:</span>
@@ -1414,11 +1414,11 @@ store = ancestree.LineageStore("ML_pipeline", rules=rules, gen_triggers=triggers
                         <span class="n">embedder</span> <span class="o">=</span> <span class="n">TSNE</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">perplexity</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="n">e_type</span> <span class="o">==</span> <span class="s2">"umap"</span><span class="p">:</span>
                         <span class="n">embedder</span> <span class="o">=</span> <span class="n">umap</span><span class="o">.</span><span class="n">UMAP</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-                    
+
                     <span class="n">embedding</span> <span class="o">=</span> <span class="n">embedder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">scaled_data</span><span class="p">)</span>
 
-                    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">e_node</span><span class="o">/</span><span class="s2">"map.npy"</span><span class="p">,</span> <span class="n">embedding</span><span class="p">)</span>
-                    <span class="n">e_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'method'</span><span class="p">,</span> <span class="n">e_type</span><span class="p">,</span> <span class="s1">'Method'</span><span class="p">)</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">e_node</span> <span class="o">/</span> <span class="s2">"map.npy"</span><span class="p">,</span> <span class="n">embedding</span><span class="p">)</span>
+                    <span class="n">e_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"method"</span><span class="p">,</span> <span class="n">e_type</span><span class="p">,</span> <span class="s2">"Method"</span><span class="p">)</span>
 
                     <span class="c1"># Clustering</span>
                     <span class="k">for</span> <span class="n">c_type</span> <span class="ow">in</span> <span class="n">clusterers</span><span class="p">:</span>
@@ -1429,30 +1429,36 @@ store = ancestree.LineageStore("ML_pipeline", rules=rules, gen_triggers=triggers
                             <span class="k">elif</span> <span class="n">c_type</span> <span class="o">==</span> <span class="s2">"hdbscan"</span><span class="p">:</span>
                                 <span class="n">model</span> <span class="o">=</span> <span class="n">HDBSCAN</span><span class="p">(</span><span class="n">min_cluster_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
                                 <span class="n">labels</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
-                            
-                            <span class="n">score</span> <span class="o">=</span> <span class="n">calinski_harabasz_score</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-                            <span class="n">c_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'CH_score'</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="s1">'text'</span><span class="p">,</span> <span class="s1">'Metrics'</span><span class="p">)</span>
 
-                            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-                            <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">embedding</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">embedding</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'turbo'</span><span class="p">)</span>
-                            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">c_node</span><span class="o">/</span><span class="s2">"clustering_img.png"</span><span class="p">)</span>
+                            <span class="n">score</span> <span class="o">=</span> <span class="n">calinski_harabasz_score</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+                            <span class="n">c_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"CH_score"</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">,</span> <span class="s2">"Metrics"</span><span class="p">)</span>
+
+                            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                                <span class="n">embedding</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">embedding</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"turbo"</span>
+                            <span class="p">)</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">c_node</span> <span class="o">/</span> <span class="s2">"clustering_img.png"</span><span class="p">)</span>
                             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                            <span class="n">c_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s1">'Final Results'</span><span class="p">,</span> <span class="n">c_node</span><span class="o">/</span><span class="s2">"clustering_img.png"</span><span class="p">,</span> <span class="s1">'Results'</span><span class="p">)</span>
+                            <span class="n">c_node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span>
+                                <span class="s2">"Final Results"</span><span class="p">,</span>
+                                <span class="n">c_node</span> <span class="o">/</span> <span class="s2">"clustering_img.png"</span><span class="p">,</span>
+                                <span class="s2">"Results"</span><span class="p">,</span>
+                            <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">scalers = {"robust": RobustScaler(), "standard":StandardScaler()}
+<div class="clipboard-copy-txt" id="cell-2">scalers = {"robust": RobustScaler(), "standard": StandardScaler()}
 embedders = ["umap", "tsne", "pca"]
 clusterers = ["kmeans", "hdbscan"]
 
 with store.create_node("raw data") as root_node:
     iris = load_iris()
-    df_raw = pd.DataFrame(iris.data, columns = iris.feature_names)
-    df_raw.to_csv(root_node/"data.csv", index=False)
+    df_raw = pd.DataFrame(iris.data, columns=iris.feature_names)
+    df_raw.to_csv(root_node / "data.csv", index=False)
 
     # Scaling
     for s_name, s_obj in scalers.items():
         with store.create_node("scaling", parent=root_node) as s_node:
             scaled_data = s_obj.fit_transform(df_raw)
-            pd.DataFrame(scaled_data).to_csv(s_node/"scaled.csv", index=False)
+            pd.DataFrame(scaled_data).to_csv(s_node / "scaled.csv", index=False)
 
             # Dim reduction
             for e_type in embedders:
@@ -1463,11 +1469,11 @@ with store.create_node("raw data") as root_node:
                         embedder = TSNE(n_components=2, perplexity=30)
                     elif e_type == "umap":
                         embedder = umap.UMAP(n_components=2)
-                    
+
                     embedding = embedder.fit_transform(scaled_data)
 
-                    np.save(e_node/"map.npy", embedding)
-                    e_node.add_meta('method', e_type, 'Method')
+                    np.save(e_node / "map.npy", embedding)
+                    e_node.add_meta("method", e_type, "Method")
 
                     # Clustering
                     for c_type in clusterers:
@@ -1478,15 +1484,21 @@ with store.create_node("raw data") as root_node:
                             elif c_type == "hdbscan":
                                 model = HDBSCAN(min_cluster_size=5)
                                 labels = model.fit_predict(embedding)
-                            
-                            score = calinski_harabasz_score(embedding, labels)
-                            c_node.add_meta('CH_score', score, 'text', 'Metrics')
 
-                            plt.figure(figsize=(6,4))
-                            plt.scatter(embedding[:, 0], embedding[:,1], c=labels, cmap='turbo')
-                            plt.savefig(c_node/"clustering_img.png")
+                            score = calinski_harabasz_score(embedding, labels)
+                            c_node.add_meta("CH_score", score, "text", "Metrics")
+
+                            plt.figure(figsize=(6, 4))
+                            plt.scatter(
+                                embedding[:, 0], embedding[:, 1], c=labels, cmap="turbo"
+                            )
+                            plt.savefig(c_node / "clustering_img.png")
                             plt.close()
-                            c_node.add_meta('Final Results', c_node/"clustering_img.png", 'Results')</div>
+                            c_node.add_meta(
+                                "Final Results",
+                                c_node / "clustering_img.png",
+                                "Results",
+                            )</div>
 </div>
 </div>
 </div>
@@ -1577,12 +1589,12 @@ with store.create_node("raw data") as root_node:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Use lambda functions for complex querying</span>
 
-<span class="n">bad_nodes</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">CH_score</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">&lt;</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">bad_nodes</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">CH_score</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">)</span>
 <span class="n">bad_nodes</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4"># Use lambda functions for complex querying
 
-bad_nodes = store.find_node(CH_score = lambda x: x&lt;1000)
+bad_nodes = store.find_node(CH_score=lambda x: x &lt; 1000)
 bad_nodes</div>
 </div>
 </div>
@@ -1626,14 +1638,14 @@ bad_nodes</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Chain search terms next to each other and supply using dictionary unpacking</span>
 
-<span class="n">search_vars</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'method'</span><span class="p">:</span><span class="s1">'pca'</span><span class="p">,</span> <span class="s1">'step_type'</span><span class="p">:</span><span class="s1">'embedding'</span><span class="p">}</span>
+<span class="n">search_vars</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"method"</span><span class="p">:</span> <span class="s2">"pca"</span><span class="p">,</span> <span class="s2">"step_type"</span><span class="p">:</span> <span class="s2">"embedding"</span><span class="p">}</span>
 
 <span class="n">nodes_of_interest</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="o">**</span><span class="n">search_vars</span><span class="p">)</span>
 <span class="n">nodes_of_interest</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5"># Chain search terms next to each other and supply using dictionary unpacking
 
-search_vars = {'method':'pca', 'step_type':'embedding'}
+search_vars = {"method": "pca", "step_type": "embedding"}
 
 nodes_of_interest = store.find_node(**search_vars)
 nodes_of_interest</div>
@@ -1676,14 +1688,14 @@ nodes_of_interest</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">last_node</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">()</span>
 
-<span class="n">nodes_in_lineage</span><span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_lineage</span><span class="p">(</span><span class="n">last_node</span><span class="p">)</span>
+<span class="n">nodes_in_lineage</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_lineage</span><span class="p">(</span><span class="n">last_node</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes_in_lineage</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">artifacts</span><span class="p">())</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-6">last_node = store.get_most_recent_node()
 
-nodes_in_lineage= store.get_lineage(last_node)
+nodes_in_lineage = store.get_lineage(last_node)
 
 for n in nodes_in_lineage:
     print(n.artifacts())</div>
@@ -1801,7 +1813,7 @@ for n in nodes_in_lineage:
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 12, 2026 20:11:52 UTC">June 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 13:26:14 UTC">June 13, 2026</span>
   </span>
 
     
