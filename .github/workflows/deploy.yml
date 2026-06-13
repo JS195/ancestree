@@ -34,14 +34,20 @@ jobs:
                       "mkdocstrings[python]" \
                       mkdocs-jupyter \
                       mkdocs-git-revision-date-localized-plugin \
-                      pytest  # 👈 Added pytest to the installation list
+                      pytest \
+                      pytest-cov 
 
       - name: Install package
         run: pip install -e .
 
       - name: Run tests with pytest
         run: |
-          pytest
+          pytest --cov=src/ancestree --cov-report=xml
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Deploy Docs
         run: mkdocs gh-deploy --force

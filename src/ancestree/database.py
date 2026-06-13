@@ -1,5 +1,6 @@
 # Python packages
 import json
+import uuid
 from pathlib import Path
 from datetime import datetime
 
@@ -85,9 +86,14 @@ class lineage_database:
             self._flush()
 
     def _flush(self):
-        tmp = self.root / '.index.json.tmp'
-        tmp.write_text(json.dumps(self.cache))
-        tmp.replace(self.snapshot_path)
+        # The temp name must be unique per writer: a shared name lets one
+        # concurrent flush replace another's temp file out from under it.
+        tmp = self.root / f'.index.{uuid.uuid4().hex}.tmp'
+        try:
+            tmp.write_text(json.dumps(self.cache))
+            tmp.replace(self.snapshot_path)
+        finally:
+            tmp.unlink(missing_ok=True)
         self._loaded_at = self.snapshot_path.stat().st_mtime_ns
 
     def rebuild_from_disk(self):
