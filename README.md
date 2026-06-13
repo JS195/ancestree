@@ -9,6 +9,8 @@
 
 **Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform.**
 
+![Pipeline Explorer](docs/assets/preview.png)
+
 No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned.
 
 ---
@@ -22,8 +24,6 @@ No server, no database, no dependencies. `pip install` + a local directory. Work
 - [What's recorded automatically](#whats-recorded-automatically)
 - [Searching and Querying](#searching-and-querying)
 - [The Pipeline Explorer](#the-pipeline-explorer)
-- [Design principles](#design-principles)
-- [Documentation & examples](#documentation--examples)
 - [Development](#development)
 - [License](#license)
 
@@ -114,11 +114,6 @@ Every node silently captures critical operational metrics and system reproducibi
 | `healthy`    | Whether the step completed, or raised mid-run                                                                                 |
 | `provenance`   | User, Python version, platform, git commit/branch, and a **dirty-worktree flag** so you know when a result isn't reproducible |
 
-
-### Crash-safe by design
-
-If your code raises inside `create_node`, anything already written is kept and the node is flagged `healthy=False`. Partial work is evidence, not garbage. If the step wrote nothing at all, the node silently vanishes: no ghost directories, ever.
-
 ---
 
 ## Searching and Querying
@@ -151,14 +146,6 @@ Inside it:
 - **Rich metadata** — inline images, file links, and pandas DataFrames rendered as tables (`data_type="table"`), grouped into sections you define. Light and dark themes included.
 - **Runs table** — flip the graph into a sortable table of runs × metrics: the "pick the best run" view when decisions trade accuracy against runtime against data size.
 
-
----
-
-## Documentation & examples
-
-- **[Documentation site](https://js195.github.io/ancestree/)** — full API reference and a live demo of the explorer.
-- **Example notebooks** in [docs/examples/](docs/examples/): [basic usage](docs/examples/basic_usage.ipynb), an end-to-end [ML pipeline](docs/examples/ML_pipeline.ipynb), and a [10k node timing benchmark](docs/examples/timing_benchmark.ipynb).
-
 ---
 
 ## Development
@@ -166,14 +153,14 @@ Built to be resilient. The test suite includes 158 verified tests protecting aga
 
 Issues and PRs welcome.
 
+Have a feature request or found a bug? Open an issue or reach out directly at [josh.smith195@outlook.com](mailto:josh.smith195@outlook.com).
+
 ```bash
 git clone https://github.com/JS195/ancestree.git
 cd ancestree
 pip install -e .
 python -m pytest tests/
 ```
-
-Have a feature request or found a bug? Open an issue or reach out directly at [josh.smith195@outlook.com](mailto:josh.smith195@outlook.com).
 
 ---
 
