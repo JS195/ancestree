@@ -10,6 +10,9 @@ try:
 except PackageNotFoundError:
     __version__ = "unknown"
 
+# Clean up the packaging tools so they don't leak into the public namespace 
+del version, PackageNotFoundError
+
 from .core import LineageStore
 
 __all__ = ["LineageStore"]

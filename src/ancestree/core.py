@@ -445,7 +445,6 @@ class LineageStore:
         The file is written to `<store root>/interactive_pipeline.html`, and the location is printed on completion.
         """
         path = run_web_generator(self)
-        print(f"Graph generated at {path}")
         return path
 
     # def host_live_graph(self):
