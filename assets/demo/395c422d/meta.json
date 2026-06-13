@@ -1,0 +1,98 @@
+{
+  "node_id": {
+    "value": "395c422d",
+    "data_type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "parent_id": {
+    "value": "55f164e9",
+    "data_type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "generation": {
+    "value": 2,
+    "data_type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "step_type": {
+    "value": "embedding",
+    "data_type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "timestamp": {
+    "value": "2026-06-13T21:03:08.086420+00:00",
+    "data_type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "user": {
+    "value": "js",
+    "data_type": "text",
+    "group": "Provenance",
+    "searchable": false
+  },
+  "python_version": {
+    "value": "3.11.14",
+    "data_type": "text",
+    "group": "Provenance",
+    "searchable": false
+  },
+  "platform": {
+    "value": "macOS-26.3-arm64-arm-64bit",
+    "data_type": "text",
+    "group": "Provenance",
+    "searchable": false
+  },
+  "git_commit": {
+    "value": "ae512ebcf3ed2c33d41c1c1b4b706c024c5101be",
+    "data_type": "text",
+    "group": "Provenance",
+    "searchable": false
+  },
+  "git_dirty": {
+    "value": true,
+    "data_type": "text",
+    "group": "Provenance",
+    "searchable": false
+  },
+  "git_branch": {
+    "value": "main",
+    "data_type": "text",
+    "group": "Provenance",
+    "searchable": false
+  },
+  "method": {
+    "value": "tsne",
+    "data_type": "text",
+    "group": "Config",
+    "searchable": true
+  },
+  "scaler": {
+    "value": "standard",
+    "data_type": "text",
+    "group": "Config",
+    "searchable": true
+  },
+  "healthy": {
+    "value": true,
+    "data_type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "duration_s": {
+    "value": 0.376,
+    "data_type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  },
+  "size_mb": {
+    "value": 0.001328,
+    "data_type": "text",
+    "group": "Structural Properties",
+    "searchable": true
+  }
+}
