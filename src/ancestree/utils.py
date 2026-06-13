@@ -17,9 +17,7 @@ import warnings
 # ---------------------------------------------------------------------------
 
 
-def get_meta_val(
-    entries: Dict[str, Any], key: str, default: Any = None
-) -> Any:
+def get_meta_val(entries: Dict[str, Any], key: str, default: Any = None) -> Any:
     e = entries.get(key)
     return e.get("value") if e else default
 
