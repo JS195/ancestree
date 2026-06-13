@@ -2,11 +2,14 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, List, Dict, Union, Optional
+from typing import Any, List, Dict, Union, Optional, Literal
 from copy import deepcopy
 
 # Internal dependancies
 from .utils import get_provenance, is_pandas
+
+_DataType = Literal["auto", "image", "link", "table", "json", "code", "text"]
+_VALID_DATA_TYPES = {"auto", "image", "link", "table", "json", "code", "text"}
 
 
 class Node:
@@ -201,7 +204,7 @@ class Node:
         key: str,
         value: Any,
         group: Optional[str] = "General",
-        data_type: str = "auto",
+        data_type: _DataType = "auto",
         searchable: bool = True,
     ) -> None:
         """
@@ -217,12 +220,37 @@ class Node:
             searchable (bool, optional): If True the entry is indexed and can be matched by the store's search methods. Set to False for display-only metadata. Defaults to True.
 
         Examples:
-            >>> with store.create_node(step_type="model") as node:
-            ...     node.add_meta("accuracy", 0.92, group="Metrics")
-            ...     node.add_meta("loss_curve", node / "loss.png", group="Metrics")   # auto: image
-            ...     node.add_meta("params", {"lr": 1e-3}, group="Config")             # auto: json
-            ...     node.add_meta("query", "SELECT * FROM runs", data_type="code")
+            >>> with store.create_node(step_type="model", parent=clean_node) as node:
+            ...     # Plain values — searchable by default
+            ...     node.add_meta("accuracy", 0.94, group="Metrics")
+            ...     node.add_meta("epochs", 42, group="Metrics")
+            ...     node.add_meta("learning_rate", 1e-3, group="Config")
+            ...
+            ...     # Dict/list — rendered as formatted JSON in the web graph
+            ...     node.add_meta("params", {"optimizer": "adam", "dropout": 0.3}, group="Config")
+            ...
+            ...     # Table — pandas DataFrame rendered as a sortable table; not searchable
+            ...     node.add_meta("results", df, data_type="table", group="Outputs")
+            ...
+            ...     # Image — path rewritten relative to store root, rendered inline
+            ...     fig.savefig(node / "confusion.png")
+            ...     node.add_meta("confusion_matrix", node / "confusion.png", group="Figures")
+            ...
+            ...     # Code — rendered in a monospaced block
+            ...     node.add_meta("query", "SELECT * FROM runs WHERE status = 'ok'", data_type="code")
+            ...
+            ...     # Display-only — visible in the web graph but excluded from find_node
+            ...     node.add_meta("notes", "rerun after fixing label encoding", searchable=False)
+            ...
+            ...     # External link — rendered as a clickable URL
+            ...     node.add_meta("wandb_run", "https://wandb.ai/my-org/run/abc123", group="Links")
         """
+        if data_type not in _VALID_DATA_TYPES:
+            raise ValueError(
+                f"Invalid data_type {data_type!r}. "
+                f"Must be one of: {', '.join(sorted(_VALID_DATA_TYPES))}"
+            )
+
         if data_type == "auto":
             data_type = self._infer_data_type(value)
 

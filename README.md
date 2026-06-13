@@ -44,7 +44,7 @@ One of Ancestree's first production use cases was an iterative optimisation, wit
 ## What makes it different
 
 **It enforces lineage — it doesn't just record it.**
-`rules={"model": ["clean"]}` makes an illegal pipeline transition a `ValueError` at creation time. Every other tracker is a passive logbook. This is an active grammar for your pipeline.
+Rules are optional, but if you declare them: `rules={"model": ["clean"]}`, illegal transitions raise a `ValueError` at creation time. Every other tracker is a passive logbook. This is active grammar for your pipeline.
 
 **Files are the database. There is no lock-in.**
 Every node is a plain directory. Every record is a human-readable `meta.json` sitting next to the artifacts it describes. You can `grep` it, `rsync` it, zip it, commit it. Uninstall Ancestree tomorrow — your lineage is still legible. The index is a disposable cache; delete it and it rebuilds from disk.
