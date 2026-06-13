@@ -4,7 +4,6 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Docs](https://github.com/JS195/ancestree/actions/workflows/deploy.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
-[![Build Status](https://github.com/JS195/ancestree/actions/workflows/pytest.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
 [![codecov](https://codecov.io/gh/JS195/ancestree/graph/badge.svg)](https://codecov.io/gh/JS195/ancestree)
 
 **Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform.**
