@@ -931,8 +931,9 @@
 <p>If you write very few nodes per session over many sessions, call <code>store.rebuild_db_from_disk()</code> periodically. It rewrites a clean snapshot from the directories and clears the journal.</p>
 </div>
 <h2 id="metadata-coercion-and-overwrites">Metadata coercion and overwrites</h2>
+<p>A handful of keys are reserved by the store — <code>parent_id</code>, <code>step_type</code>, <code>generation</code>, <code>timestamp</code>, <code>healthy</code>, <code>duration_s</code>, and <code>size_mb</code>. <code>add_meta</code> raises <code>ValueError</code> if you try to set one, so you cannot accidentally overwrite the structural metadata the store depends on for lineage, recency, and health.</p>
 <p><code>table</code> and <code>json</code> entries are always stored non-searchable, and <code>image</code>/<code>link</code> entries that point at files (rather than URLs) are rewritten relative to the store root and also forced non-searchable. They render in the web graph but cannot be matched by <code>find_node</code>.</p>
-<p>The default <code>auto</code> data type never inspects string <em>contents</em>. A string that looks like a file path or filename stays plain text. If you want it treated as an image or link, pass <code>data_type</code> explicitly. Images or links are inferred only if they are Pathlib objects.</p>
+<p>The default <code>auto</code> data type infers the rendering from the value's <em>type</em>, not by sniffing string contents: a <code>Path</code> becomes an image (by file suffix) or a file link, a <code>dict</code>/<code>list</code> becomes JSON, a DataFrame becomes a table, and an <code>http(s)://</code> string becomes a link. Any other string stays plain <code>text</code> — a string that merely looks like a file path or filename is not treated as one. Pass <code>data_type</code> explicitly to override.</p>
 <h2 id="paths-and-artifacts">Paths and artifacts</h2>
 <p><code>artifacts(contains=...)</code> matches both as a glob and as a case-insensitive substring anywhere in the filename, and always excludes <code>meta.json</code>.</p>
 <h2 id="automatic-provenance">Automatic provenance</h2>
@@ -960,7 +961,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 19:18:53 UTC">June 13, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 20:24:32 UTC">June 13, 2026</span>
   </span>
 
     
