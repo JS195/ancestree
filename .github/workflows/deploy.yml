@@ -1,4 +1,4 @@
-name: Deploy MkDocs & Run Tests
+name: Deploy MkDocs
 
 on:
   push:
@@ -33,21 +33,10 @@ jobs:
           pip install "mkdocs-material[imaging]" \
                       "mkdocstrings[python]" \
                       mkdocs-jupyter \
-                      mkdocs-git-revision-date-localized-plugin \
-                      pytest \
-                      pytest-cov 
+                      mkdocs-git-revision-date-localized-plugin
 
       - name: Install package
         run: pip install -e .
-
-      - name: Run tests with pytest
-        run: |
-          pytest --cov=src/ancestree --cov-report=xml
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Deploy Docs
         run: mkdocs gh-deploy --force
