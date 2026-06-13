@@ -10,6 +10,7 @@
 **Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform.**
 
 ![Pipeline Explorer](docs/assets/preview.png)
+> 🌐 **[Click here to play with the Live Interactive Explorer Demo!](https://js195.github.io/ancestree/demo/)** Try switching to dark mode, hovering over nodes to trace ancestry, or using `Cmd+Click` to run a live metadata diff right in your browser.
 
 No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned. Safe on NFS.
 
@@ -118,7 +119,7 @@ Every node silently captures critical operational metrics and system reproducibi
 
 ## Searching and Querying
 
-Because your execution history is structured as a proper lineage Directed Acyclic Graph (DAG) instead of a flat list of independent runs, you can ask your codebase complex ancestral questions using plain Python and native lambdas. Querying is fast at >5ms even with 10,000 nodes.
+Because your execution history is structured as a proper lineage Directed Acyclic Graph (DAG) instead of a flat list of independent runs, you can ask your codebase complex ancestral questions using plain Python and native lambdas. Querying is optimised for speed, returning results in >5ms even with 10,000 nodes.
 
 ```python
 store.find_node(step_type="model")                          # all model runs
