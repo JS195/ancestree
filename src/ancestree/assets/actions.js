@@ -495,8 +495,8 @@ function toggleTableView() {
 // Runs table: one row per node in focus, one column per numeric metric —
 // the "pick the best run" surface when a decision trades off several
 // metrics. Rows pass through the same nodeFocused() as the graph, so the
-// search bar and every filter apply unchanged; clicking a row jumps back
-// to the node in the graph.
+// search bar and every filter apply unchanged; clicking a row shows that
+// node in the details pane, staying in the table view.
 function renderTable() {
     const all = nodes.get();
     const keys = numericMetricKeys(all);
@@ -546,9 +546,20 @@ function renderTable() {
             renderTable();
         }));
     container.querySelectorAll('tr[data-id]').forEach(tr =>
-        tr.addEventListener('click', () => {
-            toggleTableView();
-            selectNode(tr.dataset.id);
+        tr.addEventListener('click', e => {
+            // Show the row's node in the details pane without leaving the
+            // table; switching to the graph is reserved for the Graph button.
+            // Cmd/Ctrl-click adds a second node and triggers comparison, the
+            // same as multiselect does in the graph.
+            const id = tr.dataset.id;
+            let ids = [id];
+            if (e.metaKey || e.ctrlKey) {
+                const current = network.getSelectedNodes();
+                ids = current.includes(id) ? current.filter(x => x !== id)
+                                           : [...current, id].slice(-2);
+            }
+            network.selectNodes(ids);
+            showSelection(ids);
         }));
 }
 
@@ -754,6 +765,36 @@ window.onload = function() {
         });
     }
 
+    // Clicking empty table space deselects, mirroring a click on blank graph
+    // canvas. Bound once on the container; rows/headers are recreated on every
+    // renderTable, so a click inside one is identified via closest() rather
+    // than a per-row guard.
+    const tableContainer = document.getElementById('table-view');
+    if (tableContainer) {
+        tableContainer.addEventListener('click', e => {
+            if (!e.target.closest('tr[data-id], th[data-key]')) {
+                network.unselectAll();
+                showSelection([]);
+            }
+        });
+    }
+
+    // Copy button in the node header: delegated once on the pane since its
+    // contents are re-rendered on every selection. Writes the node's
+    // store.get_node(...) call to the clipboard and flashes a tick.
+    const nodeContent = document.getElementById('node-content');
+    if (nodeContent) {
+        nodeContent.addEventListener('click', e => {
+            const btn = e.target.closest('.copy-code-btn');
+            if (!btn) return;
+            const code = `store.get_node('${btn.dataset.nodeId}')`;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.classList.add('copied');
+                setTimeout(() => btn.classList.remove('copied'), 1200);
+            });
+        });
+    }
+
     network.on("hoverNode", function (params){
         // Full lineage: everything upstream and everything downstream
         const lineageNodes = walkLineage(params.node, 'from');
@@ -838,8 +879,10 @@ function renderMetadata(entries) {
     if (!entries) return '';
     const groups = {};
 
-    for (const [key, entry] of Object.entries(entries))
-    (groups[entry.group] ??= []).push([key, entry]);
+    for (const [key, entry] of Object.entries(entries)) {
+        if (key === 'node_id') continue; // shown in the header, not as a row
+        (groups[entry.group] ??= []).push([key, entry]);
+    }
 
     // Provenance is reference material, not results: render it last.
     const ordered = Object.entries(groups).sort((a, b) =>
@@ -936,8 +979,30 @@ function renderStatusBanner(node) {
 
 function generateNodeHtml(nodeData) {
     return `<div class="node-info">
+    ${nodeHeader(nodeData)}
     ${renderStatusBanner(nodeData)}
     ${renderMetadata(nodeData.entries)}
+    </div>`;
+}
+
+// Sticky identity header for the single-node view: colour dot, step type and
+// node id in the same style as the comparison columns, plus a button that
+// copies the ready-to-paste store.get_node(...) call back into the user's code.
+function nodeHeader(node) {
+    const colour = stringToColor(node.group);
+    return `
+    <div class="node-head">
+        <div class="compare-head-col" title="${node.id}">
+            <span class="legend-dot" style="background:${colour.node_colour}; border-color:${colour.node_border_colour}"></span>
+            <span class="compare-head-type">${node.group}</span>
+            <span class="compare-head-id">${node.id}</span>
+        </div>
+        <button class="copy-code-btn" data-node-id="${node.id}" title="Copy store.get_node('${node.id}')" aria-label="Copy store.get_node call">
+            <svg class="copy-code-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+                <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect>
+                <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5"></path>
+            </svg>
+        </button>
     </div>`;
 }
 

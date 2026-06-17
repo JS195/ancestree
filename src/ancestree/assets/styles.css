@@ -393,6 +393,57 @@ button.theme-toggle:active {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+/* Single-node identity header: mirrors .compare-head visually but is one
+   column with a copy button on the right. */
+.node-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg-elevated);
+    border: 0.5px solid var(--border);
+    box-shadow: inset 0 1px 0 var(--card-highlight), var(--card-shadow);
+}
+.node-head .compare-head-col {
+    min-width: 0;
+}
+.copy-code-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 0.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.copy-code-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+.copy-code-btn.copied {
+    color: #2e9e5b;
+    border-color: #2e9e5b;
+}
+.copy-code-btn.copied .copy-code-icon {
+    display: none;
+}
+.copy-code-btn.copied::after {
+    content: '\2713';
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+}
 .compare-row {
     padding: 8px 0;
     border-bottom: 0.5px solid var(--border);
