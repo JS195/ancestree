@@ -12,7 +12,7 @@
 ![Pipeline Explorer](docs/assets/preview.png)
 > 🌐 **[Click here to play with the Live Interactive Explorer Demo!](https://js195.github.io/ancestree/demo/)** Try switching to dark mode, hovering over nodes to trace ancestry, or using `Cmd+Click` to run a live metadata diff right in your browser.
 
-No server, no database, no dependencies. `pip install` + a local directory. Works for any iterative workflow, not just machine learning. Runs where the others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned. Safe on NFS.
+No server, no database, no dependencies. `pip install` + a local directory. For any workflow, not just machine learning. Runs where others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned. Safe on NFS.
 
 ---
 
