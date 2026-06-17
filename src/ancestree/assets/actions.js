@@ -15,7 +15,7 @@ const DIM_EDGE = 'rgba(200, 200, 200, 0.05)';
 const RICH_TYPES = new Set(['image', 'link', 'table', 'json', 'code']);
 
 function parseQuery(query) {
-    return query.trim().toLowerCase().split(/\s+/).filter(Boolean).map(term => {
+    return query.trim().toLowerCase().split(/[\s,]+/).filter(Boolean).map(term => {
         const m = term.match(/^([^=:<>]+)(>=|<=|=|:|>|<)(.+)$/);
         return m ? {field: m[1], op: m[2] === ':' ? '=' : m[2], value: m[3]}
                  : {op: 'text', value: term};
