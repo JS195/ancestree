@@ -162,9 +162,15 @@ function nodeVisual(n, focused, ctx) {
 function applyHighlight() {
     const ctx = renderContext();
     const all = nodes.get();
-    const focused = new Set(all.filter(nodeFocused).map(n => n.id));
+    const focusedNodes = all.filter(nodeFocused);
+    const focused = new Set(focusedNodes.map(n => n.id));
     const filtering = searchMatches !== null || typeFilter !== null ||
                       statusFilter !== null || dayFilter !== null;
+
+    // The heatmap colours and ranking scope to whatever is in focus, so a
+    // search or filter narrows the scale and Top 5 to just those nodes. Must
+    // run before the node repaint below, which reads heatmap.min/max.
+    if (heatmap) updateHeatRange(focusedNodes);
 
     nodes.update(all.map(n => nodeVisual(n, focused.has(n.id), ctx)));
     edges.update(edges.get().map(edge => ({
@@ -328,27 +334,23 @@ function buildLegend(allNodes) {
                 typeList.style.display = '';
                 title.textContent = 'Step types';
             } else {
-                const values = allNodes.map(n => numericValue(n, key)).filter(v => v !== null);
                 const isTime = allNodes.some(n => {
                     const entry = (n.entries || {})[key];
                     return entry && typeof entry.epoch === 'number';
                 });
-                heatmap = {key: key, min: Math.min(...values), max: Math.max(...values),
-                           isTime: isTime, desc: true};
+                // Range, ticks and ranking are filled in by applyHighlight ->
+                // updateHeatRange so they track the focused set, not all nodes.
+                heatmap = {key: key, min: 0, max: 0, isTime: isTime, desc: true};
 
                 // The colour bar takes over the key's slot: clear any type
                 // filter, since its controls are hidden in heatmap mode.
                 typeFilter = null;
                 container.querySelectorAll('.legend-item').forEach(el => el.classList.remove('inactive'));
 
-                document.getElementById('heat-tick-max').textContent = formatTick(heatmap.max, isTime);
-                document.getElementById('heat-tick-mid').textContent = formatTick((heatmap.min + heatmap.max) / 2, isTime);
-                document.getElementById('heat-tick-min').textContent = formatTick(heatmap.min, isTime);
                 typeList.style.display = 'none';
                 scale.style.display = 'flex';
                 rank.style.display = 'block';
                 title.textContent = key;
-                renderRanking(allNodes);
             }
             applyHighlight();
         });
@@ -359,7 +361,7 @@ function buildLegend(allNodes) {
         rankHead.addEventListener('click', () => {
             if (!heatmap) return;
             heatmap.desc = !heatmap.desc;
-            renderRanking(allNodes);
+            renderRanking(nodes.get().filter(nodeFocused));
         });
     }
 }
@@ -456,6 +458,22 @@ function buildTimeline(allNodes) {
             applyHighlight();
         });
     });
+}
+
+// Recompute the heatmap's value range over the nodes currently in focus and
+// refresh the scale ticks and ranking to match. Driven from applyHighlight so
+// every search/filter change re-scopes the colours; with nothing in focus
+// carrying the metric, the last range is kept rather than blanking out.
+function updateHeatRange(focusedNodes) {
+    const values = focusedNodes.map(n => numericValue(n, heatmap.key)).filter(v => v !== null);
+    if (values.length) {
+        heatmap.min = Math.min(...values);
+        heatmap.max = Math.max(...values);
+    }
+    document.getElementById('heat-tick-max').textContent = formatTick(heatmap.max, heatmap.isTime);
+    document.getElementById('heat-tick-mid').textContent = formatTick((heatmap.min + heatmap.max) / 2, heatmap.isTime);
+    document.getElementById('heat-tick-min').textContent = formatTick(heatmap.min, heatmap.isTime);
+    renderRanking(focusedNodes);
 }
 
 // Ranked list of nodes by the active heatmap metric — answers "which run is
