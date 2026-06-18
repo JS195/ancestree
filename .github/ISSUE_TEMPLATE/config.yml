@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or general discussion
+    url: https://github.com/JS195/ancestree/discussions
+    about: For questions and ideas that aren't bug reports or feature requests.
+  - name: Email the maintainer
+    url: mailto:78921007+JS195@users.noreply.github.com
+    about: Prefer to reach out directly? That's fine too.

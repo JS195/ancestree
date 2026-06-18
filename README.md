@@ -1,6 +1,6 @@
 # Ancestree
 
-[![PyPI version](https://img.shields.io/pypi/v/ancestree)](https://pypi.org/project/ancestree/)
+[![PyPI version](https://img.shields.io/pypi/v/ancestree-track)](https://pypi.org/project/ancestree-track/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Docs](https://github.com/JS195/ancestree/actions/workflows/deploy.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
@@ -36,7 +36,7 @@ Iterative workflows are messy. You run ten variations, tweak parameters, rerun b
 
 This is a problem in machine learning, but it's just as common in simulation, optimisation, data engineering, and document processing; any workflow where steps build on each other and results branch. Tools like MLflow solve it well, but only if you're doing ML and willing to stand up a server, otherwise the options are thin.
 
-Ancestree solves this modelling the pipeline as a directed acyclic graph. **Every step of your pipeline is a local node folder**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable family tree of your work that is durable on disk, reconstructable at any time, and visual when you want it to be.
+Ancestree solves this modelling the pipeline as a directed acyclic graph. **Every step of your pipeline is a local node folder**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable data lineage tree of your work that is durable on disk, reconstructable at any time, and visual when you want it to be.
 
 One of Ancestree's first production use cases was an iterative optimisation, with 10+ generations, 3 steps per generation, and dozens of branches.
 
@@ -69,7 +69,7 @@ Step types are your vocabulary — ETL, simulation, lab protocol, report generat
 Requires Python 3.9+. No dependencies.
 
 ```bash
-pip install ancestree
+pip install ancestree-track
 ```
 
 ## Quick Start
@@ -152,7 +152,7 @@ Inside it:
 ## Development
 Issues and PRs welcome.
 
-Have a feature request or found a bug? Open an issue or reach out directly at [josh.smith195@outlook.com](mailto:josh.smith195@outlook.com).
+Have a feature request or found a bug? Open an issue or reach out directly at [78921007+JS195@users.noreply.github.com](mailto:78921007+JS195@users.noreply.github.com).
 
 ```bash
 git clone https://github.com/JS195/ancestree.git

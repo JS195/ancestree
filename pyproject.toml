@@ -3,15 +3,15 @@ requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ancestree"
+name = "ancestree-track"
 version = "0.1.0"
 description = "A Python package for tracing and managing data lineage"
 readme = "README.md"
 authors = [
-  {name = "Joshua Smith", email = "josh.smith195@outlook.com"}
+  {name = "Joshua Smith", email = "78921007+JS195@users.noreply.github.com"}
 ]
 maintainers = [
-  {name = "Joshua Smith", email = "josh.smith195@outlook.com"}
+  {name = "Joshua Smith", email = "78921007+JS195@users.noreply.github.com"}
 ]
 classifiers = [
   "Development Status :: 3 - Alpha",

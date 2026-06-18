@@ -57,7 +57,7 @@
 Install **Ancestree** directly via pip:
 
 ```bash
-pip install ancestree
+pip install ancestree-track
 ```
 
 ## How it works

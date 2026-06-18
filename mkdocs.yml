@@ -81,7 +81,7 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/JS195/ancestree
     - icon: fontawesome/brands/python
-      link: https://pypi.org/project/ancestree/
+      link: https://pypi.org/project/ancestree-track/
 
 nav:
   - Home: index.md
