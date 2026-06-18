@@ -1,6 +1,6 @@
 # Ancestree
 
-[![PyPI version](https://img.shields.io/pypi/v/ancestree-track)](https://pypi.org/project/ancestree-track/)
+[![PyPI version](https://img.shields.io/pypi/v/ancestree-track?cacheSeconds=300)](https://pypi.org/project/ancestree-track/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/JS195/ancestree/blob/main/LICENSE)
 [![Docs](https://github.com/JS195/ancestree/actions/workflows/deploy.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
