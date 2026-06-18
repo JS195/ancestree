@@ -2,14 +2,14 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/ancestree-track)](https://pypi.org/project/ancestree-track/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/JS195/ancestree/blob/main/LICENSE)
 [![Docs](https://github.com/JS195/ancestree/actions/workflows/deploy.yml/badge.svg)](https://github.com/JS195/ancestree/actions)
 [![CI](https://github.com/JS195/ancestree/actions/workflows/ci.yml/badge.svg)](https://github.com/JS195/ancestree/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/JS195/ancestree/graph/badge.svg)](https://codecov.io/gh/JS195/ancestree)
 
 **Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform.**
 
-![Pipeline Explorer](docs/assets/preview.png)
+![Pipeline Explorer](https://raw.githubusercontent.com/JS195/ancestree/main/docs/assets/preview.png)
 > 🌐 **[Click here to play with the Live Interactive Explorer Demo!](https://js195.github.io/ancestree/demo/)** Try switching to dark mode, hovering over nodes to trace ancestry, or using `Cmd+Click` to run a live metadata diff right in your browser.
 
 No server, no database, no dependencies. `pip install` + a local directory. For any workflow, not just machine learning. Runs where others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned. Safe on NFS.
@@ -135,7 +135,7 @@ store.prune(bad_branch)                                      # preview a deletio
 
 ## The Pipeline Explorer
 
-![Pipeline Explorer](docs/assets/preview.png)
+![Pipeline Explorer](https://raw.githubusercontent.com/JS195/ancestree/main/docs/assets/preview.png)
 
 `generate_web_graph()` renders the entire store into **one self-contained HTML file** — every style and script inlined, so it opens anywhere and ships as-is to a colleague or a static site.
 
@@ -165,4 +165,4 @@ python -m pytest tests/
 
 ## License
 
-[MIT](LICENSE) © Joshua Smith
+[MIT](https://github.com/JS195/ancestree/blob/main/LICENSE) © Joshua Smith
