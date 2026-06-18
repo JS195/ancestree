@@ -7,7 +7,7 @@
 [![CI](https://github.com/JS195/ancestree/actions/workflows/ci.yml/badge.svg)](https://github.com/JS195/ancestree/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/JS195/ancestree/graph/badge.svg)](https://codecov.io/gh/JS195/ancestree)
 
-**Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform.**
+**Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform. Designed to fit around your workflow, not the other way round.**
 
 ![Pipeline Explorer](https://raw.githubusercontent.com/JS195/ancestree/main/docs/assets/preview.png)
 > 🌐 **[Click here to play with the Live Interactive Explorer Demo!](https://js195.github.io/ancestree/demo/)** Try switching to dark mode, hovering over nodes to trace ancestry, or using `Cmd+Click` to run a live metadata diff right in your browser.
