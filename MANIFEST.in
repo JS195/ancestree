@@ -1,1 +1,2 @@
 graft src/ancestree/assets
+prune src/*.egg-info
