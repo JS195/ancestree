@@ -1,27 +1,22 @@
-/* Ancestree brand — matches the interactive graph palette */
-[data-md-color-primary="custom"] {
-    --md-primary-fg-color: #34c759;
-    --md-primary-fg-color--light: #7dde96;
-    --md-primary-fg-color--dark: #248a3d;
-    --md-accent-fg-color: #30d158;
-    --md-accent-fg-color--transparent: #30d1581a;
-    --md-typeset-a-color: #34c759;
-}
+/* Ancestree brand — Verdant Adriatic (Punchy, vibrant green, premium finish) */
+[data-md-color-primary="custom"],
 [data-md-color-scheme="slate"][data-md-color-primary="custom"] {
-    --md-hue: 140;
-    --md-primary-fg-color: #30d158;
-    --md-primary-fg-color--light: #7dde96;
-    --md-primary-fg-color--dark: #248a3d;
-    --md-accent-fg-color: #5de471;
-    --md-accent-fg-color--transparent: #5de4711a;
-    --md-typeset-a-color: #5de471;
+    --md-hue: 160;                            /* Shifted further into lush green territory */
+    --md-primary-fg-color: #00A36C;           /* Highly saturated, rich jade-sea green */
+    --md-primary-fg-color--light: #44D7A4;    /* Luminous, punchy highlight for hovers */
+    --md-primary-fg-color--dark: #006E48;     /* Deep, high-contrast forest-sea tone */
+    --md-accent-fg-color: #00B377;            /* Vibrant focal pop that stays elegant */
+    --md-accent-fg-color--transparent: #00B3771a;
+    --md-typeset-a-color: #00A36C;            /* Uniform link color */
 }
+
 .hero-buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0.6rem;
     width: 100%;
 }
+
 .hero-buttons .md-button {
     display: flex;
     align-items: center;
@@ -31,12 +26,14 @@
     width: 100%;
     text-align: center;
 }
+
 .doc-object {
     margin-top: 50px !important;
     margin-bottom: 50px !important;
     border-top: 1px solid var(--md-default-fg-color--lightest);
     padding-top: 25px;
 }
+
 .md-grid {
     max-width: 100%;
 }
