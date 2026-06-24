@@ -28,7 +28,7 @@ class LineageStore:
         root: Union[Path, str],
         rules: Optional[Dict[str, Any]] = None,
         gen_triggers: Optional[List[str]] = None,
-        dedupe: bool = False,
+        dedupe: bool = True,
     ):
         """
         Initialises the LineageStore, ensures its directory exists, and loads or creates the ruleset configuration.
