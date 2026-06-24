@@ -28,6 +28,7 @@ class LineageStore:
         root: Union[Path, str],
         rules: Optional[Dict[str, Any]] = None,
         gen_triggers: Optional[List[str]] = None,
+        dedupe: bool = False,
     ):
         """
         Initialises the LineageStore, ensures its directory exists, and loads or creates the ruleset configuration.
@@ -38,6 +39,7 @@ class LineageStore:
             root (Union[Path, str]): Root directory for data pipeline. This is where the nodes sit.
             rules (Dict, optional): A mapping defining the allowed transitions. Defaults to None.
             gen_triggers (List, optional): Step types that mark a new generation. When a node of this type is created, its generation number increments by one relative to its parent. Defaults to None.
+            dedupe (bool, optional): When True, a node that is content-identical to one already in the store is not created a second time: `create_node` reuses the existing node instead, and the variable yielded by the `with` block points at it. Two nodes are content-identical when they share the same step_type, the same parent, the same user metadata, and byte-identical artifacts; volatile fields (node_id, timestamp, duration, size) and provenance (user, platform, git state) are ignored. A candidate match is byte-verified before reuse. This is a behaviour of the store instance and is not persisted in the config — pass it each time you open a store you want to deduplicate. Defaults to False.
 
         Examples:
             >>> rules = {"clean": ["ingest"], "model": ["clean"]}
@@ -50,6 +52,7 @@ class LineageStore:
         config = self._do_config(rules, gen_triggers)
         self.rules = config["rules"]
         self.triggers = config["triggers"]
+        self.dedupe = dedupe
         self.database = lineage_database(self.root)
 
     def _do_config(
@@ -111,6 +114,12 @@ class LineageStore:
         adds metadata; an untouched node is discarded with a warning. If the
         user's code raises after writing, the partial work is persisted and the
         node's 'healthy' metadata flag is set to False (True on clean completion).
+
+        If the store was opened with `dedupe=True` and the block completes
+        cleanly, a node that is content-identical to one already in the store
+        is not created again: the existing node is reused and the `as node`
+        variable is rebound onto it. See `LineageStore.__init__` for what counts
+        as content-identical.
 
         Args:
             step_type (str): The type of pipeline step being performed.
@@ -188,11 +197,20 @@ class LineageStore:
         'healthy' flag, how long the block took in 'duration_s', and the
         total size of its files in 'size_mb'. Returns True if the node was
         persisted.
+
+        When the store has dedupe enabled and the node completed cleanly, a
+        node that is content-identical to an existing one is not persisted
+        again: the existing node is reused (see `_deduplicate`) and True is
+        returned without writing a second copy.
         """
         has_artifacts = bool(node.artifacts())
         has_user_meta = bool(set(node._hydrate()) - node._system_keys)
         if not (has_artifacts or has_user_meta):
             return False
+        # Only deduplicate clean completions: a failed (unhealthy) run holds
+        # partial work that should never be merged into a healthy node.
+        if self.dedupe and healthy and self._deduplicate(node):
+            return True
         size = sum(f.stat().st_size for f in node.path.rglob("*") if f.is_file())
         node._set_meta(
             "healthy", healthy, data_type="text", group="Structural Properties"
@@ -212,6 +230,54 @@ class LineageStore:
         node._write_meta()
         self.database.add(node.node_id, node.to_db())
         return True
+
+    def _deduplicate(self, node: "Node") -> bool:
+        """
+        If `node` is content-identical to a node already in the store, rebinds
+        it onto that existing node, discards the directory just written, and
+        returns True. Otherwise stamps the node with its content hash so future
+        runs can find it, and returns False.
+
+        The content hash is only a fast bucket key: a candidate it points to is
+        byte-verified with `_content_equal` before reuse, so a hash collision
+        can never merge two genuinely different nodes.
+        """
+        content_hash = node.content_hash()
+        candidate_id = self.database.find_by_hash(content_hash)
+        if candidate_id:
+            candidate = self.get_node(candidate_id)
+            if candidate and node._content_equal(candidate):
+                self._adopt(node, candidate)
+                return True
+        # New content (or an astronomically unlikely hash collision): record
+        # the hash so a later identical node deduplicates against this one.
+        node._set_meta(
+            "content_hash",
+            content_hash,
+            data_type="text",
+            group="Structural Properties",
+        )
+        return False
+
+    @staticmethod
+    def _adopt(node: "Node", existing: "Node") -> None:
+        """
+        Rebinds `node` in place onto an existing, content-identical node and
+        deletes the directory `node` had just written. Because `create_node`
+        yields this same object to the user, their `with ... as node` variable
+        transparently becomes the existing node — including when later passed
+        as a `parent`.
+        """
+        stale_dir = node.path
+        node.node_id = existing.node_id
+        node.path = existing.path
+        node.generation = existing.generation
+        node.parent_id = existing.parent_id
+        node.step_type = existing.step_type
+        node._metadata = existing._hydrate()
+        node._system_keys = set(existing._hydrate())
+        if stale_dir.resolve() != existing.path.resolve():
+            shutil.rmtree(stale_dir, ignore_errors=True)
 
     # ---------------------------------------------------------------------------
     # Searching and Querying

@@ -1,4 +1,5 @@
 # Python packages
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,7 +19,25 @@ _RESERVED_KEYS = {
     "timestamp",
     "duration_s",
     "size_mb",
+    "content_hash",
 }
+
+# Provenance keys written by Node._create. They record *who/where/when* a node
+# was produced, not *what* it contains, so they are excluded from the content
+# fingerprint used for deduplication.
+_PROVENANCE_KEYS = {
+    "user",
+    "python_version",
+    "platform",
+    "git_commit",
+    "git_dirty",
+    "git_branch",
+}
+
+# Metadata keys that do not contribute to a node's content identity: structural
+# fields (handled separately or derived), the content hash itself, and
+# provenance. Everything else — user-added metadata — is content.
+_NON_CONTENT_KEYS = _RESERVED_KEYS | _PROVENANCE_KEYS | {"node_id"}
 
 
 class Node:
@@ -350,6 +369,65 @@ class Node:
         finally:
             if temp_file.exists():
                 temp_file.unlink()
+
+    def _content_meta(self) -> Dict[str, Any]:
+        """The node's user-supplied metadata entries — everything that is not
+        a structural, provenance, or content-hash key. This is the metadata
+        portion of the node's content identity."""
+        return {
+            key: entry
+            for key, entry in self._hydrate().items()
+            if key not in _NON_CONTENT_KEYS
+        }
+
+    def _artifact_digests(self) -> Dict[str, str]:
+        """Maps each artifact's path (relative to the node's *own* directory,
+        so it is independent of the random node_id) to the SHA-256 of its
+        bytes. meta.json is excluded — it is metadata, not content."""
+        digests: Dict[str, str] = {}
+        for f in sorted(self.path.rglob("*")):
+            if f.is_file() and f.name != "meta.json":
+                rel = f.relative_to(self.path).as_posix()
+                digests[rel] = hashlib.sha256(f.read_bytes()).hexdigest()
+        return digests
+
+    def content_hash(self) -> str:
+        """A SHA-256 fingerprint of the node's content: its step_type, parent,
+        user metadata, and the bytes of every artifact. Excludes volatile
+        fields (node_id, timestamp, duration, size, healthy flag) and
+        provenance, so two runs producing the same step with the same metadata
+        and identical artifact bytes share a fingerprint.
+
+        Used by the store to deduplicate nodes when `dedupe=True`. The hash is
+        only a fast bucket key — the store byte-verifies a candidate match with
+        `_content_equal` before reusing it.
+
+        Returns:
+            str: The hex SHA-256 digest.
+        """
+        payload = {
+            "step_type": self.step_type,
+            "parent_id": self.parent_id,
+            "meta": self._content_meta(),
+            "artifacts": self._artifact_digests(),
+        }
+        blob = json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), default=str
+        )
+        return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+    def _content_equal(self, other: "Node") -> bool:
+        """True if this node and `other` are content-identical: same step_type,
+        same parent, same user metadata, and byte-identical artifacts. This is
+        the definitive check behind deduplication — the content hash only
+        narrows the candidates; equality is confirmed here so a hash collision
+        can never cause two genuinely different nodes to be merged."""
+        return (
+            self.step_type == other.step_type
+            and self.parent_id == other.parent_id
+            and self._content_meta() == other._content_meta()
+            and self._artifact_digests() == other._artifact_digests()
+        )
 
     def to_db(self) -> Dict[str, Any]:
         # This is a flat key value dict for easy searching and indexing

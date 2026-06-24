@@ -89,6 +89,7 @@ nav:
       - Overview: examples.md
       - Basic Usage: examples/basic_usage.ipynb
       - Machine Learning Pipeline: examples/ML_pipeline.ipynb
+      - Deduplicating Nodes: examples/dedupe.ipynb
       - Timing Benchmark: examples/timing_benchmark.ipynb
   - Live Demo: demo.md
   - API Reference: reference.md

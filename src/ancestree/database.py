@@ -44,6 +44,10 @@ class lineage_database:
         self._log_mtime: Optional[int] = None
         self._since_compact = 0
         self._compacted_size = 0
+        # Reverse lookup content_hash -> node_id for deduplication. Derived
+        # from the cache and rebuilt lazily; kept in sync on add/remove so
+        # dedup stays O(1) per node rather than scanning the whole index.
+        self._hash_index: Optional[Dict[str, str]] = None
 
     @staticmethod
     def _mtime_ns(path: Path) -> Optional[int]:
@@ -84,6 +88,7 @@ class lineage_database:
         assert self._cache is not None
         self._snapshot_mtime = snap_mtime
         self._compacted_size = len(self._cache)
+        self._hash_index = None  # cache replaced; rebuild lazily on next lookup
         self._replay_log()
         self._reconcile()
 
@@ -165,6 +170,7 @@ class lineage_database:
             p.parent.name: flatten_meta(json.loads(p.read_text()))
             for p in self.root.glob("*/meta.json")
         }
+        self._hash_index = None  # cache replaced; rebuild lazily on next lookup
         self._write_snapshot()
 
     def _refresh_if_stale(self) -> None:
@@ -174,12 +180,36 @@ class lineage_database:
     def add(self, node_id: str, meta: IndexEntry) -> None:
         self._refresh_if_stale()
         self.cache[node_id] = meta
+        if self._hash_index is not None:
+            content_hash = meta.get("content_hash")
+            if content_hash:
+                self._hash_index[content_hash] = node_id
         self._append_log({"id": node_id, "meta": meta})
 
     def remove(self, node_id: str) -> None:
         self._refresh_if_stale()
-        self.cache.pop(node_id, None)
+        entry = self.cache.pop(node_id, None)
+        if self._hash_index is not None and entry:
+            content_hash = entry.get("content_hash")
+            # Only drop the mapping if it still points at this node; a later
+            # duplicate could have overwritten it.
+            if content_hash and self._hash_index.get(content_hash) == node_id:
+                del self._hash_index[content_hash]
         self._append_log({"_op": "del", "id": node_id})
+
+    def find_by_hash(self, content_hash: str) -> Optional[str]:
+        """Returns the node_id of an indexed node whose content_hash matches,
+        or None. Backs deduplication: the store treats the result as a
+        candidate and byte-verifies it before reuse."""
+        self._refresh_if_stale()
+        if self._hash_index is None:
+            index: Dict[str, str] = {}
+            for nid, meta in self.cache.items():
+                stored = meta.get("content_hash")
+                if stored:
+                    index[stored] = nid
+            self._hash_index = index
+        return self._hash_index.get(content_hash)
 
     def find_matches(self, **kwargs: Any) -> List[str]:
         self._refresh_if_stale()
