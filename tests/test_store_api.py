@@ -379,6 +379,74 @@ class TestAutoDataType:
             node.add_meta("bad", [[1, 2]], data_type="table")
 
 
+class TestMetadataCoercion:
+    """add_meta coerces common non-JSON types (numpy/pandas scalars, datetimes,
+    sets) to native Python and warns; anything uncoercible is rejected at the
+    call site, not later at the meta.json write. Numpy/pandas are optional deps,
+    so the numpy-shaped cases are duck-typed fakes (as test_dataframe does)."""
+
+    @pytest.fixture
+    def node(self, bare_store):
+        with bare_store.create_node(step_type="ingest") as node:
+            yield node
+
+    def test_set_coerced_to_list_with_warning(self, node):
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("tags", {3, 1, 2})
+        assert sorted(node.metadata["tags"]["value"]) == [1, 2, 3]
+
+    def test_datetime_coerced_to_isoformat(self, node):
+        from datetime import datetime
+
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("when", datetime(2024, 1, 2, 3, 4, 5))
+        assert node.metadata["when"]["value"] == "2024-01-02T03:04:05"
+
+    def test_numpy_like_scalar_coerced(self, node):
+        class FakeScalar:  # numpy scalar shape: .item() + .dtype
+            dtype = "int64"
+
+            def item(self):
+                return 42
+
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("n", FakeScalar())
+        assert node.metadata["n"]["value"] == 42
+
+    def test_numpy_like_array_coerced(self, node):
+        class FakeArray:  # ndarray shape: .tolist() + ndim
+            dtype = "int64"
+            ndim = 1
+
+            def tolist(self):
+                return [1, 2, 3]
+
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("arr", FakeArray())
+        assert node.metadata["arr"]["value"] == [1, 2, 3]
+
+    def test_nested_value_is_coerced(self, node):
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("cfg", {"vals": {1, 2}}, data_type="json")
+        assert node.metadata["cfg"]["value"] == {"vals": [1, 2]}
+
+    def test_native_values_do_not_warn(self, node, recwarn):
+        node.add_meta("a", 5)
+        node.add_meta("b", [1, 2, 3])
+        node.add_meta("c", {"k": "v"})
+        assert [w for w in recwarn if "coerced" in str(w.message)] == []
+
+    def test_uncoercible_value_rejected_at_call_time(self, node):
+        # Fires here at add_meta — not at block exit where the traceback misleads.
+        with pytest.raises(TypeError, match="not JSON-serialisable even after coercion"):
+            node.add_meta("bad", object())
+
+    def test_rejected_value_leaves_no_partial_entry(self, node):
+        with pytest.raises(TypeError):
+            node.add_meta("bad", object())
+        assert "bad" not in node.metadata
+
+
 class TestWebGraph:
     def test_empty_store_generates(self, bare_store, capsys):
         bare_store.generate_web_graph()

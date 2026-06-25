@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import uuid
+import warnings
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,7 +12,7 @@ from copy import deepcopy
 
 # Internal dependancies
 from .chunkstore import ChunkStore, chunk_bytes, get_read_cache
-from .utils import get_provenance, is_pandas
+from .utils import flatten_meta, get_provenance, is_pandas, to_jsonable
 
 # Reassembling a packed artifact reads and decompresses its chunks; both release
 # the GIL, so a small thread pool overlaps that work for large files. Threads are
@@ -353,15 +354,30 @@ class Node:
                 raise TypeError(
                     f"Expected a dict or list for 'json', got {type(value).__name__}"
                 )
-            try:
-                json.dumps(value)
-                searchable = False
-            except (TypeError, ValueError) as e:
-                # Fail here, at the call site, rather than corrupting the
-                # node's whole meta.json write later.
-                raise TypeError(
-                    f"Value for 'json' is not JSON-serialisable: {e}"
-                ) from None
+            searchable = False
+
+        # Coerce numpy/pandas and other common non-JSON types to native Python so
+        # the eventual meta.json write cannot fail, and warn that we did. Anything
+        # still not serialisable is rejected here, at the call site, rather than
+        # at block exit where the traceback would not point at this add_meta.
+        value, coerced = to_jsonable(value)
+        if coerced:
+            warnings.warn(
+                f"Metadata {key!r} held values that are not natively JSON-"
+                "serialisable (e.g. numpy/pandas scalars, arrays, sets, "
+                "datetimes); they were coerced to plain Python types. Pass native "
+                "Python types to silence this.",
+                UserWarning,
+                stacklevel=3,
+            )
+        try:
+            json.dumps(value)
+        except (TypeError, ValueError) as exc:
+            raise TypeError(
+                f"Metadata {key!r} is not JSON-serialisable even after coercion "
+                f"({type(exc).__name__}: {exc}). Convert it to plain Python types "
+                "(int/float/str/bool/list/dict) before calling add_meta."
+            ) from None
 
         entry = {
             f"{key}": {
@@ -471,13 +487,10 @@ class Node:
         )
 
     def to_db(self) -> Dict[str, Any]:
-        # This is a flat key value dict for easy searching and indexing
-        entries: Dict[str, Any] = {}
-        for key, properties in self._hydrate().items():
-            if properties.get("searchable", True):
-                entries[key] = properties.get("value")
-
-        return entries
+        # Flat {searchable key: value} dict for indexing/searching. Shares the
+        # one definition of "searchable flattening" with the database, which
+        # applies it to raw meta.json dicts on reconcile/rebuild.
+        return flatten_meta(self._hydrate())
 
     def artifacts(self, contains: str = "*") -> List[Path]:
         """

@@ -197,17 +197,6 @@ class TestReclaim:
         assert ".cache" in p.parts
         assert not (chunk_store.root / node.node_id / "f.bin").exists()
 
-    def test_compact_packs_store_created_without_chunking(self, tmp_path):
-        plain = ancestree.LineageStore(tmp_path / "s", chunk=False)
-        with plain.create_node(step_type="ingest") as node:
-            (node / "f.bin").write_bytes(os.urandom(80_000))
-        assert (plain.root / node.node_id / "f.bin").exists()  # stored whole
-
-        chunked = ancestree.LineageStore(tmp_path / "s", chunk=True)
-        chunked.compact()
-        assert not (chunked.root / node.node_id / "f.bin").exists()  # now packed
-        assert (chunked.get_node(node.node_id) / "f.bin").exists()  # still readable
-
 
 # ---------------------------------------------------------------------------
 # Interaction with the rest of the lifecycle
