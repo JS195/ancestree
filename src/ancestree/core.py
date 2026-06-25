@@ -7,6 +7,7 @@ import queue
 import threading
 import time
 import uuid
+import weakref
 from collections import deque
 from typing import List, Dict, Any, Optional, Union, Iterator, Set
 import shutil
@@ -18,6 +19,36 @@ from .chunkstore import ChunkStore, drop_read_cache
 from .database import lineage_database
 from .models import ARTIFACT_MANIFEST, Node
 from .vis import run_web_generator
+
+
+# Every live store registers here so the after-fork handler can re-arm them all.
+# A WeakSet means a garbage-collected store drops out on its own (no leak).
+_live_stores: "weakref.WeakSet[LineageStore]" = weakref.WeakSet()
+
+
+def _reset_workers_after_fork() -> None:
+    """Runs in a forked child (before any user code) to make the inherited
+    background packers safe.
+
+    A thread does not survive `fork`: the child holds a *dead* packer thread and,
+    if the worker happened to hold the lock at the instant of the fork, an
+    inherited *locked* lock with no owner — touching it would deadlock the child.
+    So we swap each live store's worker state for fresh primitives. The queued and
+    half-packed work belongs to the parent (whose worker is alive and will finish
+    it); the child starts clean and lazily spins up its own worker on its next
+    write.
+    """
+    for store in list(_live_stores):
+        store._pack_worker = None
+        store._pack_queue = queue.Queue()
+        store._pack_lock = threading.Lock()
+        store._enqueued = set()
+        store._reclaim_pending = set()
+        store._scan_done = threading.Event()
+
+
+if hasattr(os, "register_at_fork"):  # POSIX only; Windows multiprocessing uses spawn
+    os.register_at_fork(after_in_child=_reset_workers_after_fork)
 
 
 class LineageStore:
@@ -75,6 +106,9 @@ class LineageStore:
         self._reclaim_pending: Set[str] = set()   # chunked, awaiting loose reclaim
         self._flush_registered = False
         self._scan_done = threading.Event()       # worker finished its straggler scan
+        # Track this store so the after-fork handler can re-arm its packer in a
+        # forked child (a thread does not survive fork — see _reset_workers_after_fork).
+        _live_stores.add(self)
 
     def __enter__(self) -> "LineageStore":
         return self

@@ -75,7 +75,7 @@ class TestRules:
     def test_parent_given_as_id_string_is_accepted(self, bare_store, make_node):
         ingest = make_node(bare_store, "ingest")
         child = make_node(bare_store, "clean", parent=ingest.node_id)
-        assert child.parent_id == ingest.node_id
+        assert child.parent_id == [ingest.node_id]
 
     def test_failed_creation_leaves_no_trace(self, bare_store):
         before = set(bare_store.database.cache)

@@ -457,3 +457,76 @@ class TestCrashSafety:
         assert loose.exists() and loose.read_bytes() == b"hello"
         # A read before any flush returns the loose path, not a cache path.
         assert chunk_store.get_node(node.node_id) / "f.bin" == loose
+
+
+# ---------------------------------------------------------------------------
+# Fork safety of the background packer
+#
+# A thread does not survive fork(): a forked child inherits a dead packer and,
+# if the worker held the lock at the instant of the fork, an inherited LOCKED
+# lock with no owner — deadlocking the child. An os.register_at_fork handler
+# re-arms each live store in the child before any user code runs.
+# ---------------------------------------------------------------------------
+
+
+class TestForkSafety:
+    def test_after_fork_handler_re_arms_the_worker(self, chunk_store):
+        from ancestree.core import _reset_workers_after_fork
+
+        with chunk_store.create_node(step_type="x") as n:  # start the worker
+            (n / "f.bin").write_bytes(os.urandom(50_000))
+        old_lock = chunk_store._pack_lock
+        old_lock.acquire()  # simulate the worker holding it at the fork instant
+        try:
+            _reset_workers_after_fork()  # exactly what runs in the child
+        finally:
+            old_lock.release()
+
+        # The store now has fresh, unlocked primitives and a clean slate.
+        assert chunk_store._pack_lock is not old_lock
+        assert chunk_store._pack_lock.acquire(blocking=False) is True
+        chunk_store._pack_lock.release()
+        assert chunk_store._pack_worker is None
+        assert chunk_store._enqueued == set()
+        assert chunk_store._reclaim_pending == set()
+        # ...and it still works, lazily restarting its own worker.
+        with chunk_store.create_node(step_type="x") as n2:
+            (n2 / "g.bin").write_bytes(b"ok")
+        chunk_store.flush()
+        assert (chunk_store.get_node(n2.node_id) / "g.bin").read_bytes() == b"ok"
+
+    @pytest.mark.skipif(not hasattr(os, "fork"), reason="needs os.fork")
+    def test_fork_with_held_lock_does_not_deadlock_child(self, tmp_path):
+        import signal
+
+        store = ancestree.LineageStore(tmp_path / "s", chunk=True)
+        with store.create_node(step_type="x") as n:  # start the worker
+            (n / "f.bin").write_bytes(os.urandom(50_000))
+        store._pack_lock.acquire()  # force the lock-held-at-fork window
+
+        pid = os.fork()
+        if pid == 0:
+            # Without the after-fork reset this deadlocks the first time
+            # create_node touches the inherited locked lock.
+            try:
+                with store.create_node(step_type="x") as c:
+                    (c / "c.bin").write_bytes(b"child")
+                store.flush()
+                os._exit(0)
+            except BaseException:
+                os._exit(3)
+
+        store._pack_lock.release()
+        deadline = time.time() + 10
+        status = None
+        while time.time() < deadline:
+            wpid, st = os.waitpid(pid, os.WNOHANG)
+            if wpid:
+                status = os.WEXITSTATUS(st)
+                break
+            time.sleep(0.05)
+        if status is None:
+            os.kill(pid, signal.SIGKILL)
+            os.waitpid(pid, 0)
+            pytest.fail("forked child deadlocked on the inherited packer lock")
+        assert status == 0
