@@ -152,7 +152,9 @@ class LineageStore:
 
     @contextmanager
     def create_node(
-        self, step_type: str, parent: Union["Node", str, None] = None
+        self,
+        step_type: str,
+        parent: Union["Node", str, List[Union["Node", str]], None] = None,
     ) -> Iterator["Node"]:
         """Creates a new node while enforcing lineage rules.
 
@@ -169,7 +171,7 @@ class LineageStore:
 
         Args:
             step_type (str): The type of pipeline step being performed.
-            parent (Union[Node, str], optional): The parent Node object or node_id. Defaults to None.
+            parent (Node | str | list, optional): The parent — a Node or node_id, or a **list** of them for a step that joins several inputs (a merge/join, making the lineage a DAG). Every parent must already exist in this store and individually satisfy the rules; the node's generation is one past its deepest parent. Defaults to None (a root). Examples: `parent=clean`, `parent=[features_a, features_b]`.
 
         Raises:
             ValueError: If the step type transition is not permitted according to the store rules.
@@ -183,29 +185,30 @@ class LineageStore:
             ...     node.add_meta("rows", len(df))
         """
 
-        parent_node = self._resolve_parent(parent)
-        parent_type = parent_node.step_type if parent_node else None
+        parents = self._resolve_parents(parent)
 
-        # Check to ensure not illegal node creation
+        # Rule check: every parent must individually be a legal predecessor.
         allowed = self.rules.get(step_type)
-        if allowed is not None and parent_type not in allowed:
-            raise ValueError(
-                f"Invalid transition: {parent_type} -> {step_type}. "
-                f"Allowed parents: {allowed}."
-            )
+        if allowed is not None:
+            parent_types = [p.step_type for p in parents] or [None]
+            for ptype in parent_types:
+                if ptype not in allowed:
+                    raise ValueError(
+                        f"Invalid transition: {ptype} -> {step_type}. "
+                        f"Allowed parents: {allowed}."
+                    )
 
-        parent_gen = parent_node.generation if parent_node else 0
-        if parent_node and (step_type in self.triggers):
-            current_gen = parent_gen + 1
-        else:
-            current_gen = parent_gen
+        # A node sits one generation below its deepest input (when it triggers a
+        # new generation), otherwise at that depth.
+        base_gen = max((p.generation for p in parents), default=0)
+        current_gen = base_gen + 1 if (parents and step_type in self.triggers) else base_gen
 
         node_id = uuid.uuid4().hex[:8]
         while node_id in self.database.cache or (self.root / node_id).exists():
             node_id = uuid.uuid4().hex[:8]
         node_path = self.root / node_id
 
-        parent_id = parent_node.node_id if parent_node else None
+        parent_id = [p.node_id for p in parents]
         new_node = Node._create(
             node_path, node_id, current_gen, parent_id, step_type=step_type
         )
@@ -236,26 +239,40 @@ class LineageStore:
                 stacklevel=3,
             )
 
-    def _resolve_parent(self, parent: Union["Node", str, None]) -> Optional["Node"]:
-        """Resolves a `create_node` parent argument to a node that exists in THIS
-        store, or None when no parent was given.
+    def _resolve_parents(
+        self, parent: Union["Node", str, List[Union["Node", str]], None]
+    ) -> List["Node"]:
+        """Resolves a `create_node` parent argument — None, a single Node/id, or a
+        list of them (a join with several inputs) — to the list of parent nodes
+        that exist in THIS store, de-duplicated and order-preserving.
 
-        Raises ValueError if a parent was supplied but is not present in this
-        store's index — a stale or foreign Node (e.g. one created in a different
-        store) or an unknown id. This stops a child being hung off a parent the
-        store cannot resolve, which would otherwise only surface later as a
-        KeyError from `get_lineage`.
+        Raises ValueError if any supplied parent is not present in this store's
+        index — a stale or foreign Node, or an unknown id — so a child can never
+        be hung off a parent the store cannot resolve (which would otherwise only
+        surface later as a KeyError from `get_lineage`).
         """
         if parent is None:
-            return None
-        parent_id = parent.node_id if isinstance(parent, Node) else str(parent)
-        if parent_id not in self.database.cache:
-            raise ValueError(
-                f"Parent node {parent_id!r} is not present in this store. A "
-                "parent must be a node already created in or loaded from this "
-                "store; pass parent=None to create a root node."
-            )
-        return self._node_from_index(parent_id)
+            return []
+        if isinstance(parent, (Node, str)):
+            parent = [parent]
+
+        resolved: List["Node"] = []
+        seen: Set[str] = set()
+        for p in parent:
+            if p is None:
+                continue
+            pid = p.node_id if isinstance(p, Node) else str(p)
+            if pid in seen:
+                continue
+            if pid not in self.database.cache:
+                raise ValueError(
+                    f"Parent node {pid!r} is not present in this store. A parent "
+                    "must be a node already created in or loaded from this store; "
+                    "pass parent=None to create a root node."
+                )
+            seen.add(pid)
+            resolved.append(self._node_from_index(pid))
+        return resolved
 
     def _persist_if_touched(self, node: "Node", healthy: bool, duration: float) -> bool:
         """
@@ -345,7 +362,7 @@ class LineageStore:
         node.node_id = existing.node_id
         node.path = existing.path
         node.generation = existing.generation
-        node.parent_id = existing.parent_id
+        node.parent_id = list(existing.parent_id)
         node.step_type = existing.step_type
         node._metadata = existing._hydrate()
         node._system_keys = set(existing._hydrate())
@@ -519,17 +536,21 @@ class LineageStore:
             filename (str): A glob pattern or substring to match against the parent's files, as in `Node.artifacts`.
 
         Returns:
-            List[Path]: The matching file paths from the parent node, ready to read directly (as returned by `Node.artifacts`). Empty if the node or its parent cannot be found, the node has no parent, or nothing matches.
+            List[Path]: The matching file paths from the node's parent(s), ready to read directly (as returned by `Node.artifacts`). For a node with several parents the matches across all of them are returned, in parent order. Empty if the node or its parents cannot be found, the node has no parent, or nothing matches.
 
         Examples:
             >>> with store.create_node(step_type="model", parent=clean_node) as node:
             ...     [training_data] = store.from_parent(node, "cleaned.csv")
         """
         resolved = self.get_node(node)
-        if resolved is None or resolved.parent_id is None:
+        if resolved is None:
             return []
-        parent_node = self.get_node(resolved.parent_id)
-        return parent_node.artifacts(filename) if parent_node else []
+        matches: List[Path] = []
+        for pid in resolved.parent_id:
+            parent_node = self.get_node(pid)
+            if parent_node:
+                matches.extend(parent_node.artifacts(filename))
+        return matches
 
     def find_node(self, **kwargs: Any) -> List["Node"]:
         """
@@ -610,7 +631,12 @@ class LineageStore:
             List[Node]: All nodes whose parent is the specified node. Empty if the node has no children or does not exist.
         """
         target = self.get_node(node)
-        return self.find_node(parent_id=target.node_id) if target else []
+        if not target:
+            return []
+        return [
+            self._node_from_index(nid)
+            for nid in self.database.find_children(target.node_id)
+        ]
 
     def _node_from_index(self, node_id: str) -> "Node":
         """
@@ -639,9 +665,14 @@ class LineageStore:
 
     def prune(self, node: Union[str, "Node"], dry_run: bool = True) -> List["Node"]:
         """
-        Deletes a node and all of its descendants, purging the entire branch.
+        Deletes a node and the descendants it solely supports.
 
-        THIS IS RECURSIVE — deleting a node deletes anything downstream of it, removing both the directories on disk and their index entries. Run with the default `dry_run=True` first to preview exactly what would be removed.
+        A descendant is removed only when EVERY one of its parents is also being
+        removed — a node still reachable from a branch you did not prune survives,
+        with the pruned parent dropped from its `parent_id`. (For a plain tree
+        this is just "delete the whole subtree".) Both the directories on disk and
+        their index entries are removed. Run with the default `dry_run=True` first
+        to preview exactly what would be removed.
 
         Args:
             node (Union[str, Node]): Either a node_id string or a Node object.
@@ -671,27 +702,72 @@ class LineageStore:
         if target.path.resolve() == self.root.resolve():
             raise PermissionError("Cannot prune the root lineageStore directory.")
 
-        # Walk the subtree breadth-first, iteratively, so a deep lineage cannot
-        # exhaust the recursion limit (a recursive descent raised RecursionError
-        # past ~1000 deep). BFS visits shallowest-first; reversing it yields the
-        # documented deepest-first order, with the target itself last. The seen
-        # set is insurance against a corrupted store with a parent cycle.
-        ordered: List["Node"] = []
-        seen: set = set()
-        queue: deque = deque([target])
-        while queue:
-            current = queue.popleft()
-            if current.node_id in seen:
-                continue
-            seen.add(current.node_id)
-            ordered.append(current)
-            queue.extend(self.get_child_nodes(current))
-        deleted = list(reversed(ordered))
+        db = self.database
+        target_id = target.node_id
 
-        if not dry_run:
-            for victim in deleted:
-                shutil.rmtree(victim.path)
-                self.database.remove(victim.node_id)
+        # 1. Collect the target and all its transitive descendants (the part of
+        #    the DAG a deletion could touch), iteratively.
+        affected: Set[str] = set()
+        stack = [target_id]
+        while stack:
+            nid = stack.pop()
+            if nid in affected:
+                continue
+            affected.add(nid)
+            stack.extend(db.find_children(nid))
+
+        # 2. Topologically order the affected nodes (a node after its affected
+        #    parents) via Kahn's algorithm, then decide deletions in that order:
+        #    the target goes, and a descendant goes only if ALL of its parents
+        #    (anywhere) are being deleted. A surviving parent spares the child.
+        indeg = {nid: 0 for nid in affected}
+        for nid in affected:
+            for p in db._parents(db.cache[nid]):
+                if p in affected:
+                    indeg[nid] += 1
+        ready = [nid for nid in affected if indeg[nid] == 0]
+        topo: List[str] = []
+        while ready:
+            nid = ready.pop()
+            topo.append(nid)
+            for child in db.find_children(nid):
+                if child in affected:
+                    indeg[child] -= 1
+                    if indeg[child] == 0:
+                        ready.append(child)
+
+        deleted_ids: Set[str] = set()
+        for nid in topo:
+            if nid == target_id or all(
+                p in deleted_ids for p in db._parents(db.cache[nid])
+            ):
+                deleted_ids.add(nid)
+
+        # Deepest-first (children before parents) for the returned list.
+        deleted = [
+            self._node_from_index(nid) for nid in reversed(topo) if nid in deleted_ids
+        ]
+        if dry_run:
+            return deleted
+
+        for victim in deleted:
+            shutil.rmtree(victim.path)
+            db.remove(victim.node_id)
+
+        # 3. Survivors keep their other parents but must drop the deleted ones,
+        #    or they would point at nodes that no longer exist.
+        for nid in affected - deleted_ids:
+            survivor = self.get_node(nid)
+            if survivor is None:
+                continue
+            kept = [p for p in survivor.parent_id if p not in deleted_ids]
+            if kept != survivor.parent_id:
+                survivor.parent_id = kept
+                survivor._set_meta(
+                    "parent_id", kept, data_type="text", group="Structural Properties"
+                )
+                survivor._write_meta()
+                db.add(survivor.node_id, survivor.to_db())
 
         return deleted
 

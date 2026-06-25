@@ -145,7 +145,7 @@ class TestFilesystemSabotage:
     def test_cycle_in_lineage_is_detected(self, chain_store):
         store, nodes = chain_store
         a, b = nodes["ingest"].node_id, nodes["clean"].node_id
-        store.database.cache[a]["parent_id"] = b  # a <-> b
+        store.database.cache[a]["parent_id"] = [b]  # a <-> b
         with pytest.raises(ValueError, match="Cycle detected"):
             store.get_lineage(b)
 

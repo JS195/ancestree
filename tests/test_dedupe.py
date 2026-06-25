@@ -72,7 +72,7 @@ class TestReuse:
             (dup / "data.csv").write_text("x")
         child = _node(dedupe_store, "clean", parent=dup, files=(("c.csv", "y"),))
 
-        assert child.parent_id == first.node_id
+        assert child.parent_id == [first.node_id]
         assert dedupe_store.get_lineage(child)[0].node_id == first.node_id
 
     def test_timestamp_and_provenance_do_not_block_reuse(self, dedupe_store):

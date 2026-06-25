@@ -220,25 +220,60 @@ class lineage_database:
             k for k in self.get_lineage(curr_node) if is_match(self.cache[k], **kwargs)
         ]
 
-    def get_lineage(self, curr_node: Optional[str]) -> List[str]:
+    @staticmethod
+    def _parents(entry: IndexEntry) -> List[str]:
+        """The parent ids of an index entry (a list; empty for a root)."""
+        return entry.get("parent_id") or []
+
+    def find_children(self, node_id: str) -> List[str]:
+        """Returns the ids of nodes that list `node_id` among their parents."""
         self._refresh_if_stale()
-        history: List[str] = []
-        visited: set[str] = set()
-        while curr_node:
-            if curr_node in visited:
-                raise ValueError(
-                    f"Cycle detected in lineage at node '{curr_node}'. "
-                    "The store metadata may be corrupted."
-                )
-            if curr_node not in self.cache:
+        return [
+            nid for nid, entry in self.cache.items()
+            if node_id in self._parents(entry)
+        ]
+
+    def get_lineage(self, curr_node: Optional[str]) -> List[str]:
+        """Returns every ancestor of `curr_node` plus `curr_node` itself, in
+        topological order (oldest first), following all parents. For a linear
+        chain this is the chain; for a DAG (a join) it is the union of all the
+        inputs' histories, each node listed once and after all of its parents."""
+        self._refresh_if_stale()
+        if not curr_node:
+            return []
+        order: List[str] = []
+        done: set[str] = set()      # fully emitted
+        on_stack: set[str] = set()  # ancestors currently being walked (cycle guard)
+
+        # Iterative post-order DFS over parents: a node is emitted only after all
+        # of its parents, so the result is oldest-first. Done iteratively so deep
+        # lineages cannot exhaust the recursion limit.
+        stack: List[tuple] = [(curr_node, False)]
+        while stack:
+            nid, expanded = stack.pop()
+            if nid in done:
+                continue
+            if nid not in self.cache:
                 raise KeyError(
-                    f"Node '{curr_node}' not found in the index. "
+                    f"Node '{nid}' not found in the index. "
                     "Call store.rebuild_db_from_disk() to resync the index."
                 )
-            visited.add(curr_node)
-            history.append(curr_node)
-            curr_node = self.cache[curr_node].get("parent_id")
-        return history[::-1]
+            if expanded:
+                on_stack.discard(nid)
+                done.add(nid)
+                order.append(nid)
+                continue
+            if nid in on_stack:
+                raise ValueError(
+                    f"Cycle detected in lineage at node '{nid}'. "
+                    "The store metadata may be corrupted."
+                )
+            on_stack.add(nid)
+            stack.append((nid, True))  # emit after its parents
+            for pid in self._parents(self.cache[nid]):
+                if pid not in done:
+                    stack.append((pid, False))
+        return order
 
     def most_recent(self, node_ids: List[str]) -> Optional[str]:
         # Takes an already-matched id list rather than calling find_matches

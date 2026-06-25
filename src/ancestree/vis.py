@@ -83,11 +83,12 @@ def visualise_nodes(store: LineageStore) -> Dict[str, Any]:
         raw.append(entries)
 
     node_ids = [get_meta_val(e, "node_id") for e in raw]
-    edges = [
-        (get_meta_val(e, "parent_id"), get_meta_val(e, "node_id"))
-        for e in raw
-        if get_meta_val(e, "parent_id")
-    ]
+    edges = []
+    for e in raw:
+        child = get_meta_val(e, "node_id")
+        for parent in get_meta_val(e, "parent_id") or []:  # parent_id is a list
+            if parent:
+                edges.append((parent, child))
 
     levels = assign_levels(node_ids, edges)
 

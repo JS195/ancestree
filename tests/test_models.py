@@ -21,7 +21,7 @@ class TestCreateAndLoad:
     def test_fresh_node_builds_structural_metadata(self, node):
         meta = node.metadata
         assert meta["node_id"]["value"] == "abcd1234"
-        assert meta["parent_id"]["value"] is None
+        assert meta["parent_id"]["value"] == []
         assert meta["generation"]["value"] == 0
         assert meta["step_type"]["value"] == "ingest"
         # Timestamp must be parseable ISO-8601.
@@ -60,7 +60,7 @@ class TestCreateAndLoad:
         assert reloaded.metadata == node.metadata
         assert reloaded.node_id == "abcd1234"
         assert reloaded.generation == 0
-        assert reloaded.parent_id is None
+        assert reloaded.parent_id == []
         assert reloaded.step_type == "ingest"
 
     def test_metadata_property_returns_defensive_copy(self, node):
@@ -74,14 +74,14 @@ class TestFromIndex:
         flat = {
             "node_id": "abcd1234",
             "generation": 2,
-            "parent_id": "ffff0000",
+            "parent_id": ["ffff0000"],
             "step_type": "clean",
         }
         lazy = Node._from_index(tmp_path / "abcd1234", flat)  # path doesn't exist
 
         assert lazy.node_id == "abcd1234"
         assert lazy.generation == 2
-        assert lazy.parent_id == "ffff0000"
+        assert lazy.parent_id == ["ffff0000"]
         assert lazy.step_type == "clean"
 
     def test_metadata_hydrates_lazily_from_disk(self, node):

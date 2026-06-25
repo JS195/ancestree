@@ -66,7 +66,8 @@ class Node:
         path (Path): The node's directory on disk.
         node_id (str): The unique 8-character identifier of the node.
         generation (int): The generation number of the node in the pipeline.
-        parent_id (str): The node_id of the parent node, or None for a root node.
+        parent_id (List[str]): The node_ids of this node's parent(s) — a list,
+            since a node may join several inputs. Empty for a root node.
         step_type (str): The type of pipeline step this node represents.
     """
 
@@ -75,7 +76,7 @@ class Node:
         path: Path,
         node_id: str,
         generation: int,
-        parent_id: Optional[str] = None,
+        parent_id: Optional[List[str]] = None,
         step_type: Optional[str] = None,
     ):
         """
@@ -86,12 +87,12 @@ class Node:
             path (Path): The filesystem path where the node is stored.
             node_id (str): A unique 8-character alphanumeric identifier.
             generation (int): The generation number of the node in the pipeline.
-            parent_id (str): The unique 8-character identifier of node the current node descends from.
+            parent_id (List[str]): The ids of the node's parent(s); empty/None for a root.
         """
         self.path = path
         self.node_id = node_id
         self.generation = generation
-        self.parent_id = parent_id
+        self.parent_id: List[str] = list(parent_id) if parent_id else []
         self.step_type = step_type
         self._metadata: Optional[Dict[str, Any]] = {}
         self._system_keys: set[Any] = set()
@@ -164,7 +165,8 @@ class Node:
         meta = json.loads((path / "meta.json").read_text())
 
         def _value(key: str) -> Any:
-            return meta.get(key).get("value")
+            entry = meta.get(key)
+            return entry.get("value") if entry else None
 
         node = cls(
             path,
@@ -182,7 +184,7 @@ class Node:
         path: Path,
         node_id: str,
         generation: int,
-        parent_id: Optional[str] = None,
+        parent_id: Optional[List[str]] = None,
         step_type: Optional[str] = None,
     ) -> "Node":
         """
@@ -194,7 +196,7 @@ class Node:
             path (Path): The filesystem path where the node is stored.
             node_id (str): A unique 8-character alphanumeric identifier.
             generation (int): The generation number of the node in the pipeline.
-            parent_id (str): The unique 8-character identifier of node the current node descends from.
+            parent_id (List[str]): The ids of the node's parent(s).
 
         Returns:
             Node: The new node. Nothing is written to disk until _write_meta().
@@ -203,8 +205,10 @@ class Node:
         node._set_meta(
             "node_id", node_id, data_type="text", group="Structural Properties"
         )
+        # Stored as a searchable list (data_type 'text' keeps it in the index, so
+        # the database can find a node's children across any of its parents).
         node._set_meta(
-            "parent_id", parent_id, data_type="text", group="Structural Properties"
+            "parent_id", node.parent_id, data_type="text", group="Structural Properties"
         )
         node._set_meta(
             "generation", generation, data_type="text", group="Structural Properties"
@@ -464,7 +468,7 @@ class Node:
         """
         payload = {
             "step_type": self.step_type,
-            "parent_id": self.parent_id,
+            "parents": sorted(self.parent_id),  # order-independent
             "meta": self._content_meta(),
             "artifacts": self._artifact_digests(),
         }
@@ -481,7 +485,7 @@ class Node:
         can never cause two genuinely different nodes to be merged."""
         return (
             self.step_type == other.step_type
-            and self.parent_id == other.parent_id
+            and set(self.parent_id) == set(other.parent_id)
             and self._content_meta() == other._content_meta()
             and self._artifact_digests() == other._artifact_digests()
         )
