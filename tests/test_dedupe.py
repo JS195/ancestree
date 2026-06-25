@@ -17,14 +17,19 @@ from ancestree import LineageStore
 
 
 def node_dirs(store):
-    """Every node directory currently on disk (store internals excluded)."""
-    return [d for d in store.root.iterdir() if d.is_dir()]
+    """Every node directory currently on disk (store internals excluded, e.g.
+    the .chunks pool)."""
+    return [
+        d for d in store.root.iterdir() if d.is_dir() and not d.name.startswith(".")
+    ]
 
 
 @pytest.fixture
 def dedupe_store(tmp_path):
-    """A store with deduplication enabled and no lineage rules."""
-    return LineageStore(root=tmp_path / "store", dedupe=True)
+    """A store with deduplication enabled and no lineage rules. Chunking is off
+    so these tests isolate whole-node dedup; the two features are exercised
+    together in test_chunking.py::test_dedupe_and_chunk_together."""
+    return LineageStore(root=tmp_path / "store", dedupe=True, chunk=False)
 
 
 def _node(store, step_type, parent=None, files=(("data.csv", "x"),), meta=None):
@@ -116,17 +121,20 @@ class TestDistinct:
 
 class TestOptIn:
     def test_duplicates_kept_when_dedupe_disabled(self, tmp_path):
-        store = LineageStore(root=tmp_path / "store")  # dedupe defaults to False
+        store = LineageStore(root=tmp_path / "store", dedupe=False, chunk=False)
         first = _node(store, "ingest", meta={"rows": 10})
         second = _node(store, "ingest", meta={"rows": 10})
         assert second.node_id != first.node_id
         assert len(node_dirs(store)) == 2
 
-    def test_dedupe_is_not_persisted_in_config(self, tmp_path):
+    def test_dedupe_is_a_per_instance_flag_not_persisted_in_config(self, tmp_path):
+        # The flag lives on the instance, never in the on-disk config: opening
+        # with a non-default value must not leak into a later plain open.
         root = tmp_path / "store"
-        LineageStore(root=root, dedupe=True)
-        reopened = LineageStore(root=root)  # dedupe not resupplied
-        assert reopened.dedupe is False
+        explicit = LineageStore(root=root, dedupe=False)
+        assert explicit.dedupe is False
+        reopened = LineageStore(root=root)  # dedupe not resupplied -> the default
+        assert reopened.dedupe is True
 
 
 # ---------------------------------------------------------------------------

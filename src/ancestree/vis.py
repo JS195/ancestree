@@ -72,9 +72,10 @@ def visualise_nodes(store: LineageStore) -> Dict[str, Any]:
                 pass
 
         for item in node_obj.artifacts():
-            path = Path(*item.parts[1:])
-            entries[str(path)] = {
-                "value": str(item),
+            # artifacts() returns absolute paths; the web graph wants the key
+            # relative to the node and the link href relative to the store root.
+            entries[str(item.relative_to(node_obj.path))] = {
+                "value": str(item.relative_to(node_obj.path.parent)),
                 "data_type": "link",
                 "group": "Artifacts",
             }

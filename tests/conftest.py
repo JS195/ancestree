@@ -35,8 +35,20 @@ def make_node():
 
 @pytest.fixture
 def bare_store(tmp_path):
-    """A freshly initialised store with rules and triggers but no nodes."""
-    return LineageStore(root=tmp_path / "store", rules=RULES, gen_triggers=TRIGGERS)
+    """A freshly initialised store with rules and triggers but no nodes.
+
+    Deduplication and chunking are opted out here: this is the general-purpose
+    fixture for lifecycle and query tests, which assume each create_node yields
+    a distinct node whose artifacts sit whole on disk. The features themselves
+    are exercised by tests/test_dedupe.py and tests/test_chunking.py.
+    """
+    return LineageStore(
+        root=tmp_path / "store",
+        rules=RULES,
+        gen_triggers=TRIGGERS,
+        dedupe=False,
+        chunk=False,
+    )
 
 
 @pytest.fixture

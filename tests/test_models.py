@@ -166,10 +166,10 @@ class TestArtifacts:
         return node
 
     def test_lists_all_files_except_meta_json(self, populated):
-        found = {str(p) for p in populated.artifacts()}
+        found = set(populated.artifacts())
         assert found == {
-            str(Path("abcd1234/data.csv")),
-            str(Path("abcd1234/results/deep.txt")),
+            populated.path / "data.csv",
+            populated.path / "results/deep.txt",
         }
 
     def test_glob_pattern_filter(self, populated):

@@ -7,7 +7,12 @@ from typing import Any, List, Dict, Union, Optional, Literal
 from copy import deepcopy
 
 # Internal dependancies
+from .chunkstore import ChunkStore, chunk_bytes
 from .utils import get_provenance, is_pandas
+
+#: Per-node sidecar holding the recipe for every packed artifact. Excluded from
+#: artifact listings and content hashing — it describes artifacts, it is not one.
+ARTIFACT_MANIFEST = ".artifacts.json"
 
 _DataType = Literal["auto", "image", "link", "table", "json", "code", "text"]
 _VALID_DATA_TYPES = {"auto", "image", "link", "table", "json", "code", "text"}
@@ -79,6 +84,9 @@ class Node:
         self.step_type = step_type
         self._metadata: Optional[Dict[str, Any]] = {}
         self._system_keys: set[Any] = set()
+        # Lazily loaded recipe (relpath -> {size, sha256, chunks}) for artifacts
+        # that have been packed into the chunk store. Empty when nothing is packed.
+        self._manifest_data: Optional[Dict[str, Any]] = None
 
     @property
     def metadata(self) -> Dict[str, Dict[str, Any]]:
@@ -375,20 +383,43 @@ class Node:
         a structural, provenance, or content-hash key. This is the metadata
         portion of the node's content identity."""
         return {
-            key: entry
+            key: self._normalise_entry(entry)
             for key, entry in self._hydrate().items()
             if key not in _NON_CONTENT_KEYS
         }
 
+    def _normalise_entry(self, entry: Dict[str, Any]) -> Dict[str, Any]:
+        """Strips this node's id out of file-referencing metadata so identical
+        content fingerprints the same. An ``image``/``link`` value that points
+        at a file inside the node is stored with the (random) node_id as a path
+        segment; left in, it would make every run look unique. URLs are real
+        content and pass through untouched. Returns a copy when rewritten; the
+        node's own metadata is never mutated."""
+        if entry.get("data_type") not in ("image", "link"):
+            return entry
+        value = entry.get("value")
+        if not isinstance(value, str) or value.startswith(("http://", "https://")):
+            return entry
+        parts = Path(value).parts
+        if self.node_id not in parts:
+            return entry
+        rest = parts[parts.index(self.node_id) + 1 :]
+        return {**entry, "value": Path(*rest).as_posix() if rest else ""}
+
     def _artifact_digests(self) -> Dict[str, str]:
         """Maps each artifact's path (relative to the node's *own* directory,
         so it is independent of the random node_id) to the SHA-256 of its
-        bytes. meta.json is excluded — it is metadata, not content."""
-        digests: Dict[str, str] = {}
+        bytes. For packed artifacts the digest is read straight from the recipe,
+        so no reassembly is needed. meta.json and the manifest are excluded —
+        they describe the node, they are not its content."""
+        manifest = self._manifest()
+        digests: Dict[str, str] = {
+            rel: record["sha256"] for rel, record in manifest.items()
+        }
         for f in sorted(self.path.rglob("*")):
-            if f.is_file() and f.name != "meta.json":
+            if f.is_file() and f.name not in ("meta.json", ARTIFACT_MANIFEST):
                 rel = f.relative_to(self.path).as_posix()
-                digests[rel] = hashlib.sha256(f.read_bytes()).hexdigest()
+                digests.setdefault(rel, hashlib.sha256(f.read_bytes()).hexdigest())
         return digests
 
     def content_hash(self) -> str:
@@ -447,27 +478,38 @@ class Node:
             contains (str, optional): A glob pattern to filter discovered files. A plain substring also works: it is matched anywhere in the filename, case-insensitively. Defaults to "*" (all files).
 
         Returns:
-            List[Path]: The matching file paths, relative to the store root.
+            List[Path]: The matching file paths inside the node's directory,
+                ready to read or pass to a loader directly (no need to prefix
+                the store root). This mirrors the path `node / "file"` returns.
 
         Examples:
             >>> node.artifacts("*.csv")
-            [PosixPath('abc12345/sample.csv')]
-            >>> node.artifacts("sample")
-            [PosixPath('abc12345/sample.csv')]
+            [PosixPath('/data/store/abc12345/sample.csv')]
+            >>> pd.read_csv(node.artifacts("sample")[0])
         """
-        artifacts = []
-
         search_pattern = contains
         if "*" not in contains and "?" not in contains:
             search_pattern = f"*{contains}*"
 
+        # Logical artifacts are the union of packed entries (in the manifest)
+        # and any real files on disk. A packed artifact is reassembled on demand
+        # so the returned path always points at readable bytes.
+        manifest = self._manifest()
+        relpaths = set(manifest)
         for f in self.path.rglob("*"):
-            if f.is_file() and f.name != "meta.json":
-                if (
-                    f.match(search_pattern)
-                    or f.name.lower().find(contains.lower()) != -1
-                ):
-                    artifacts.append(f.relative_to(self.path.parent))
+            if f.is_file() and f.name not in ("meta.json", ARTIFACT_MANIFEST):
+                relpaths.add(f.relative_to(self.path).as_posix())
+
+        artifacts = []
+        for rel in sorted(relpaths):
+            name = rel.rsplit("/", 1)[-1]
+            if Path(rel).match(search_pattern) or name.lower().find(
+                contains.lower()
+            ) != -1:
+                target = self.path / rel
+                if rel in manifest and not target.exists():
+                    self._materialize(rel)
+                artifacts.append(target)
         return artifacts
 
     def __truediv__(self, relative_loc: Union[Path, str]) -> Path:
@@ -494,8 +536,78 @@ class Node:
                 f"Artifact path {relative_loc!r} escapes the node directory. "
                 "Keep all artifact paths inside the node."
             )
+        # If this names a packed artifact whose bytes are not on disk, reassemble
+        # it first so the returned path is readable — reading is transparent.
+        rel = target_path.relative_to(self.path.resolve()).as_posix()
+        if rel in self._manifest() and not target_path.exists():
+            self._materialize(rel)
         target_path.parent.mkdir(parents=True, exist_ok=True)
         return target_path
+
+    # ---------------------------------------------------------------------------
+    # Chunked storage (manifest, packing, reassembly)
+    # ---------------------------------------------------------------------------
+
+    def _manifest(self) -> Dict[str, Any]:
+        """The recipe for every packed artifact, loaded lazily and cached.
+        Empty when nothing in this node is packed."""
+        if self._manifest_data is None:
+            path = self.path / ARTIFACT_MANIFEST
+            self._manifest_data = (
+                json.loads(path.read_text()) if path.exists() else {}
+            )
+        return self._manifest_data
+
+    def _write_manifest(self, manifest: Dict[str, Any]) -> None:
+        self._manifest_data = manifest
+        path = self.path / ARTIFACT_MANIFEST
+        tmp = self.path / f"{ARTIFACT_MANIFEST}.tmp"
+        try:
+            tmp.write_text(json.dumps(manifest, indent=2))
+            tmp.replace(path)
+        finally:
+            if tmp.exists():
+                tmp.unlink()
+
+    def _pack(self) -> None:
+        """Splits every real artifact file into content-defined chunks, stores
+        them in the shared chunk pool, records the recipe in the manifest, and
+        removes the original file. Idempotent: artifacts already packed (no file
+        on disk) are left as they are. Identical chunks across nodes are stored
+        only once, so near-identical artifacts cost only their differing chunks."""
+        store = ChunkStore(self.path.parent)
+        manifest = dict(self._manifest())
+        for f in sorted(self.path.rglob("*")):
+            if not f.is_file() or f.name in ("meta.json", ARTIFACT_MANIFEST):
+                continue
+            if f.name.endswith(".tmp"):
+                continue
+            data = f.read_bytes()
+            rel = f.relative_to(self.path).as_posix()
+            manifest[rel] = {
+                "size": len(data),
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "chunks": [store.put(chunk) for chunk in chunk_bytes(data)],
+            }
+            f.unlink()
+        if manifest:
+            self._write_manifest(manifest)
+
+    def _materialize(self, rel: str) -> Path:
+        """Reassembles a packed artifact from its chunks, verifies it against the
+        recorded SHA-256, and writes it back in place. Returns the file path."""
+        record = self._manifest()[rel]
+        store = ChunkStore(self.path.parent)
+        data = b"".join(store.get(h) for h in record["chunks"])
+        if hashlib.sha256(data).hexdigest() != record["sha256"]:
+            raise RuntimeError(
+                f"Artifact {rel!r} failed its integrity check while being "
+                "reassembled — the chunk store may be corrupt."
+            )
+        out = self.path / rel
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(data)
+        return out
 
     def __repr__(self) -> str:
         """

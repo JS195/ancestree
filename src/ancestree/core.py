@@ -1,6 +1,7 @@
 # Python packages
 from pathlib import Path
 import json
+import os
 import time
 import uuid
 from typing import List, Dict, Any, Optional, Union, Iterator
@@ -9,8 +10,9 @@ from contextlib import contextmanager
 import warnings
 
 # Internal dependancies
+from .chunkstore import ChunkStore
 from .database import lineage_database
-from .models import Node
+from .models import ARTIFACT_MANIFEST, Node
 from .vis import run_web_generator
 
 
@@ -29,6 +31,7 @@ class LineageStore:
         rules: Optional[Dict[str, Any]] = None,
         gen_triggers: Optional[List[str]] = None,
         dedupe: bool = True,
+        chunk: bool = True,
     ):
         """
         Initialises the LineageStore, ensures its directory exists, and loads or creates the ruleset configuration.
@@ -40,6 +43,7 @@ class LineageStore:
             rules (Dict, optional): A mapping defining the allowed transitions. Defaults to None.
             gen_triggers (List, optional): Step types that mark a new generation. When a node of this type is created, its generation number increments by one relative to its parent. Defaults to None.
             dedupe (bool, optional): When True, a node that is content-identical to one already in the store is not created a second time: `create_node` reuses the existing node instead, and the variable yielded by the `with` block points at it. Two nodes are content-identical when they share the same step_type, the same parent, the same user metadata, and byte-identical artifacts; volatile fields (node_id, timestamp, duration, size) and provenance (user, platform, git state) are ignored. A candidate match is byte-verified before reuse. This is a behaviour of the store instance and is not persisted in the config — pass it each time you open a store you want to deduplicate. Defaults to False.
+            chunk (bool, optional): When True, artifacts are deduplicated at sub-file granularity. As each node is persisted, its files are split into content-defined chunks stored once in a shared pool (`<root>/.chunks`); near-identical artifacts across nodes then cost only their differing chunks. This is transparent: you write files normally inside `create_node`, and reading them back (`node / "file"`, `node.artifacts()`, the web graph) reassembles them on demand. Space is reclaimed by calling `compact()`. Like `dedupe`, this is a per-instance behaviour and is not persisted in the config. Defaults to False.
 
         Examples:
             >>> rules = {"clean": ["ingest"], "model": ["clean"]}
@@ -53,6 +57,7 @@ class LineageStore:
         self.rules = config["rules"]
         self.triggers = config["triggers"]
         self.dedupe = dedupe
+        self.chunk = chunk
         self.database = lineage_database(self.root)
 
     def _do_config(
@@ -229,6 +234,11 @@ class LineageStore:
         )
         node._write_meta()
         self.database.add(node.node_id, node.to_db())
+        # Sub-file deduplication: chunk the artifacts into the shared pool once
+        # the node is safely persisted and indexed. Only clean completions are
+        # packed; a failed run's partial files are left untouched on disk.
+        if self.chunk and healthy:
+            node._pack()
         return True
 
     def _deduplicate(self, node: "Node") -> bool:
@@ -342,7 +352,7 @@ class LineageStore:
             filename (str): A glob pattern or substring to match against the parent's files, as in `Node.artifacts`.
 
         Returns:
-            List[Path]: The matching file paths from the parent node, relative to the store root. Empty if the node or its parent cannot be found, the node has no parent, or nothing matches.
+            List[Path]: The matching file paths from the parent node, ready to read directly (as returned by `Node.artifacts`). Empty if the node or its parent cannot be found, the node has no parent, or nothing matches.
 
         Examples:
             >>> with store.create_node(step_type="model", parent=clean_node) as node:
@@ -480,6 +490,13 @@ class LineageStore:
             >>> store.prune("abc12345")                  # preview only
             >>> store.prune("abc12345", dry_run=False)   # actually delete
         """
+        deleted = self._prune(node, dry_run=dry_run)
+        # Deleting nodes orphans the chunks only they referenced; reclaim them.
+        if deleted and not dry_run and self.chunk:
+            self.gc()
+        return deleted
+
+    def _prune(self, node: Union[str, "Node"], dry_run: bool) -> List["Node"]:
         target = self.get_node(node)
         if not target:
             return []
@@ -489,7 +506,7 @@ class LineageStore:
 
         deleted = []
         for child in self.get_child_nodes(target):
-            deleted.extend(self.prune(child, dry_run=dry_run))
+            deleted.extend(self._prune(child, dry_run=dry_run))
 
         if not dry_run:
             shutil.rmtree(target.path)
@@ -497,6 +514,71 @@ class LineageStore:
 
         deleted.append(target)
         return deleted
+
+    def compact(self) -> int:
+        """
+        Reclaims disk space when sub-file chunking is in use.
+
+        Re-packs any artifacts that have been reassembled to disk (by reading
+        them back) into the shared chunk pool, then runs `gc` to delete chunks
+        no longer referenced by any node. This also packs nodes that were
+        written before chunking was enabled, so it doubles as a way to compact
+        an existing store after opening it with `chunk=True`.
+
+        Reading a packed artifact leaves a real copy on disk until the next
+        `compact`; this is the only manual step in the chunking workflow.
+
+        Returns:
+            int: The number of chunks deleted by the subsequent garbage collection.
+        """
+        for entry in self.root.iterdir():
+            if entry.is_dir() and (entry / "meta.json").exists():
+                node = self.get_node(entry.name)
+                if node:
+                    node._pack()
+        return self.gc()
+
+    def gc(self) -> int:
+        """
+        Deletes chunks in the shared pool that no node references any more.
+
+        Scans every node's artifact manifest for the chunks still in use, then
+        removes the rest. A store-level lock makes concurrent collections safe,
+        and chunks written in the last minute are spared so an in-flight pack in
+        another process is never reaped before it records its recipe.
+
+        Returns:
+            int: The number of chunks deleted.
+        """
+        lock = self.root / ".gc.lock"
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            return 0  # another collection holds the lock; nothing to do
+        try:
+            live: set[str] = set()
+            for entry in self.root.iterdir():
+                manifest = entry / ARTIFACT_MANIFEST
+                if not manifest.exists():
+                    continue
+                try:
+                    records = json.loads(manifest.read_text())
+                except json.JSONDecodeError:
+                    continue
+                for record in records.values():
+                    live.update(record.get("chunks", ()))
+
+            store = ChunkStore(self.root)
+            grace = time.time() - 60
+            removed = 0
+            for digest in list(store.all_digests()):
+                if digest not in live and store.mtime(digest) < grace:
+                    store.delete(digest)
+                    removed += 1
+            return removed
+        finally:
+            os.close(fd)
+            lock.unlink(missing_ok=True)
 
     # ---------------------------------------------------------------------------
     # Visualisation
