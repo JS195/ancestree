@@ -431,12 +431,14 @@ class TestCrashSafety:
 
         root = tmp_path / "store"
         payload = b"X" * 500_000
+        # Build the payload INSIDE the child — embedding 500 KB into the `-c`
+        # script string blows past the OS argument-length limit (ARG_MAX) on Linux.
         script = textwrap.dedent(
             f"""
             import os, ancestree
             store = ancestree.LineageStore(r"{root}", chunk=True)
             with store.create_node(step_type="ingest") as node:
-                (node / "f.bin").write_bytes({payload!r})
+                (node / "f.bin").write_bytes(b"X" * 500_000)
             print(node.node_id, flush=True)   # flush: os._exit skips buffers
             os._exit(0)   # hard exit: no flush, no atexit, worker killed
             """
