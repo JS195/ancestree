@@ -149,9 +149,7 @@ class TestPipeline:
             clean = _node(
                 dedupe_store, "clean", parent=ingest, files=(("clean.csv", "c"),)
             )
-            model = _node(
-                dedupe_store, "model", parent=clean, files=(("m.pkl", "m"),)
-            )
+            model = _node(dedupe_store, "model", parent=clean, files=(("m.pkl", "m"),))
             return ingest, clean, model
 
         first = build()

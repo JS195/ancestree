@@ -49,9 +49,27 @@ class TestHostileMetadataValues:
             node.add_meta("nested", value)
         assert bare_store.get_node(node.node_id).metadata["nested"]["value"] == value
 
-    def test_empty_step_type_works(self, bare_store):
-        node = _make_node(bare_store, "")
-        assert bare_store.get_node(node.node_id).step_type == ""
+    def test_empty_step_type_rejected(self, bare_store):
+        # An empty step_type would silently bypass the rule check, so it is
+        # rejected at create_node.
+        for bad in ("", "   "):
+            with pytest.raises(ValueError, match="non-empty"):
+                with bare_store.create_node(step_type=bad):
+                    pass
+
+    def test_control_chars_and_overlong_step_type_rejected(self, bare_store):
+        with pytest.raises(ValueError, match="printable"):
+            with bare_store.create_node(step_type="bad\nstep"):
+                pass
+        with pytest.raises(ValueError, match="too long"):
+            with bare_store.create_node(step_type="x" * 101):
+                pass
+
+    def test_ordinary_step_types_accepted(self, bare_store):
+        # Normal labels, including non-Latin and symbols, still work.
+        for ok in ("ingest", "train-model", "feature.v2", "clean data", "café", "步骤"):
+            node = _make_node(bare_store, ok)
+            assert bare_store.get_node(node.node_id).step_type == ok
 
 
 class TestSystemKeyHijacking:

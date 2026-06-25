@@ -4,7 +4,7 @@ With chunking on, each artifact is split into content-defined chunks stored once
 in a shared pool (<root>/.chunks) as the node is persisted, and reassembled on
 demand when read. Near-identical artifacts across nodes share all but their
 differing chunks. Reading is transparent (node / "file", node.artifacts());
-space is reclaimed with compact()/gc().
+space is reclaimed with flush()/gc().
 
 Run with: pytest tests/test_chunking.py
 """
@@ -141,8 +141,12 @@ class TestSharing:
             (b / "f.bin").write_bytes(edited)
         chunk_store.flush()
 
-        a_chunks = {c for r in manifest(chunk_store, a.node_id).values() for c in r["chunks"]}
-        b_chunks = {c for r in manifest(chunk_store, b.node_id).values() for c in r["chunks"]}
+        a_chunks = {
+            c for r in manifest(chunk_store, a.node_id).values() for c in r["chunks"]
+        }
+        b_chunks = {
+            c for r in manifest(chunk_store, b.node_id).values() for c in r["chunks"]
+        }
         assert a_chunks & b_chunks  # they share chunks
         # The pool is far smaller than storing both files whole would imply.
         assert len(pool(chunk_store)) < len(a_chunks) + len(b_chunks)
@@ -155,7 +159,9 @@ class TestSharing:
             (b / "f.bin").write_bytes(payload)  # same bytes, different node
         chunk_store.flush()
 
-        a_chunks = {c for r in manifest(chunk_store, a.node_id).values() for c in r["chunks"]}
+        a_chunks = {
+            c for r in manifest(chunk_store, a.node_id).values() for c in r["chunks"]
+        }
         # Every chunk of the second file already existed: the pool didn't grow.
         assert pool(chunk_store) == a_chunks
 
@@ -172,7 +178,9 @@ class TestReclaim:
         with chunk_store.create_node(step_type="ingest") as b:
             (b / "f.bin").write_bytes(os.urandom(120_000))
         chunk_store.flush()
-        b_chunks = {c for r in manifest(chunk_store, b.node_id).values() for c in r["chunks"]}
+        b_chunks = {
+            c for r in manifest(chunk_store, b.node_id).values() for c in r["chunks"]
+        }
 
         age_chunks(chunk_store)
         chunk_store.prune(a, dry_run=False)
@@ -271,7 +279,11 @@ class TestIntegrity:
 
 def _cache_files(store):
     base = store.root / ".cache"
-    return [f for f in base.rglob("*") if f.is_file() and f.suffix != ".lock"] if base.exists() else []
+    return (
+        [f for f in base.rglob("*") if f.is_file() and f.suffix != ".lock"]
+        if base.exists()
+        else []
+    )
 
 
 class TestReadCache:
@@ -445,7 +457,7 @@ class TestCrashSafety:
         with store.create_node(step_type="ingest") as other:
             other.add_meta("k", 1)
         store.flush()
-        assert not (store.root / nid / "f.bin").exists()             # reclaimed
+        assert not (store.root / nid / "f.bin").exists()  # reclaimed
         assert (store.get_node(nid) / "f.bin").read_bytes() == payload  # via chunks
 
     def test_writes_are_native_speed_loose_until_flush(self, chunk_store):
@@ -457,6 +469,17 @@ class TestCrashSafety:
         assert loose.exists() and loose.read_bytes() == b"hello"
         # A read before any flush returns the loose path, not a cache path.
         assert chunk_store.get_node(node.node_id) / "f.bin" == loose
+
+    def test_pending_sets_do_not_leak_over_a_long_session(self, chunk_store):
+        # The dedup/reclaim bookkeeping must track only pending work, not grow
+        # one entry per node forever (the long-lived-process memory leak).
+        for i in range(50):
+            with chunk_store.create_node(step_type="x") as node:
+                node.add_meta("i", i)
+                (node / "f.txt").write_text(str(i))
+        chunk_store.flush()
+        assert chunk_store._enqueued == set()
+        assert chunk_store._reclaim_pending == set()
 
 
 # ---------------------------------------------------------------------------

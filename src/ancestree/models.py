@@ -472,9 +472,7 @@ class Node:
             "meta": self._content_meta(),
             "artifacts": self._artifact_digests(),
         }
-        blob = json.dumps(
-            payload, sort_keys=True, separators=(",", ":"), default=str
-        )
+        blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
         return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
     def _content_equal(self, other: "Node") -> bool:
@@ -523,9 +521,10 @@ class Node:
         artifacts = []
         for rel in sorted(self._artifact_rels()):
             name = rel.rsplit("/", 1)[-1]
-            if Path(rel).match(search_pattern) or name.lower().find(
-                contains.lower()
-            ) != -1:
+            if (
+                Path(rel).match(search_pattern)
+                or name.lower().find(contains.lower()) != -1
+            ):
                 artifacts.append(self._resolve(rel))
         return artifacts
 
@@ -606,9 +605,7 @@ class Node:
         Empty when nothing in this node is packed."""
         if self._manifest_data is None:
             path = self.path / ARTIFACT_MANIFEST
-            self._manifest_data = (
-                json.loads(path.read_text()) if path.exists() else {}
-            )
+            self._manifest_data = json.loads(path.read_text()) if path.exists() else {}
         return self._manifest_data
 
     def _write_manifest(self, manifest: Dict[str, Any]) -> None:

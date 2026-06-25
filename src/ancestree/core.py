@@ -8,7 +8,6 @@ import threading
 import time
 import uuid
 import weakref
-from collections import deque
 from typing import List, Dict, Any, Optional, Union, Iterator, Set
 import shutil
 from contextlib import contextmanager
@@ -49,6 +48,11 @@ def _reset_workers_after_fork() -> None:
 
 if hasattr(os, "register_at_fork"):  # POSIX only; Windows multiprocessing uses spawn
     os.register_at_fork(after_in_child=_reset_workers_after_fork)
+
+
+# step_type is a category key (rules, the web graph, search), so it must be a
+# short, printable label — not empty, not a wall of text, not control characters.
+_MAX_STEP_TYPE_LEN = 100
 
 
 class LineageStore:
@@ -102,10 +106,10 @@ class LineageStore:
         self._pack_queue: "queue.Queue[str]" = queue.Queue()
         self._pack_worker: Optional[threading.Thread] = None
         self._pack_lock = threading.Lock()
-        self._enqueued: Set[str] = set()          # node_ids queued for chunking
-        self._reclaim_pending: Set[str] = set()   # chunked, awaiting loose reclaim
+        self._enqueued: Set[str] = set()  # node_ids queued for chunking
+        self._reclaim_pending: Set[str] = set()  # chunked, awaiting loose reclaim
         self._flush_registered = False
-        self._scan_done = threading.Event()       # worker finished its straggler scan
+        self._scan_done = threading.Event()  # worker finished its straggler scan
         # Track this store so the after-fork handler can re-arm its packer in a
         # forked child (a thread does not survive fork — see _reset_workers_after_fork).
         _live_stores.add(self)
@@ -219,6 +223,7 @@ class LineageStore:
             ...     node.add_meta("rows", len(df))
         """
 
+        self._validate_step_type(step_type)
         parents = self._resolve_parents(parent)
 
         # Rule check: every parent must individually be a legal predecessor.
@@ -235,7 +240,9 @@ class LineageStore:
         # A node sits one generation below its deepest input (when it triggers a
         # new generation), otherwise at that depth.
         base_gen = max((p.generation for p in parents), default=0)
-        current_gen = base_gen + 1 if (parents and step_type in self.triggers) else base_gen
+        current_gen = (
+            base_gen + 1 if (parents and step_type in self.triggers) else base_gen
+        )
 
         node_id = uuid.uuid4().hex[:8]
         while node_id in self.database.cache or (self.root / node_id).exists():
@@ -271,6 +278,25 @@ class LineageStore:
                 UserWarning,
                 # 1=here, 2=contextlib.__exit__ (next(self.gen)), 3=user `with`.
                 stacklevel=3,
+            )
+
+    @staticmethod
+    def _validate_step_type(step_type: str) -> None:
+        """Rejects a step_type that is empty, over-long, or holds control
+        characters. It keys the rules, the web graph, and search, so it must be a
+        short printable label — an empty one would also silently slip past the
+        rule check. Arbitrary printable text (any language, symbols) is allowed."""
+        if not isinstance(step_type, str) or not step_type.strip():
+            raise ValueError("step_type must be a non-empty string.")
+        if len(step_type) > _MAX_STEP_TYPE_LEN:
+            raise ValueError(
+                f"step_type is too long ({len(step_type)} characters; max "
+                f"{_MAX_STEP_TYPE_LEN}). Use a short label for the kind of step."
+            )
+        if not step_type.isprintable():
+            raise ValueError(
+                "step_type must contain only printable characters "
+                "(no newlines, tabs, or other control characters)."
             )
 
     def _resolve_parents(
@@ -431,15 +457,22 @@ class LineageStore:
         self._scan_stragglers()  # pick up anything a previous run left loose
         while True:
             node_id = self._pack_queue.get()
+            packed = False
             try:
                 node = self.get_node(node_id)
                 if node is not None:
                     node._pack()
-                    with self._pack_lock:
-                        self._reclaim_pending.add(node_id)
+                    packed = True
             except Exception:
                 pass  # leave loose files in place; readable, packed next time
             finally:
+                with self._pack_lock:
+                    # This id is no longer queued/in-flight: drop it from the
+                    # dedup set (which only needs pending work, so it stays
+                    # bounded rather than growing for the life of the process).
+                    self._enqueued.discard(node_id)
+                    if packed:
+                        self._reclaim_pending.add(node_id)
                 self._pack_queue.task_done()
 
     def _scan_stragglers(self) -> None:

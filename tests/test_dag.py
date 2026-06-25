@@ -1,7 +1,6 @@
 """Multi-parent (DAG) lineage: a node may have several parents (a join/merge),
 so lineage is a DAG, not a tree. Covers creation, lineage, children, from_parent,
-orphan-only prune, rules/generation, dedupe, the web graph, and back-compat with
-the legacy single-parent on-disk format.
+orphan-only prune, rules/generation, dedupe, and the web graph.
 
 Run with: pytest tests/test_dag.py
 """
@@ -82,7 +81,9 @@ class TestLineage:
         b = _n(store, "clean", parent=a)
         c = _n(store, "model", parent=b)
         assert [n.node_id for n in store.get_lineage(c)] == [
-            a.node_id, b.node_id, c.node_id
+            a.node_id,
+            b.node_id,
+            c.node_id,
         ]
 
     def test_find_in_lineage_spans_the_dag(self, store):
@@ -159,21 +160,25 @@ class TestPrune:
 
 class TestRulesAndGeneration:
     def test_rule_applies_to_every_parent(self, tmp_path):
-        s = LineageStore(tmp_path / "s", rules={"merge": ["clean"]},
-                         dedupe=False, chunk=False)
+        s = LineageStore(
+            tmp_path / "s", rules={"merge": ["clean"]}, dedupe=False, chunk=False
+        )
         ing = _n(s, "ingest")
         cl = _n(s, "clean", parent=ing)
         with pytest.raises(ValueError, match="Invalid transition"):
-            with s.create_node(step_type="merge", parent=[cl, ing]):  # ingest not allowed
+            with s.create_node(
+                step_type="merge", parent=[cl, ing]
+            ):  # ingest not allowed
                 pass
 
     def test_generation_is_max_of_parents(self, tmp_path):
-        s = LineageStore(tmp_path / "s", gen_triggers=["gen"],
-                         dedupe=False, chunk=False)
-        a = _n(s, "ingest")                       # gen 0
-        deep = _n(s, "gen", parent=a)             # trigger -> gen 1
-        b = _n(s, "ingest")                       # gen 0
-        m = _n(s, "merge", parent=[deep, b])      # max(1, 0) = 1
+        s = LineageStore(
+            tmp_path / "s", gen_triggers=["gen"], dedupe=False, chunk=False
+        )
+        a = _n(s, "ingest")  # gen 0
+        deep = _n(s, "gen", parent=a)  # trigger -> gen 1
+        b = _n(s, "ingest")  # gen 0
+        m = _n(s, "merge", parent=[deep, b])  # max(1, 0) = 1
         assert deep.generation == 1
         assert m.generation == 1
 

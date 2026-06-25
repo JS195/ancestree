@@ -229,8 +229,7 @@ class lineage_database:
         """Returns the ids of nodes that list `node_id` among their parents."""
         self._refresh_if_stale()
         return [
-            nid for nid, entry in self.cache.items()
-            if node_id in self._parents(entry)
+            nid for nid, entry in self.cache.items() if node_id in self._parents(entry)
         ]
 
     def get_lineage(self, curr_node: Optional[str]) -> List[str]:
@@ -242,7 +241,7 @@ class lineage_database:
         if not curr_node:
             return []
         order: List[str] = []
-        done: set[str] = set()      # fully emitted
+        done: set[str] = set()  # fully emitted
         on_stack: set[str] = set()  # ancestors currently being walked (cycle guard)
 
         # Iterative post-order DFS over parents: a node is emitted only after all

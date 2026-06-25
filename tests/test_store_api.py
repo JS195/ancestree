@@ -65,7 +65,9 @@ class TestRules:
             with bare_store.create_node(step_type="freeform", parent="zzzzzzzz"):
                 pass
 
-    def test_parent_from_another_store_is_rejected(self, bare_store, tmp_path, make_node):
+    def test_parent_from_another_store_is_rejected(
+        self, bare_store, tmp_path, make_node
+    ):
         other = LineageStore(tmp_path / "other")
         foreign = make_node(other, "ingest")
         with pytest.raises(ValueError, match="not present in this store"):
@@ -273,7 +275,9 @@ class TestPrune:
         with pytest.raises(PermissionError):
             bare_store.prune(impostor, dry_run=False)
 
-    def test_prune_handles_chains_deeper_than_recursion_limit(self, tmp_path, monkeypatch):
+    def test_prune_handles_chains_deeper_than_recursion_limit(
+        self, tmp_path, monkeypatch
+    ):
         # A linear lineage longer than the interpreter recursion limit must
         # prune (and preview) without RecursionError — _prune is iterative.
         # Provenance is stubbed out so building a very deep chain is fast (it
@@ -478,7 +482,9 @@ class TestMetadataCoercion:
 
     def test_uncoercible_value_rejected_at_call_time(self, node):
         # Fires here at add_meta — not at block exit where the traceback misleads.
-        with pytest.raises(TypeError, match="not JSON-serialisable even after coercion"):
+        with pytest.raises(
+            TypeError, match="not JSON-serialisable even after coercion"
+        ):
             node.add_meta("bad", object())
 
     def test_rejected_value_leaves_no_partial_entry(self, node):
