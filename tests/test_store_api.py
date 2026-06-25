@@ -51,19 +51,31 @@ class TestRules:
             with bare_store.create_node(step_type="clean"):
                 pass
 
-    def test_unknown_parent_id_treated_as_root(self, bare_store):
-        # A typo'd parent resolves to None: rules then judge it as a root
-        with pytest.raises(ValueError, match="Invalid transition"):
+    def test_unknown_parent_id_raises_clearly(self, bare_store):
+        # An unknown parent id raises a clear error naming the parent — it is no
+        # longer silently treated as a root (which later broke get_lineage).
+        with pytest.raises(ValueError, match="not present in this store"):
             with bare_store.create_node(step_type="clean", parent="zzzzzzzz"):
                 pass
 
-    def test_unrestricted_type_with_unknown_parent_becomes_root(
-        self, bare_store, make_node
-    ):
-        # Sharp edge, pinned: for a type with no rule, a bad parent id
-        # silently produces a root node rather than raising.
-        node = make_node(bare_store, "freeform", parent="zzzzzzzz")
-        assert bare_store.get_node(node.node_id).parent_id is None
+    def test_unknown_parent_id_raises_even_without_a_rule(self, bare_store):
+        # Also raises for a step type that has no rule, where it used to silently
+        # produce a root node.
+        with pytest.raises(ValueError, match="not present in this store"):
+            with bare_store.create_node(step_type="freeform", parent="zzzzzzzz"):
+                pass
+
+    def test_parent_from_another_store_is_rejected(self, bare_store, tmp_path, make_node):
+        other = LineageStore(tmp_path / "other")
+        foreign = make_node(other, "ingest")
+        with pytest.raises(ValueError, match="not present in this store"):
+            with bare_store.create_node(step_type="ingest", parent=foreign):
+                pass
+
+    def test_parent_given_as_id_string_is_accepted(self, bare_store, make_node):
+        ingest = make_node(bare_store, "ingest")
+        child = make_node(bare_store, "clean", parent=ingest.node_id)
+        assert child.parent_id == ingest.node_id
 
     def test_failed_creation_leaves_no_trace(self, bare_store):
         before = set(bare_store.database.cache)
@@ -260,6 +272,34 @@ class TestPrune:
         impostor = Node(bare_store.root, "fake", 0, None, step_type="x")
         with pytest.raises(PermissionError):
             bare_store.prune(impostor, dry_run=False)
+
+    def test_prune_handles_chains_deeper_than_recursion_limit(self, tmp_path, monkeypatch):
+        # A linear lineage longer than the interpreter recursion limit must
+        # prune (and preview) without RecursionError — _prune is iterative.
+        # Provenance is stubbed out so building a very deep chain is fast (it
+        # otherwise shells out to git per node); it is irrelevant here.
+        import sys
+
+        monkeypatch.setattr("ancestree.models.get_provenance", lambda: {})
+        store = LineageStore(tmp_path / "deep", dedupe=False, chunk=False)
+        depth = sys.getrecursionlimit() + 200
+
+        with store.create_node(step_type="s") as root:
+            root.add_meta("i", 0)
+        prev = root.node_id
+        for i in range(1, depth):
+            with store.create_node(step_type="s", parent=prev) as n:
+                n.add_meta("i", i)
+            prev = n.node_id
+
+        preview = store.prune(root.node_id, dry_run=True)  # was RecursionError
+        assert len(preview) == depth
+        assert preview[0].node_id == prev  # deepest first
+        assert preview[-1].node_id == root.node_id  # target last
+
+        deleted = store.prune(root.node_id, dry_run=False)
+        assert len(deleted) == depth
+        assert store.find_node() == []
 
 
 class TestCrashSafety:

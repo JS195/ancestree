@@ -4,6 +4,7 @@ import json
 import os
 import time
 import uuid
+from collections import deque
 from typing import List, Dict, Any, Optional, Union, Iterator
 import shutil
 from contextlib import contextmanager
@@ -165,7 +166,7 @@ class LineageStore:
             ...     node.add_meta("rows", len(df))
         """
 
-        parent_node = self.get_node(parent)
+        parent_node = self._resolve_parent(parent)
         parent_type = parent_node.step_type if parent_node else None
 
         # Check to ensure not illegal node creation
@@ -217,6 +218,27 @@ class LineageStore:
                 # 1=here, 2=contextlib.__exit__ (next(self.gen)), 3=user `with`.
                 stacklevel=3,
             )
+
+    def _resolve_parent(self, parent: Union["Node", str, None]) -> Optional["Node"]:
+        """Resolves a `create_node` parent argument to a node that exists in THIS
+        store, or None when no parent was given.
+
+        Raises ValueError if a parent was supplied but is not present in this
+        store's index — a stale or foreign Node (e.g. one created in a different
+        store) or an unknown id. This stops a child being hung off a parent the
+        store cannot resolve, which would otherwise only surface later as a
+        KeyError from `get_lineage`.
+        """
+        if parent is None:
+            return None
+        parent_id = parent.node_id if isinstance(parent, Node) else str(parent)
+        if parent_id not in self.database.cache:
+            raise ValueError(
+                f"Parent node {parent_id!r} is not present in this store. A "
+                "parent must be a node already created in or loaded from this "
+                "store; pass parent=None to create a root node."
+            )
+        return self._node_from_index(parent_id)
 
     def _persist_if_touched(self, node: "Node", healthy: bool, duration: float) -> bool:
         """
@@ -527,15 +549,28 @@ class LineageStore:
         if target.path.resolve() == self.root.resolve():
             raise PermissionError("Cannot prune the root lineageStore directory.")
 
-        deleted = []
-        for child in self.get_child_nodes(target):
-            deleted.extend(self._prune(child, dry_run=dry_run))
+        # Walk the subtree breadth-first, iteratively, so a deep lineage cannot
+        # exhaust the recursion limit (a recursive descent raised RecursionError
+        # past ~1000 deep). BFS visits shallowest-first; reversing it yields the
+        # documented deepest-first order, with the target itself last. The seen
+        # set is insurance against a corrupted store with a parent cycle.
+        ordered: List["Node"] = []
+        seen: set = set()
+        queue: deque = deque([target])
+        while queue:
+            current = queue.popleft()
+            if current.node_id in seen:
+                continue
+            seen.add(current.node_id)
+            ordered.append(current)
+            queue.extend(self.get_child_nodes(current))
+        deleted = list(reversed(ordered))
 
         if not dry_run:
-            shutil.rmtree(target.path)
-            self.database.remove(target.node_id)
+            for victim in deleted:
+                shutil.rmtree(victim.path)
+                self.database.remove(victim.node_id)
 
-        deleted.append(target)
         return deleted
 
     def gc(self) -> int:
