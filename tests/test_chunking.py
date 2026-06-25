@@ -87,6 +87,7 @@ class TestTransparency:
     def test_artifact_is_packed_and_file_removed(self, chunk_store):
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "data.bin").write_bytes(os.urandom(50_000))
+        chunk_store.flush()  # force the deferred background pack to complete
         assert not (chunk_store.root / node.node_id / "data.bin").exists()
         assert "data.bin" in manifest(chunk_store, node.node_id)
         assert pool(chunk_store)  # chunks were written
@@ -103,6 +104,7 @@ class TestTransparency:
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "a.bin").write_bytes(b"x" * 40_000)
             (node / "sub/b.bin").write_bytes(b"y" * 40_000)
+        chunk_store.flush()  # pack + reclaim so reads resolve through the cache
 
         reopened = chunk_store.get_node(node.node_id)
         # The logical artifact names are preserved (nested paths included)...
@@ -137,6 +139,7 @@ class TestSharing:
             (a / "f.bin").write_bytes(base)
         with chunk_store.create_node(step_type="ingest") as b:
             (b / "f.bin").write_bytes(edited)
+        chunk_store.flush()
 
         a_chunks = {c for r in manifest(chunk_store, a.node_id).values() for c in r["chunks"]}
         b_chunks = {c for r in manifest(chunk_store, b.node_id).values() for c in r["chunks"]}
@@ -150,6 +153,7 @@ class TestSharing:
             (a / "f.bin").write_bytes(payload)
         with chunk_store.create_node(step_type="report") as b:
             (b / "f.bin").write_bytes(payload)  # same bytes, different node
+        chunk_store.flush()
 
         a_chunks = {c for r in manifest(chunk_store, a.node_id).values() for c in r["chunks"]}
         # Every chunk of the second file already existed: the pool didn't grow.
@@ -167,6 +171,7 @@ class TestReclaim:
             (a / "f.bin").write_bytes(os.urandom(120_000))
         with chunk_store.create_node(step_type="ingest") as b:
             (b / "f.bin").write_bytes(os.urandom(120_000))
+        chunk_store.flush()
         b_chunks = {c for r in manifest(chunk_store, b.node_id).values() for c in r["chunks"]}
 
         age_chunks(chunk_store)
@@ -176,6 +181,7 @@ class TestReclaim:
     def test_gc_grace_spares_fresh_chunks(self, chunk_store):
         with chunk_store.create_node(step_type="ingest") as a:
             (a / "f.bin").write_bytes(os.urandom(120_000))
+        chunk_store.flush()
         before = len(pool(chunk_store))
         # prune triggers gc immediately; the just-written chunks are too fresh.
         chunk_store.prune(a, dry_run=False)
@@ -189,6 +195,7 @@ class TestReclaim:
         payload = os.urandom(80_000)
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "f.bin").write_bytes(payload)
+        chunk_store.flush()  # pack + reclaim the loose file
 
         # Reading reassembles into the read cache, not back into the node dir,
         # so the node stays packed and no compact() is needed to reclaim space.
@@ -246,6 +253,7 @@ class TestIntegrity:
 
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "f.bin").write_bytes(os.urandom(40_000))
+        chunk_store.flush()
 
         # Overwrite a chunk with valid-but-wrong bytes (decompresses, wrong hash).
         cs = ChunkStore(chunk_store.root)
@@ -270,6 +278,7 @@ class TestReadCache:
     def test_read_populates_cache_not_node_dir(self, chunk_store):
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "f.bin").write_bytes(os.urandom(50_000))
+        chunk_store.flush()  # pack + reclaim so the read goes through the cache
         _ = chunk_store.get_node(node.node_id) / "f.bin"  # read -> materialize
         assert _cache_files(chunk_store)  # bytes landed in the cache
         assert not (chunk_store.root / node.node_id / "f.bin").exists()
@@ -277,6 +286,7 @@ class TestReadCache:
     def test_clear_cache_wipes_the_cache(self, chunk_store):
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "f.bin").write_bytes(os.urandom(50_000))
+        chunk_store.flush()
         payload = (chunk_store.get_node(node.node_id) / "f.bin").read_bytes()
         assert _cache_files(chunk_store)
 
@@ -289,6 +299,7 @@ class TestReadCache:
         with ancestree.LineageStore(tmp_path / "s", chunk=True) as store:
             with store.create_node(step_type="ingest") as node:
                 (node / "f.bin").write_bytes(os.urandom(50_000))
+            store.flush()  # pack + reclaim so the read populates the cache
             _ = store.get_node(node.node_id) / "f.bin"
             assert _cache_files(store)
         assert _cache_files(store) == []  # wiped on block exit
@@ -302,9 +313,11 @@ class TestReadCache:
         (base / "99999-deadbeef" / "stale.bin").write_bytes(b"junk")
         (base / "99999-deadbeef.lock").write_bytes(b"")
 
-        # Opening this process's cache (via a read) reaps siblings it can lock.
+        # Opening this process's cache (via a materializing read) reaps siblings
+        # it can lock.
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "f.bin").write_bytes(os.urandom(50_000))
+        chunk_store.flush()  # so the read materializes (touches the cache)
         _ = chunk_store.get_node(node.node_id) / "f.bin"
 
         assert not (base / "99999-deadbeef").exists()
@@ -314,6 +327,7 @@ class TestReadCache:
         payload = os.urandom(2_000_000)
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "big.bin").write_bytes(payload)
+        chunk_store.flush()
         n_chunks = len(manifest(chunk_store, node.node_id)["big.bin"]["chunks"])
         assert n_chunks > 32
         assert (chunk_store.get_node(node.node_id) / "big.bin").read_bytes() == payload
@@ -324,6 +338,7 @@ class TestReadCache:
             (a / "f.bin").write_bytes(payload)
         with chunk_store.create_node(step_type="report") as b:
             (b / "g.bin").write_bytes(payload)  # same bytes, different node
+        chunk_store.flush()
 
         pa = chunk_store.get_node(a.node_id) / "f.bin"
         pb = chunk_store.get_node(b.node_id) / "g.bin"
@@ -336,5 +351,109 @@ class TestReadCache:
     def test_nested_artifact_keeps_its_relative_path_in_cache(self, chunk_store):
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "sub/deep.bin").write_bytes(os.urandom(40_000))
+        chunk_store.flush()
         p = chunk_store.get_node(node.node_id) / "sub/deep.bin"
         assert p.parts[-3:] == (node.node_id, "sub", "deep.bin")
+
+
+# ---------------------------------------------------------------------------
+# Crash safety of deferred packing
+#
+# The invariant: at every instant an artifact is recoverable from its loose
+# file OR its chunks — never neither. The packer only ever ADDS (chunks +
+# atomic manifest); loose files are removed only after their recipe is durable.
+# So an interrupt (Ctrl+C / crash / kill) at any point cannot lose data.
+# ---------------------------------------------------------------------------
+
+
+class TestCrashSafety:
+    def test_interrupt_while_chunking_keeps_loose_file(self, tmp_path, monkeypatch):
+        # chunk=False -> no background worker; drive _pack manually so we control
+        # exactly where the "crash" lands.
+        store = ancestree.LineageStore(tmp_path / "s", chunk=False)
+        payload = os.urandom(300_000)
+        with store.create_node(step_type="ingest") as node:
+            (node / "f.bin").write_bytes(payload)
+        nid = node.node_id
+
+        real_put = ChunkStore.put
+        calls = {"n": 0}
+
+        def boom(self, data):
+            calls["n"] += 1
+            if calls["n"] == 3:  # die partway through writing chunks
+                raise KeyboardInterrupt("simulated Ctrl+C mid-pack")
+            return real_put(self, data)
+
+        monkeypatch.setattr(ChunkStore, "put", boom)
+        with pytest.raises(KeyboardInterrupt):
+            store.get_node(nid)._pack()
+
+        # The manifest was never written (it is written only after all chunks),
+        # so the loose file is the sole source of truth — and it is intact.
+        assert not (store.root / nid / ".artifacts.json").exists()
+        assert (store.root / nid / "f.bin").read_bytes() == payload
+        assert (store.get_node(nid) / "f.bin").read_bytes() == payload
+
+    def test_data_recoverable_between_manifest_and_reclaim(self, tmp_path):
+        store = ancestree.LineageStore(tmp_path / "s", chunk=False)
+        payload = os.urandom(300_000)
+        with store.create_node(step_type="ingest") as node:
+            (node / "f.bin").write_bytes(payload)
+        nid = node.node_id
+
+        store.get_node(nid)._pack()  # chunks + manifest durable; loose still present
+        # Pure-add: the loose file is NOT removed by _pack, so both representations
+        # exist simultaneously — a crash here loses nothing.
+        assert (store.root / nid / "f.bin").exists()
+        assert (store.root / nid / ".artifacts.json").exists()
+
+        store.get_node(nid)._reclaim_loose()  # now the loose copy goes
+        assert not (store.root / nid / "f.bin").exists()
+        assert (store.get_node(nid) / "f.bin").read_bytes() == payload  # via chunks
+
+    def test_hard_crash_before_pack_keeps_data_and_converges(self, tmp_path):
+        import subprocess
+        import sys
+        import textwrap
+
+        root = tmp_path / "store"
+        payload = b"X" * 500_000
+        script = textwrap.dedent(
+            f"""
+            import os, ancestree
+            store = ancestree.LineageStore(r"{root}", chunk=True)
+            with store.create_node(step_type="ingest") as node:
+                (node / "f.bin").write_bytes({payload!r})
+            print(node.node_id, flush=True)   # flush: os._exit skips buffers
+            os._exit(0)   # hard exit: no flush, no atexit, worker killed
+            """
+        )
+        out = subprocess.run(
+            [sys.executable, "-c", script], capture_output=True, text=True
+        )
+        nid = out.stdout.strip()
+        assert nid, out.stderr
+
+        # Reopen a fresh store: the artifact must still read back correctly
+        # (from its loose file — the crash skipped packing).
+        store = ancestree.LineageStore(root, chunk=True)
+        assert (store.get_node(nid) / "f.bin").read_bytes() == payload
+
+        # Continuing work converges it: a write starts the background packer,
+        # whose straggler scan finds and packs the orphan; flush reclaims it.
+        with store.create_node(step_type="ingest") as other:
+            other.add_meta("k", 1)
+        store.flush()
+        assert not (store.root / nid / "f.bin").exists()             # reclaimed
+        assert (store.get_node(nid) / "f.bin").read_bytes() == payload  # via chunks
+
+    def test_writes_are_native_speed_loose_until_flush(self, chunk_store):
+        # The artifact is a plain loose file immediately after the block — the
+        # pack is deferred — and is readable natively without touching the pool.
+        with chunk_store.create_node(step_type="ingest") as node:
+            (node / "f.bin").write_bytes(b"hello")
+        loose = chunk_store.root / node.node_id / "f.bin"
+        assert loose.exists() and loose.read_bytes() == b"hello"
+        # A read before any flush returns the loose path, not a cache path.
+        assert chunk_store.get_node(node.node_id) / "f.bin" == loose

@@ -538,13 +538,21 @@ class Node:
         return rels
 
     def _resolve(self, rel: str) -> Path:
-        """Returns a readable filesystem path for the logical artifact `rel`. A
-        loose file is returned in place; a packed artifact is reassembled into
-        the store's read cache and that path is returned. Reading never writes
-        back into the node directory, so packed nodes stay packed and `compact`
-        is not needed to reclaim what reads would otherwise leak."""
+        """Returns a readable filesystem path for the logical artifact `rel`.
+
+        Prefers the loose file when it is still on disk — that is a native read,
+        no decompression — which is the common case for artifacts written this
+        session before the background packer has reclaimed them. Once the loose
+        file is gone the artifact is served from its chunks via the read cache;
+        the manifest is reloaded first in case it was packed after we cached it.
+        Because a loose file is only ever removed once its recipe is durable, a
+        missing loose file guarantees the manifest can rebuild it."""
         loose = self.path / rel
-        if rel in self._manifest() and not loose.exists():
+        if loose.exists():
+            return loose
+        if rel not in self._manifest():
+            self._manifest_data = None  # may have been packed since we cached it
+        if rel in self._manifest():
             return self._materialize(rel)
         return loose
 
@@ -572,12 +580,16 @@ class Node:
                 f"Artifact path {relative_loc!r} escapes the node directory. "
                 "Keep all artifact paths inside the node."
             )
-        # A packed artifact with no file on disk is a read: reassemble it into the
-        # read cache and return that path (reading is transparent). Anything else
-        # is a write target, so return a path inside the node directory.
+        # A packed artifact with no loose file on disk is a read: reassemble it
+        # into the read cache and return that path (reading is transparent). A
+        # loose file (read) or a not-yet-written path (write target) returns a
+        # path inside the node directory.
         rel = target_path.relative_to(self.path.resolve()).as_posix()
-        if rel in self._manifest() and not target_path.exists():
-            return self._materialize(rel)
+        if not target_path.exists():
+            if rel not in self._manifest():
+                self._manifest_data = None  # may have been packed in the background
+            if rel in self._manifest():
+                return self._materialize(rel)
         target_path.parent.mkdir(parents=True, exist_ok=True)
         return target_path
 
@@ -607,28 +619,55 @@ class Node:
                 tmp.unlink()
 
     def _pack(self) -> None:
-        """Splits every real artifact file into content-defined chunks, stores
-        them in the shared chunk pool, records the recipe in the manifest, and
-        removes the original file. Idempotent: artifacts already packed (no file
-        on disk) are left as they are. Identical chunks across nodes are stored
-        only once, so near-identical artifacts cost only their differing chunks."""
+        """Chunks every loose artifact file into the shared pool and records the
+        recipe in the manifest. This only ever ADDS — it writes content-addressed
+        chunks (idempotent: an already-present chunk is a no-op) and then
+        atomically replaces the manifest. It never deletes a loose file; that is
+        done separately by `_reclaim_loose` at a quiescent point.
+
+        Because of that ordering it is safe to interrupt at any instant (Ctrl+C,
+        crash, kill): an artifact is always recoverable from its loose file (here
+        until reclaimed) AND, once this returns, from its chunks — there is never
+        a moment where neither exists. A half-finished run leaves only orphan
+        chunks (reclaimed later by `gc`) and an unchanged manifest."""
         store = ChunkStore(self.path.parent)
         manifest = dict(self._manifest())
+        changed = False
         for f in sorted(self.path.rglob("*")):
             if not f.is_file() or f.name in ("meta.json", ARTIFACT_MANIFEST):
                 continue
             if f.name.endswith(".tmp"):
                 continue
-            data = f.read_bytes()
             rel = f.relative_to(self.path).as_posix()
+            if rel in manifest:
+                continue  # already chunked (artifacts are immutable)
+            data = f.read_bytes()
             manifest[rel] = {
                 "size": len(data),
                 "sha256": hashlib.sha256(data).hexdigest(),
                 "chunks": [store.put(chunk) for chunk in chunk_bytes(data)],
             }
-            f.unlink()
-        if manifest:
-            self._write_manifest(manifest)
+            changed = True
+        if changed:
+            self._write_manifest(manifest)  # durable before any loose file is removed
+
+    def _reclaim_loose(self) -> None:
+        """Removes loose artifact files whose recipe is already durably in the
+        manifest, reclaiming the space the chunk pool now holds. Call ONLY at a
+        quiescent point (no reader may be holding a loose path) — `flush`/close
+        do. Safe to interrupt: every file removed is reproducible from its
+        chunks, so a partial run just leaves more to reclaim next time."""
+        manifest = self._manifest()
+        if not manifest:
+            return
+        for f in sorted(self.path.rglob("*")):
+            if not f.is_file() or f.name in ("meta.json", ARTIFACT_MANIFEST):
+                continue
+            if f.name.endswith(".tmp"):
+                continue
+            rel = f.relative_to(self.path).as_posix()
+            if rel in manifest:
+                f.unlink(missing_ok=True)
 
     def _materialize(self, rel: str) -> Path:
         """Reassembles a packed artifact from its chunks into the store's read

@@ -1,11 +1,14 @@
 # Python packages
 from pathlib import Path
+import atexit
 import json
 import os
+import queue
+import threading
 import time
 import uuid
 from collections import deque
-from typing import List, Dict, Any, Optional, Union, Iterator
+from typing import List, Dict, Any, Optional, Union, Iterator, Set
 import shutil
 from contextlib import contextmanager
 import warnings
@@ -61,13 +64,27 @@ class LineageStore:
         self.chunk = chunk
         self.database = lineage_database(self.root)
 
+        # Deferred packing: artifacts are written as normal files (native speed)
+        # and chunked into the pool by a background worker, off the write path.
+        # The worker only ever ADDS (chunks + manifest); loose files are removed
+        # only by flush()/close, so an interrupt never loses data.
+        self._pack_queue: "queue.Queue[str]" = queue.Queue()
+        self._pack_worker: Optional[threading.Thread] = None
+        self._pack_lock = threading.Lock()
+        self._enqueued: Set[str] = set()          # node_ids queued for chunking
+        self._reclaim_pending: Set[str] = set()   # chunked, awaiting loose reclaim
+        self._flush_registered = False
+        self._scan_done = threading.Event()       # worker finished its straggler scan
+
     def __enter__(self) -> "LineageStore":
         return self
 
     def __exit__(self, *exc: Any) -> None:
-        # Wipe the read cache deterministically at the end of a `with` block.
-        # (It is also wiped at interpreter exit, so non-context-manager use is
-        # cleaned up too.)
+        # Finish deferred packing and reclaim loose files (the only point loose
+        # files are removed — quiescent, so no reader can be mid-read), then wipe
+        # the session read cache. flush() is also run at interpreter exit, so
+        # non-context-manager use converges too.
+        self.flush()
         self.clear_cache()
 
     def clear_cache(self) -> None:
@@ -279,11 +296,12 @@ class LineageStore:
         )
         node._write_meta()
         self.database.add(node.node_id, node.to_db())
-        # Sub-file deduplication: chunk the artifacts into the shared pool once
-        # the node is safely persisted and indexed. Only clean completions are
-        # packed; a failed run's partial files are left untouched on disk.
+        # Sub-file deduplication happens off the write path: hand the node to the
+        # background packer and return immediately, so the write costs ~a native
+        # file write. Only clean completions are packed; a failed run's partial
+        # files are left loose (and fully readable) on disk.
         if self.chunk and healthy:
-            node._pack()
+            self._enqueue_pack(node.node_id)
         return True
 
     def _deduplicate(self, node: "Node") -> bool:
@@ -333,6 +351,110 @@ class LineageStore:
         node._system_keys = set(existing._hydrate())
         if stale_dir.resolve() != existing.path.resolve():
             shutil.rmtree(stale_dir, ignore_errors=True)
+
+    # ---------------------------------------------------------------------------
+    # Deferred packing (off the write path)
+    # ---------------------------------------------------------------------------
+
+    def _enqueue_pack(self, node_id: str) -> None:
+        """Hands a node to the background packer (starting it on first use)."""
+        with self._pack_lock:
+            if node_id in self._enqueued:
+                return
+            self._enqueued.add(node_id)
+            if self._pack_worker is None or not self._pack_worker.is_alive():
+                self._pack_worker = threading.Thread(
+                    target=self._pack_loop, name="ancestree-packer", daemon=True
+                )
+                self._pack_worker.start()
+            if not self._flush_registered:
+                atexit.register(self.flush)  # converge on interpreter exit
+                self._flush_registered = True
+        self._pack_queue.put(node_id)
+
+    def _pack_loop(self) -> None:
+        """Background worker: chunks each queued node into the pool. Pure
+        addition — it never deletes a loose file — so killing the process mid-run
+        cannot lose data. Exceptions (e.g. a node pruned underneath it) are
+        swallowed: the loose files stay readable and get packed next time."""
+        self._scan_stragglers()  # pick up anything a previous run left loose
+        while True:
+            node_id = self._pack_queue.get()
+            try:
+                node = self.get_node(node_id)
+                if node is not None:
+                    node._pack()
+                    with self._pack_lock:
+                        self._reclaim_pending.add(node_id)
+            except Exception:
+                pass  # leave loose files in place; readable, packed next time
+            finally:
+                self._pack_queue.task_done()
+
+    def _scan_stragglers(self) -> None:
+        """Enqueues any node still holding loose artifact files — e.g. left by a
+        crash before the background packer reached it — so storage converges on
+        the next run without a manual step. Runs once, in the worker thread."""
+        try:
+            self._scan_stragglers_inner()
+        finally:
+            self._scan_done.set()  # flush() waits on this before joining the queue
+
+    def _scan_stragglers_inner(self) -> None:
+        try:
+            entries = list(self.root.iterdir())
+        except OSError:
+            return
+        for entry in entries:
+            if entry.name.startswith(".") or not (entry / "meta.json").exists():
+                continue
+            has_loose = any(
+                f.is_file()
+                and f.name not in ("meta.json", ARTIFACT_MANIFEST)
+                and not f.name.endswith(".tmp")
+                for f in entry.rglob("*")
+            )
+            if not has_loose:
+                continue
+            node = self.get_node(entry.name)
+            if node is None:
+                continue
+            # A failed run's partial files are intentionally left loose and
+            # unpacked; only converge healthy nodes a crash left behind.
+            if node._hydrate().get("healthy", {}).get("value") is False:
+                continue
+            with self._pack_lock:
+                if entry.name in self._enqueued:
+                    continue
+                self._enqueued.add(entry.name)
+            self._pack_queue.put(entry.name)
+
+    def flush(self) -> None:
+        """Blocks until every queued artifact has been chunked, then reclaims the
+        loose files whose recipe is now durable. This is the only place loose
+        files are removed; it runs on the calling (main) thread, so no reader can
+        be mid-read of a file it removes. Called automatically by the context
+        manager and at interpreter exit; call it directly to converge sooner.
+
+        Safe to interrupt: a partial flush just leaves more loose files to
+        reclaim next time, and never loses data.
+        """
+        if not self.chunk:
+            return
+        with self._pack_lock:
+            worker = self._pack_worker
+        if worker is not None:
+            # Make sure the worker has finished enqueuing any crash-stragglers
+            # before we wait for the queue to drain, or we could return early.
+            self._scan_done.wait()
+        self._pack_queue.join()  # wait for the worker to chunk everything queued
+        with self._pack_lock:
+            pending = list(self._reclaim_pending)
+            self._reclaim_pending.clear()
+        for node_id in pending:
+            node = self.get_node(node_id)
+            if node is not None:
+                node._reclaim_loose()
 
     # ---------------------------------------------------------------------------
     # Searching and Querying
