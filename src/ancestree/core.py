@@ -538,31 +538,6 @@ class LineageStore:
         deleted.append(target)
         return deleted
 
-    def compact(self) -> int:
-        """
-        Packs any not-yet-chunked artifacts and garbage-collects the pool.
-
-        Walks every node packing loose artifact files into the shared chunk pool,
-        then runs `gc` to delete chunks no node references any more. Its main use
-        is migrating a store opened with `chunk=True` whose older nodes were
-        written before chunking — those still have whole files on disk.
-
-        Note: reading a packed artifact does not leave a copy in the node
-        directory — reassembled bytes go to the disposable read cache (see
-        `clear_cache`) — so, unlike earlier versions, you do not need to call
-        `compact` to reclaim space after reading. It remains useful for the
-        migration case and to trigger a `gc`.
-
-        Returns:
-            int: The number of chunks deleted by the subsequent garbage collection.
-        """
-        for entry in self.root.iterdir():
-            if entry.is_dir() and (entry / "meta.json").exists():
-                node = self.get_node(entry.name)
-                if node:
-                    node._pack()
-        return self.gc()
-
     def gc(self) -> int:
         """
         Deletes chunks in the shared pool that no node references any more.
