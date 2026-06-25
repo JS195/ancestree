@@ -12,7 +12,7 @@ from typing import Dict, Iterator, Optional, Union
 try:
     import fcntl  # POSIX advisory locks; absent on Windows
 except ImportError:  # pragma: no cover - platform dependent
-    fcntl = None
+    fcntl = None  # type: ignore[assignment]
 
 # ---------------------------------------------------------------------------
 # Content-defined chunking (FastCDC)

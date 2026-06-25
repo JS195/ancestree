@@ -7,7 +7,7 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, List, Dict, Union, Optional, Literal
+from typing import Any, List, Dict, Set, Union, Optional, Literal
 from copy import deepcopy
 
 # Internal dependancies
@@ -528,7 +528,7 @@ class Node:
                 artifacts.append(self._resolve(rel))
         return artifacts
 
-    def _artifact_rels(self) -> set:
+    def _artifact_rels(self) -> Set[str]:
         """The node's logical artifact paths (relative to the node): the union of
         packed manifest entries and loose files actually on disk. meta.json and
         the manifest are excluded — they describe the node, they are not its

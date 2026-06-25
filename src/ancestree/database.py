@@ -2,7 +2,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .utils import parse_iso_utc, is_match, flatten_meta
 
@@ -247,7 +247,7 @@ class lineage_database:
         # Iterative post-order DFS over parents: a node is emitted only after all
         # of its parents, so the result is oldest-first. Done iteratively so deep
         # lineages cannot exhaust the recursion limit.
-        stack: List[tuple] = [(curr_node, False)]
+        stack: List[Tuple[str, bool]] = [(curr_node, False)]
         while stack:
             nid, expanded = stack.pop()
             if nid in done:

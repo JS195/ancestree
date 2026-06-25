@@ -112,7 +112,7 @@ def to_jsonable(value: Any) -> Tuple[Any, bool]:
                 changed = True
             return [convert(x) for x in v]
         # numpy ndarray (or anything array-like with a positive ndim).
-        if hasattr(v, "tolist") and getattr(v, "ndim", 0):
+        if hasattr(v, "tolist") and hasattr(v, "ndim") and v.ndim:
             changed = True
             return convert(v.tolist())
         # numpy scalar: a 0-d value carrying a dtype.
