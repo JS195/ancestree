@@ -71,11 +71,12 @@ def visualise_nodes(store: LineageStore) -> Dict[str, Any]:
             except (ValueError, TypeError):
                 pass
 
-        for item in node_obj.artifacts():
-            # artifacts() returns absolute paths; the web graph wants the key
-            # relative to the node and the link href relative to the store root.
-            entries[str(item.relative_to(node_obj.path))] = {
-                "value": str(item.relative_to(node_obj.path.parent)),
+        for rel in sorted(node_obj._artifact_rels()):
+            # Use logical artifact names: a packed artifact has no file in the
+            # node dir, and its cached path is irrelevant to the graph. The key
+            # is the node-relative name; the href stays root-relative.
+            entries[rel] = {
+                "value": f"{node_obj.node_id}/{rel}",
                 "data_type": "link",
                 "group": "Artifacts",
             }

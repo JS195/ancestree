@@ -1,14 +1,24 @@
 # Python packages
 import hashlib
 import json
+import os
+import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List, Dict, Union, Optional, Literal
 from copy import deepcopy
 
 # Internal dependancies
-from .chunkstore import ChunkStore, chunk_bytes
+from .chunkstore import ChunkStore, chunk_bytes, get_read_cache
 from .utils import get_provenance, is_pandas
+
+# Reassembling a packed artifact reads and decompresses its chunks; both release
+# the GIL, so a small thread pool overlaps that work for large files. Threads are
+# only worth their overhead past a chunk count, and ~4 workers is the sweet spot
+# (more contends on the GIL for the Python-level glue), regardless of core count.
+_MATERIALIZE_THREAD_THRESHOLD = 32
+_MATERIALIZE_WORKERS = min(4, os.cpu_count() or 1)
 
 #: Per-node sidecar holding the recipe for every packed artifact. Excluded from
 #: artifact listings and content hashing — it describes artifacts, it is not one.
@@ -478,9 +488,11 @@ class Node:
             contains (str, optional): A glob pattern to filter discovered files. A plain substring also works: it is matched anywhere in the filename, case-insensitively. Defaults to "*" (all files).
 
         Returns:
-            List[Path]: The matching file paths inside the node's directory,
-                ready to read or pass to a loader directly (no need to prefix
-                the store root). This mirrors the path `node / "file"` returns.
+            List[Path]: The matching file paths, ready to read or pass to a
+                loader directly (no need to prefix the store root). A loose file
+                points inside the node's directory; a packed artifact points at a
+                reassembled copy in the store's read cache. Either way the path
+                holds readable bytes, mirroring what `node / "file"` returns.
 
         Examples:
             >>> node.artifacts("*.csv")
@@ -491,26 +503,37 @@ class Node:
         if "*" not in contains and "?" not in contains:
             search_pattern = f"*{contains}*"
 
-        # Logical artifacts are the union of packed entries (in the manifest)
-        # and any real files on disk. A packed artifact is reassembled on demand
-        # so the returned path always points at readable bytes.
-        manifest = self._manifest()
-        relpaths = set(manifest)
-        for f in self.path.rglob("*"):
-            if f.is_file() and f.name not in ("meta.json", ARTIFACT_MANIFEST):
-                relpaths.add(f.relative_to(self.path).as_posix())
-
         artifacts = []
-        for rel in sorted(relpaths):
+        for rel in sorted(self._artifact_rels()):
             name = rel.rsplit("/", 1)[-1]
             if Path(rel).match(search_pattern) or name.lower().find(
                 contains.lower()
             ) != -1:
-                target = self.path / rel
-                if rel in manifest and not target.exists():
-                    self._materialize(rel)
-                artifacts.append(target)
+                artifacts.append(self._resolve(rel))
         return artifacts
+
+    def _artifact_rels(self) -> set:
+        """The node's logical artifact paths (relative to the node): the union of
+        packed manifest entries and loose files actually on disk. meta.json and
+        the manifest are excluded — they describe the node, they are not its
+        content. This is the storage-independent view artifact listing and the
+        web graph build on, since a packed artifact has no file in the node dir."""
+        rels = set(self._manifest())
+        for f in self.path.rglob("*"):
+            if f.is_file() and f.name not in ("meta.json", ARTIFACT_MANIFEST):
+                rels.add(f.relative_to(self.path).as_posix())
+        return rels
+
+    def _resolve(self, rel: str) -> Path:
+        """Returns a readable filesystem path for the logical artifact `rel`. A
+        loose file is returned in place; a packed artifact is reassembled into
+        the store's read cache and that path is returned. Reading never writes
+        back into the node directory, so packed nodes stay packed and `compact`
+        is not needed to reclaim what reads would otherwise leak."""
+        loose = self.path / rel
+        if rel in self._manifest() and not loose.exists():
+            return self._materialize(rel)
+        return loose
 
     def __truediv__(self, relative_loc: Union[Path, str]) -> Path:
         """
@@ -536,11 +559,12 @@ class Node:
                 f"Artifact path {relative_loc!r} escapes the node directory. "
                 "Keep all artifact paths inside the node."
             )
-        # If this names a packed artifact whose bytes are not on disk, reassemble
-        # it first so the returned path is readable — reading is transparent.
+        # A packed artifact with no file on disk is a read: reassemble it into the
+        # read cache and return that path (reading is transparent). Anything else
+        # is a write target, so return a path inside the node directory.
         rel = target_path.relative_to(self.path.resolve()).as_posix()
         if rel in self._manifest() and not target_path.exists():
-            self._materialize(rel)
+            return self._materialize(rel)
         target_path.parent.mkdir(parents=True, exist_ok=True)
         return target_path
 
@@ -594,19 +618,37 @@ class Node:
             self._write_manifest(manifest)
 
     def _materialize(self, rel: str) -> Path:
-        """Reassembles a packed artifact from its chunks, verifies it against the
-        recorded SHA-256, and writes it back in place. Returns the file path."""
+        """Reassembles a packed artifact from its chunks into the store's read
+        cache and returns that path. A cached copy from earlier in the session is
+        reused as-is; otherwise the chunks are read and decompressed (in parallel
+        for large files), verified against the recorded SHA-256, and written
+        atomically. The node directory is never touched, so packed nodes stay
+        packed without a manual `compact`."""
         record = self._manifest()[rel]
+        out = get_read_cache(self.path.parent).path_for(self.node_id, rel)
+        if out.exists():
+            return out  # already reassembled this session
+
         store = ChunkStore(self.path.parent)
-        data = b"".join(store.get(h) for h in record["chunks"])
+        digests = record["chunks"]
+        if len(digests) >= _MATERIALIZE_THREAD_THRESHOLD and _MATERIALIZE_WORKERS > 1:
+            # store.get reads + zlib-decompresses each chunk, both releasing the
+            # GIL, so the pool overlaps real work. map() keeps chunk order.
+            with ThreadPoolExecutor(max_workers=_MATERIALIZE_WORKERS) as pool:
+                data = b"".join(pool.map(store.get, digests, chunksize=16))
+        else:
+            data = b"".join(store.get(h) for h in digests)
+
         if hashlib.sha256(data).hexdigest() != record["sha256"]:
             raise RuntimeError(
                 f"Artifact {rel!r} failed its integrity check while being "
                 "reassembled — the chunk store may be corrupt."
             )
-        out = self.path / rel
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_bytes(data)
+        # Atomic publish: a unique temp keeps concurrent reassembles of the same
+        # entry from clobbering each other mid-write.
+        tmp = out.with_name(f"{out.name}.{uuid.uuid4().hex}.tmp")
+        tmp.write_bytes(data)
+        tmp.replace(out)
         return out
 
     def __repr__(self) -> str:

@@ -10,7 +10,7 @@ from contextlib import contextmanager
 import warnings
 
 # Internal dependancies
-from .chunkstore import ChunkStore
+from .chunkstore import ChunkStore, drop_read_cache
 from .database import lineage_database
 from .models import ARTIFACT_MANIFEST, Node
 from .vis import run_web_generator
@@ -59,6 +59,29 @@ class LineageStore:
         self.dedupe = dedupe
         self.chunk = chunk
         self.database = lineage_database(self.root)
+
+    def __enter__(self) -> "LineageStore":
+        return self
+
+    def __exit__(self, *exc: Any) -> None:
+        # Wipe the read cache deterministically at the end of a `with` block.
+        # (It is also wiped at interpreter exit, so non-context-manager use is
+        # cleaned up too.)
+        self.clear_cache()
+
+    def clear_cache(self) -> None:
+        """
+        Discards the store's session read cache (`<root>/.cache`).
+
+        Reading a packed artifact reassembles its bytes into this cache rather
+        than back into the node directory, so the store never needs `compact()`
+        to reclaim what reads would otherwise leak. The cache is pure derived
+        data — anything in it is regenerated from the chunk pool on the next
+        read — so clearing it only frees disk, never loses anything. It is also
+        cleared automatically when the process exits or a `with` block closes;
+        call this to reclaim the space sooner.
+        """
+        drop_read_cache(self.root)
 
     def _do_config(
         self,
@@ -517,16 +540,18 @@ class LineageStore:
 
     def compact(self) -> int:
         """
-        Reclaims disk space when sub-file chunking is in use.
+        Packs any not-yet-chunked artifacts and garbage-collects the pool.
 
-        Re-packs any artifacts that have been reassembled to disk (by reading
-        them back) into the shared chunk pool, then runs `gc` to delete chunks
-        no longer referenced by any node. This also packs nodes that were
-        written before chunking was enabled, so it doubles as a way to compact
-        an existing store after opening it with `chunk=True`.
+        Walks every node packing loose artifact files into the shared chunk pool,
+        then runs `gc` to delete chunks no node references any more. Its main use
+        is migrating a store opened with `chunk=True` whose older nodes were
+        written before chunking — those still have whole files on disk.
 
-        Reading a packed artifact leaves a real copy on disk until the next
-        `compact`; this is the only manual step in the chunking workflow.
+        Note: reading a packed artifact does not leave a copy in the node
+        directory — reassembled bytes go to the disposable read cache (see
+        `clear_cache`) — so, unlike earlier versions, you do not need to call
+        `compact` to reclaim space after reading. It remains useful for the
+        migration case and to trigger a `gc`.
 
         Returns:
             int: The number of chunks deleted by the subsequent garbage collection.

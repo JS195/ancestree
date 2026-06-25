@@ -18,6 +18,11 @@ import pytest
 import ancestree
 from ancestree.chunkstore import ChunkStore, _MAX_SIZE, _MIN_SIZE, chunk_bytes
 
+try:
+    import fcntl as _fcntl
+except ImportError:  # pragma: no cover - platform dependent
+    _fcntl = None
+
 
 @pytest.fixture
 def chunk_store(tmp_path):
@@ -100,10 +105,15 @@ class TestTransparency:
             (node / "sub/b.bin").write_bytes(b"y" * 40_000)
 
         reopened = chunk_store.get_node(node.node_id)
-        listed = set(reopened.artifacts())
-        assert listed == {reopened.path / "a.bin", reopened.path / "sub/b.bin"}
+        # The logical artifact names are preserved (nested paths included)...
+        assert reopened._artifact_rels() == {"a.bin", "sub/b.bin"}
+        listed = reopened.artifacts()
+        # ...and every listed path resolves to readable bytes in the read cache,
+        # never back into the node directory.
+        assert {p.name for p in listed} == {"a.bin", "b.bin"}
         for path in listed:
-            assert path.exists()  # resolved to real bytes
+            assert path.exists() and ".cache" in path.parts
+        assert not (chunk_store.root / node.node_id / "a.bin").exists()
 
     def test_from_parent_reads_through_chunks(self, chunk_store):
         with chunk_store.create_node(step_type="ingest") as parent:
@@ -175,17 +185,17 @@ class TestReclaim:
         assert chunk_store.gc() == before
         assert pool(chunk_store) == set()
 
-    def test_compact_repacks_rehydrated_file(self, chunk_store):
+    def test_reading_does_not_repollute_the_node_dir(self, chunk_store):
         payload = os.urandom(80_000)
         with chunk_store.create_node(step_type="ingest") as node:
             (node / "f.bin").write_bytes(payload)
 
-        # Reading rehydrates a real copy to disk.
-        assert (chunk_store.get_node(node.node_id) / "f.bin").exists()
-        chunk_store.compact()
+        # Reading reassembles into the read cache, not back into the node dir,
+        # so the node stays packed and no compact() is needed to reclaim space.
+        p = chunk_store.get_node(node.node_id) / "f.bin"
+        assert p.read_bytes() == payload
+        assert ".cache" in p.parts
         assert not (chunk_store.root / node.node_id / "f.bin").exists()
-        # Still transparently readable afterwards.
-        assert (chunk_store.get_node(node.node_id) / "f.bin").read_bytes() == payload
 
     def test_compact_packs_store_created_without_chunking(self, tmp_path):
         plain = ancestree.LineageStore(tmp_path / "s", chunk=False)
@@ -255,3 +265,87 @@ class TestIntegrity:
 
         with pytest.raises(RuntimeError, match="integrity"):
             _ = chunk_store.get_node(node.node_id) / "f.bin"
+
+
+# ---------------------------------------------------------------------------
+# Session-scoped read cache
+# ---------------------------------------------------------------------------
+
+
+def _cache_files(store):
+    base = store.root / ".cache"
+    return [f for f in base.rglob("*") if f.is_file() and f.suffix != ".lock"] if base.exists() else []
+
+
+class TestReadCache:
+    def test_read_populates_cache_not_node_dir(self, chunk_store):
+        with chunk_store.create_node(step_type="ingest") as node:
+            (node / "f.bin").write_bytes(os.urandom(50_000))
+        _ = chunk_store.get_node(node.node_id) / "f.bin"  # read -> materialize
+        assert _cache_files(chunk_store)  # bytes landed in the cache
+        assert not (chunk_store.root / node.node_id / "f.bin").exists()
+
+    def test_clear_cache_wipes_the_cache(self, chunk_store):
+        with chunk_store.create_node(step_type="ingest") as node:
+            (node / "f.bin").write_bytes(os.urandom(50_000))
+        payload = (chunk_store.get_node(node.node_id) / "f.bin").read_bytes()
+        assert _cache_files(chunk_store)
+
+        chunk_store.clear_cache()
+        assert _cache_files(chunk_store) == []
+        # Still readable afterwards: the cache lazily regenerates from the pool.
+        assert (chunk_store.get_node(node.node_id) / "f.bin").read_bytes() == payload
+
+    def test_context_manager_clears_cache_on_exit(self, tmp_path):
+        with ancestree.LineageStore(tmp_path / "s", chunk=True) as store:
+            with store.create_node(step_type="ingest") as node:
+                (node / "f.bin").write_bytes(os.urandom(50_000))
+            _ = store.get_node(node.node_id) / "f.bin"
+            assert _cache_files(store)
+        assert _cache_files(store) == []  # wiped on block exit
+
+    @pytest.mark.skipif(_fcntl is None, reason="reaping needs POSIX file locks")
+    def test_dead_session_dir_is_reaped_on_open(self, chunk_store):
+        # Simulate a crashed session: a cache dir with an unheld lock file.
+        base = chunk_store.root / ".cache"
+        base.mkdir(parents=True, exist_ok=True)
+        (base / "99999-deadbeef").mkdir()
+        (base / "99999-deadbeef" / "stale.bin").write_bytes(b"junk")
+        (base / "99999-deadbeef.lock").write_bytes(b"")
+
+        # Opening this process's cache (via a read) reaps siblings it can lock.
+        with chunk_store.create_node(step_type="ingest") as node:
+            (node / "f.bin").write_bytes(os.urandom(50_000))
+        _ = chunk_store.get_node(node.node_id) / "f.bin"
+
+        assert not (base / "99999-deadbeef").exists()
+
+    def test_large_file_round_trips_through_threaded_path(self, chunk_store):
+        # >32 chunks at the 32 KB average -> exercises the ThreadPoolExecutor.
+        payload = os.urandom(2_000_000)
+        with chunk_store.create_node(step_type="ingest") as node:
+            (node / "big.bin").write_bytes(payload)
+        n_chunks = len(manifest(chunk_store, node.node_id)["big.bin"]["chunks"])
+        assert n_chunks > 32
+        assert (chunk_store.get_node(node.node_id) / "big.bin").read_bytes() == payload
+
+    def test_cache_path_is_scoped_to_its_node(self, chunk_store):
+        payload = os.urandom(50_000)
+        with chunk_store.create_node(step_type="ingest") as a:
+            (a / "f.bin").write_bytes(payload)
+        with chunk_store.create_node(step_type="report") as b:
+            (b / "g.bin").write_bytes(payload)  # same bytes, different node
+
+        pa = chunk_store.get_node(a.node_id) / "f.bin"
+        pb = chunk_store.get_node(b.node_id) / "g.bin"
+        # The cache path reads like the node it belongs to, and each node keeps
+        # its own copy (no cross-node sharing in the disposable session cache).
+        assert a.node_id in pa.parts and pa.name == "f.bin"
+        assert b.node_id in pb.parts and pb.name == "g.bin"
+        assert pa != pb
+
+    def test_nested_artifact_keeps_its_relative_path_in_cache(self, chunk_store):
+        with chunk_store.create_node(step_type="ingest") as node:
+            (node / "sub/deep.bin").write_bytes(os.urandom(40_000))
+        p = chunk_store.get_node(node.node_id) / "sub/deep.bin"
+        assert p.parts[-3:] == (node.node_id, "sub", "deep.bin")
