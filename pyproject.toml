@@ -53,6 +53,11 @@ packages = ["ancestree", "ancestree.assets"]
 [tool.ruff]
 line-length = 88
 
+[tool.ruff.lint.per-file-ignores]
+# Example/benchmark notebooks favour compact cells; allow one-liner if/for and
+# semicolons there (still linted for real issues like unused/undefined names).
+"*.ipynb" = ["E701", "E702"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

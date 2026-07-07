@@ -2,7 +2,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .utils import parse_iso_utc, is_match, flatten_meta
 
@@ -44,6 +44,10 @@ class lineage_database:
         self._log_mtime: Optional[int] = None
         self._since_compact = 0
         self._compacted_size = 0
+        # Reverse lookup content_hash -> node_id for deduplication. Derived
+        # from the cache and rebuilt lazily; kept in sync on add/remove so
+        # dedup stays O(1) per node rather than scanning the whole index.
+        self._hash_index: Optional[Dict[str, str]] = None
 
     @staticmethod
     def _mtime_ns(path: Path) -> Optional[int]:
@@ -84,6 +88,7 @@ class lineage_database:
         assert self._cache is not None
         self._snapshot_mtime = snap_mtime
         self._compacted_size = len(self._cache)
+        self._hash_index = None  # cache replaced; rebuild lazily on next lookup
         self._replay_log()
         self._reconcile()
 
@@ -165,6 +170,7 @@ class lineage_database:
             p.parent.name: flatten_meta(json.loads(p.read_text()))
             for p in self.root.glob("*/meta.json")
         }
+        self._hash_index = None  # cache replaced; rebuild lazily on next lookup
         self._write_snapshot()
 
     def _refresh_if_stale(self) -> None:
@@ -174,12 +180,36 @@ class lineage_database:
     def add(self, node_id: str, meta: IndexEntry) -> None:
         self._refresh_if_stale()
         self.cache[node_id] = meta
+        if self._hash_index is not None:
+            content_hash = meta.get("content_hash")
+            if content_hash:
+                self._hash_index[content_hash] = node_id
         self._append_log({"id": node_id, "meta": meta})
 
     def remove(self, node_id: str) -> None:
         self._refresh_if_stale()
-        self.cache.pop(node_id, None)
+        entry = self.cache.pop(node_id, None)
+        if self._hash_index is not None and entry:
+            content_hash = entry.get("content_hash")
+            # Only drop the mapping if it still points at this node; a later
+            # duplicate could have overwritten it.
+            if content_hash and self._hash_index.get(content_hash) == node_id:
+                del self._hash_index[content_hash]
         self._append_log({"_op": "del", "id": node_id})
+
+    def find_by_hash(self, content_hash: str) -> Optional[str]:
+        """Returns the node_id of an indexed node whose content_hash matches,
+        or None. Backs deduplication: the store treats the result as a
+        candidate and byte-verifies it before reuse."""
+        self._refresh_if_stale()
+        if self._hash_index is None:
+            index: Dict[str, str] = {}
+            for nid, meta in self.cache.items():
+                stored = meta.get("content_hash")
+                if stored:
+                    index[stored] = nid
+            self._hash_index = index
+        return self._hash_index.get(content_hash)
 
     def find_matches(self, **kwargs: Any) -> List[str]:
         self._refresh_if_stale()
@@ -190,25 +220,59 @@ class lineage_database:
             k for k in self.get_lineage(curr_node) if is_match(self.cache[k], **kwargs)
         ]
 
-    def get_lineage(self, curr_node: Optional[str]) -> List[str]:
+    @staticmethod
+    def _parents(entry: IndexEntry) -> List[str]:
+        """The parent ids of an index entry (a list; empty for a root)."""
+        return entry.get("parent_id") or []
+
+    def find_children(self, node_id: str) -> List[str]:
+        """Returns the ids of nodes that list `node_id` among their parents."""
         self._refresh_if_stale()
-        history: List[str] = []
-        visited: set[str] = set()
-        while curr_node:
-            if curr_node in visited:
-                raise ValueError(
-                    f"Cycle detected in lineage at node '{curr_node}'. "
-                    "The store metadata may be corrupted."
-                )
-            if curr_node not in self.cache:
+        return [
+            nid for nid, entry in self.cache.items() if node_id in self._parents(entry)
+        ]
+
+    def get_lineage(self, curr_node: Optional[str]) -> List[str]:
+        """Returns every ancestor of `curr_node` plus `curr_node` itself, in
+        topological order (oldest first), following all parents. For a linear
+        chain this is the chain; for a DAG (a join) it is the union of all the
+        inputs' histories, each node listed once and after all of its parents."""
+        self._refresh_if_stale()
+        if not curr_node:
+            return []
+        order: List[str] = []
+        done: set[str] = set()  # fully emitted
+        on_stack: set[str] = set()  # ancestors currently being walked (cycle guard)
+
+        # Iterative post-order DFS over parents: a node is emitted only after all
+        # of its parents, so the result is oldest-first. Done iteratively so deep
+        # lineages cannot exhaust the recursion limit.
+        stack: List[Tuple[str, bool]] = [(curr_node, False)]
+        while stack:
+            nid, expanded = stack.pop()
+            if nid in done:
+                continue
+            if nid not in self.cache:
                 raise KeyError(
-                    f"Node '{curr_node}' not found in the index. "
+                    f"Node '{nid}' not found in the index. "
                     "Call store.rebuild_db_from_disk() to resync the index."
                 )
-            visited.add(curr_node)
-            history.append(curr_node)
-            curr_node = self.cache[curr_node].get("parent_id")
-        return history[::-1]
+            if expanded:
+                on_stack.discard(nid)
+                done.add(nid)
+                order.append(nid)
+                continue
+            if nid in on_stack:
+                raise ValueError(
+                    f"Cycle detected in lineage at node '{nid}'. "
+                    "The store metadata may be corrupted."
+                )
+            on_stack.add(nid)
+            stack.append((nid, True))  # emit after its parents
+            for pid in self._parents(self.cache[nid]):
+                if pid not in done:
+                    stack.append((pid, False))
+        return order
 
     def most_recent(self, node_ids: List[str]) -> Optional[str]:
         # Takes an already-matched id list rather than calling find_matches

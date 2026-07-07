@@ -71,21 +71,24 @@ def visualise_nodes(store: LineageStore) -> Dict[str, Any]:
             except (ValueError, TypeError):
                 pass
 
-        for item in node_obj.artifacts():
-            path = Path(*item.parts[1:])
-            entries[str(path)] = {
-                "value": str(item),
+        for rel in sorted(node_obj._artifact_rels()):
+            # Use logical artifact names: a packed artifact has no file in the
+            # node dir, and its cached path is irrelevant to the graph. The key
+            # is the node-relative name; the href stays root-relative.
+            entries[rel] = {
+                "value": f"{node_obj.node_id}/{rel}",
                 "data_type": "link",
                 "group": "Artifacts",
             }
         raw.append(entries)
 
     node_ids = [get_meta_val(e, "node_id") for e in raw]
-    edges = [
-        (get_meta_val(e, "parent_id"), get_meta_val(e, "node_id"))
-        for e in raw
-        if get_meta_val(e, "parent_id")
-    ]
+    edges = []
+    for e in raw:
+        child = get_meta_val(e, "node_id")
+        for parent in get_meta_val(e, "parent_id") or []:  # parent_id is a list
+            if parent:
+                edges.append((parent, child))
 
     levels = assign_levels(node_ids, edges)
 

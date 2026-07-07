@@ -247,9 +247,9 @@ class TestLineageQueriesAcrossLayers:
 
 class TestCrossInstanceSearch:
     def test_reader_sees_writer_adds_and_prunes(self, tmp_path):
-        writer = LineageStore(root=tmp_path / "shared")
+        writer = LineageStore(root=tmp_path / "shared", dedupe=False, chunk=False)
         writer.database._COMPACT_MIN = 3
-        reader = LineageStore(root=tmp_path / "shared")
+        reader = LineageStore(root=tmp_path / "shared", dedupe=False, chunk=False)
         _ = reader.database.cache  # reader loads an empty index first
 
         made = [_make_node(writer, "ingest", meta={"tag": "x"}) for _ in range(7)]

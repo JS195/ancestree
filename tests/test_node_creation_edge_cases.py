@@ -24,12 +24,22 @@ from ancestree import LineageStore
 
 @pytest.fixture
 def store(tmp_path):
-    return LineageStore(root=tmp_path / "store", rules={"ingest": [None]})
+    # These tests pin the on-disk persistence contract (artifacts written whole
+    # to the node directory), so deduplication and chunking are opted out here;
+    # they have their own suites in test_dedupe.py and test_chunking.py.
+    return LineageStore(
+        root=tmp_path / "store",
+        rules={"ingest": [None]},
+        dedupe=False,
+        chunk=False,
+    )
 
 
 def node_dirs(store):
     """Every node directory currently on disk (store internals excluded)."""
-    return [d for d in store.root.iterdir() if d.is_dir()]
+    return [
+        d for d in store.root.iterdir() if d.is_dir() and not d.name.startswith(".")
+    ]
 
 
 def assert_no_orphan_dirs(store):
