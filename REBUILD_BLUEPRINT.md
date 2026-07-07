@@ -1,6 +1,6 @@
 # Ancestree Rebuild Blueprint & Action Plan
 
-> **Version:** 2.1 &nbsp;•&nbsp; **Date:** 2026-07-07 &nbsp;•&nbsp; **Author:** Joshua Smith &nbsp;•&nbsp; **Status:** Approved for implementation
+> **Version:** 2.2 &nbsp;•&nbsp; **Date:** 2026-07-07 &nbsp;•&nbsp; **Author:** Joshua Smith &nbsp;•&nbsp; **Status:** Approved for implementation
 
 A living design document for consolidating Ancestree onto a single SQLite backing store, adding advanced content-defined deduplication, decomposing the two large classes, and adding an optional local interactive server — **without adding a single third-party dependency.**
 
@@ -187,27 +187,32 @@ src/ancestree/
 ├── __main__.py               # CLI: python -m ancestree serve|export|compact|migrate
 ├── py.typed
 ├── store.py                  # LineageStore — thin facade that wires the layers
-├── node.py                   # Node — thin handle over the DB + scratch workspace
-├── workspace.py              # NodeWorkspace — the ONLY filesystem-write logic
-├── metadata.py               # metadata envelope: validate / coerce / infer type
-├── rules.py                  # RuleEngine — transition validation + generation numbering
-├── fingerprint.py            # node content-identity (hash + equality) → node-level dedup
-├── provenance.py             # who/what/how capture (user, python, platform, git)
-├── errors.py                 # typed exception hierarchy
-├── util.py                   # JSON coercion, ISO time, small shared helpers
+├── maintenance.py            # Pruner + compact (chunk GC + incremental_vacuum) + orphan-scratch sweep
+├── errors.py                 # typed exception hierarchy (cross-cutting)
+├── util.py                   # JSON coercion, ISO time, small shared helpers (cross-cutting)
 │
-├── db/                       # persistence layer — all SQLite
+├── domain/                   # what a node IS — pure logic, no I/O
+│   ├── __init__.py
+│   ├── node.py               # Node record + recording handle
+│   ├── metadata.py           # metadata envelope: validate / coerce / infer type
+│   ├── rules.py              # RuleEngine — transition validation + generation numbering
+│   ├── fingerprint.py        # node content-identity (hash + equality) → node-level dedup
+│   └── provenance.py         # who/what/how capture (user, python, platform, git)
+│
+├── db/                       # how state is PERSISTED — all SQLite
 │   ├── __init__.py
 │   ├── connection.py         # ConnectionManager: pragmas, per-thread/PID conns, write lock, fork reset
 │   ├── schema.py             # canonical DDL + ensure/verify + user_version migrations
 │   ├── metadata_store.py     # MetadataStore: node/edge/metadata rows, queries, lineage
 │   └── chunk_store.py        # ChunkStore: chunk & delta BLOBs, artifacts, reassembly, read cache, gc
 │
-├── cdc.py                    # CDC in one module: FastCDC (L1) · super-features · zlib-zdict delta (L2)
-├── packing.py                # ingest pipeline: scratch files → chunk → (delta?) → SQLite
-├── maintenance.py            # Pruner + compact (chunk GC + incremental_vacuum) + orphan-scratch sweep
+├── ingest/                   # how bytes GET IN — the write path
+│   ├── __init__.py
+│   ├── workspace.py          # NodeWorkspace — scratch dirs; the ONLY filesystem writer
+│   ├── cdc.py                # CDC in one module: FastCDC (L1) · super-features · zlib-zdict delta (L2)
+│   └── packing.py            # ingest pipeline: scratch files → chunk → (delta?) → SQLite
 │
-└── web/
+└── web/                      # how it's SEEN
     ├── __init__.py
     ├── graph.py              # build {nodes, edges, levels} payload from the store
     ├── export.py             # single-file static HTML export (+ artifact materialization)
@@ -218,6 +223,8 @@ src/ancestree/
         ├── styles.css
         └── vis-network.min.js
 ```
+
+The root holds only entry points (`store`, `__main__`) and cross-cutting leaves (`maintenance`, `errors`, `util`); each package is one architectural layer. During the transition the 0.1.x modules (`core.py`, `models.py`, `database.py`, `chunkstore.py`, `utils.py`, `vis.py`) sit flat at the root beside them — an easy visual cue for what is legacy — and are deleted in Phase 9.
 
 ### 5.2 On-disk layout (at rest)
 
@@ -232,7 +239,7 @@ The reassembled-artifact **read cache** lives in the system temp directory (via 
 
 ### 5.3 File-by-file — contents & rationale
 
-#### Top level
+#### Top level — entry points & cross-cutting leaves
 
 **`__init__.py`** — *Contains:* re-exports of `LineageStore` and `__version__`. *Why:* one stable import point that hides the internal reshuffle.
 
@@ -240,21 +247,23 @@ The reassembled-artifact **read cache** lives in the system temp directory (via 
 
 **`store.py` — `LineageStore` (facade).** *Contains:* construction/wiring of `ConnectionManager`, `MetadataStore`, `ChunkStore`, `RuleEngine`, `Pruner`; the context-manager; and thin delegating methods (`create_node`, `get`/`find`/`latest`/`lineage`/`children`/`ancestors`, `prune`, `compact`, `sql`, `stats`, `export`, `generate_web_graph`, `host_live_graph`). *Why:* the current 899-line God-class should *orchestrate*, not *implement*. Every algorithm moves to a focused module.
 
-**`node.py` — `Node` (record) + recording handle.** *Contains:* the immutable **`Node`** returned by queries (identity + `metadata` property, `artifacts`, read-side `/`, `__repr__`), and the mutable **recording handle** yielded by `create_node` (write-side `/` and `add_meta`). Both read metadata from `MetadataStore` and artifacts from `ChunkStore`/`NodeWorkspace`. *Why:* separating the read record from the write handle prevents `add_meta` on a queried node and lets the record be an immutable, hashable value object — see [AD10](#ad10--redesign-the-public-api-for-coherence). A node is a thin handle over the database, not a directory.
-
-**`workspace.py` — `NodeWorkspace`.** *Contains:* create the scratch dir, resolve `node / "x"` write targets inside it (with the escape-guard), enumerate written files, and drive ingest → delete on block-exit. Writes a tiny **seed file** (`node_id`, `step_type`, parents, pid) at block-start so a hard-killed block's scratch can be adopted later (§7.5). *Why:* isolates the *only* remaining filesystem-write logic in one place, keeping `Node` free of I/O concerns (AD2).
-
-**`metadata.py`.** *Contains:* the `{value, data_type, group, searchable}` envelope builder — validation, reserved-key guard, type inference (`auto` → table/json/image/link/text), pandas-DataFrame → `{columns, rows}` coercion, and `to_row()` (extract `num_value` for indexing). *Why:* one home for envelope logic currently tangled inside `Node._set_meta`.
-
-**`rules.py` — `RuleEngine`.** *Contains:* `validate(step_type, parent_step_types)` (raises `InvalidTransition`) and `generation_for(step_type, parents)`. *Why:* pure, unit-testable transition/generation logic lifted out of `create_node`.
-
-**`fingerprint.py`.** *Contains:* `content_hash(step_type, parent_ids, content_meta, artifact_digests)` and `content_equal(a, b)`. *Why:* node-level dedup is content-identity logic, not node behaviour; extracting it lets it be tested in isolation.
-
-**`provenance.py`.** *Contains:* `capture()` → user / python_version / platform / git_commit / git_branch / git_dirty. *Why:* already self-contained; a clean move from `utils.py`.
+**`maintenance.py`.** *Contains:* `Pruner.prune(node_id, dry_run=True)` (DAG-aware: a child dies only if all parents die — expressed with SQL + `ON DELETE CASCADE`); `compact()` (delete chunks unreachable from any artifact or as a live delta base — a one-hop closure under depth-1 — then `PRAGMA incremental_vacuum`, with full `VACUUM` as an explicit deep-compact option); and the **orphan-scratch sweep** run at store open (adopt a dead process's seeded scratch as an unhealthy node — §7.5). *Why:* destructive/space ops separated from the read/write path, top-level because they cut across `db/` and `ingest/`; unifies the `gc`/`flush`/`compact` vocabulary into one verb.
 
 **`errors.py`.** *Contains:* `AncestreeError` base + `InvalidTransition`, `NodeNotFound`, `SchemaError`, `IntegrityError`, `CorruptChunkError`. *Why:* replaces scattered bare `ValueError`/`RuntimeError`/`PermissionError` so callers can catch selectively.
 
 **`util.py`.** *Contains:* `to_jsonable` (numpy/pandas duck-typed coercion — keeps pandas optional), ISO time parse/format, misc helpers. *Why:* one home; retires the `parse_time`/`parse_iso_utc` split.
+
+#### `domain/` — the vocabulary of lineage (pure logic, no I/O)
+
+**`domain/node.py` — `Node` (record) + recording handle.** *Contains:* the immutable **`Node`** returned by queries (identity + `metadata` property, `artifacts`, read-side `/`, `__repr__`), and the mutable **recording handle** yielded by `create_node` (write-side `/` and `add_meta`). Both read metadata from `MetadataStore` and artifacts from `ChunkStore`/`NodeWorkspace`. *Why:* separating the read record from the write handle prevents `add_meta` on a queried node and lets the record be an immutable, hashable value object — see [AD10](#ad10--redesign-the-public-api-for-coherence). A node is a thin handle over the database, not a directory.
+
+**`domain/metadata.py`.** *Contains:* the `{value, data_type, group, searchable}` envelope builder — validation, reserved-key guard, type inference (`auto` → table/json/image/link/text), pandas-DataFrame → `{columns, rows}` coercion, and `to_row()` (extract `num_value` for indexing). *Why:* one home for envelope logic currently tangled inside `Node._set_meta`.
+
+**`domain/rules.py` — `RuleEngine`.** *Contains:* `validate(step_type, parent_step_types)` (raises `InvalidTransition`) and `generation_for(step_type, parents)`. *Why:* pure, unit-testable transition/generation logic lifted out of `create_node`.
+
+**`domain/fingerprint.py`.** *Contains:* `content_hash(step_type, parent_ids, content_meta, artifact_digests)` and `content_equal(a, b)`. *Why:* node-level dedup is content-identity logic, not node behaviour; extracting it lets it be tested in isolation.
+
+**`domain/provenance.py`.** *Contains:* `capture()` → user / python_version / platform / git_commit / git_branch / git_dirty. *Why:* already self-contained; a clean move from `utils.py`.
 
 #### `db/` — persistence
 
@@ -266,15 +275,13 @@ The reassembled-artifact **read cache** lives in the system temp directory (via 
 
 **`chunk_store.py` — `ChunkStore`.** *Contains:* `put_chunk(plaintext)` (exact dedup → resemblance/delta or raw), `get_chunk(digest)` (for a delta, fetch its raw base — depth-1 — decode, verify SHA-256), `add_artifact`, `artifact_manifest`, `reassemble` (into the read cache), `has_artifacts`, `gc`. Also owns the session **read cache**: a `tempfile`-managed directory in the *system temp dir* that `reassemble` writes into — folded in here because reassembly is its only consumer, and living in system temp makes hard-killed leftovers the OS temp-cleaner's problem (replacing the old `fcntl` lock/reap machinery with nothing). *Why:* absorbs the filesystem chunk pool + `Node`'s packing/reassembly/manifest, now SQLite-backed and driving the two-layer dedup.
 
-#### `cdc.py` — chunking + advanced dedup (one module)
+#### `ingest/` — the write path (scratch → chunks → SQLite)
 
-**`cdc.py`.** *Contains three clearly-sectioned parts (~250 lines total):* **(1) FastCDC chunker** — `chunk(data) -> Iterator[bytes]`, Gear table, normalized masks, retunable min/avg/max constants (a larger min-size raises throughput at a small dedup cost), plus the fixed-boundary fallback for artifacts above the large-file threshold (AD4); **(2) resemblance** — `super_features(...)` computed in the chunking pass, backing the `chunk_feature` lookup for candidate bases (Layer 2 discovery); **(3) delta codec** — `encode(base, target)` / `decode(base, blob)` via `zlib` dictionary compression with the base chunk as `zdict` (AD5), ~20 lines at C speed, no bsdiff/xdelta/zstd (HC1). *Why one module:* these are three faces of a single algorithmic concern with ~250 lines between them — a three-file package would fragment what today's `chunkstore.py` already proves reads well as one file. Layer 1 is lifted from the existing implementation with reproducible boundaries.
+**`ingest/workspace.py` — `NodeWorkspace`.** *Contains:* create the scratch dir, resolve `node / "x"` write targets inside it (with the escape-guard), enumerate written files, and drive ingest → delete on block-exit. Writes a tiny **seed file** (`node_id`, `step_type`, parents, pid) at block-start so a hard-killed block's scratch can be adopted later (§7.5). *Why:* isolates the *only* remaining filesystem-write logic in one place, keeping `Node` free of I/O concerns (AD2).
 
-#### Pipeline & maintenance
+**`ingest/cdc.py` — chunking + advanced dedup, one module.** *Contains three clearly-sectioned parts (~250 lines total):* **(1) FastCDC chunker** — `chunk(data) -> Iterator[bytes]`, Gear table, normalized masks, retunable min/avg/max constants (a larger min-size raises throughput at a small dedup cost), plus the fixed-boundary fallback for artifacts above the large-file threshold (AD4); **(2) resemblance** — `super_features(...)` computed in the chunking pass, backing the `chunk_feature` lookup for candidate bases (Layer 2 discovery); **(3) delta codec** — `encode(base, target)` / `decode(base, blob)` via `zlib` dictionary compression with the base chunk as `zdict` (AD5), ~20 lines at C speed, no bsdiff/xdelta/zstd (HC1). *Why one module:* these are three faces of a single algorithmic concern with ~250 lines between them — a three-file package would fragment what today's `chunkstore.py` already proves reads well as one file. Layer 1 is lifted from the existing implementation with reproducible boundaries.
 
-**`packing.py`.** *Contains:* the ingest pipeline — read a node's scratch files, chunk via `cdc`, dedup/delta via `ChunkStore`, write chunk + artifact rows in one transaction, compute artifact SHA-256s + node size + `content_hash` in the same pass, mark scratch for deletion. Runs synchronously by default; the same entry point can be dispatched to a single worker thread if `background=True` (AD4). *Why:* one place for the write→durable transform, decoupled from both `Node` and the storage primitives.
-
-**`maintenance.py`.** *Contains:* `Pruner.prune(node_id, dry_run=True)` (DAG-aware: a child dies only if all parents die — expressed with SQL + `ON DELETE CASCADE`); `compact()` (delete chunks unreachable from any artifact or as a live delta base — a one-hop closure under depth-1 — then `PRAGMA incremental_vacuum`, with full `VACUUM` as an explicit deep-compact option); and the **orphan-scratch sweep** run at store open (adopt a dead process's seeded scratch as an unhealthy node — §7.5). *Why:* destructive/space ops separated from the read/write path; unifies the `gc`/`flush`/`compact` vocabulary into one verb.
+**`ingest/packing.py`.** *Contains:* the ingest pipeline — read a node's scratch files, chunk via `cdc`, dedup/delta via `ChunkStore`, write chunk + artifact rows in one transaction, compute artifact SHA-256s + node size + `content_hash` in the same pass, mark scratch for deletion. Runs synchronously by default; the same entry point can be dispatched to a single worker thread if `background=True` (AD4). *Why:* one place for the write→durable transform, decoupled from both `Node` and the storage primitives.
 
 #### `web/`
 
@@ -290,20 +297,20 @@ The reassembled-artifact **read cache** lives in the system temp directory (via 
 
 | Old (lines) | Becomes |
 |---|---|
-| `LineageStore` (899) | `store.py` (facade) + `rules.py` + `packing.py` + `maintenance.py` + `db/metadata_store.py` + `fingerprint.py` |
-| `Node` (716) | `node.py` + `workspace.py` + `metadata.py` + `db/chunk_store.py` + `fingerprint.py` |
+| `LineageStore` (899) | `store.py` (facade) + `domain/rules.py` + `ingest/packing.py` + `maintenance.py` + `db/metadata_store.py` + `domain/fingerprint.py` |
+| `Node` (716) | `domain/node.py` + `ingest/workspace.py` + `domain/metadata.py` + `db/chunk_store.py` + `domain/fingerprint.py` |
 | `lineage_database` (286) | `db/{connection,schema,metadata_store}.py` — journal/snapshot/reconcile **deleted** |
-| `chunkstore.py` (257) | `db/chunk_store.py` (SQLite, incl. the read cache) + `cdc.py` |
-| `utils.py` (218) | `provenance.py` + `util.py`; matching logic → SQL in `metadata_store` |
+| `chunkstore.py` (257) | `db/chunk_store.py` (SQLite, incl. the read cache) + `ingest/cdc.py` |
+| `utils.py` (218) | `domain/provenance.py` + `util.py`; matching logic → SQL in `metadata_store` |
 | `vis.py` (140) | `web/{graph,export,server}.py` |
 
 ### 5.5 Code conventions
 
 - **Frozen dataclasses for value objects** (`NodeRecord`, the metadata envelope, chunk records) — stdlib, self-documenting, and they enforce the immutability the record/handle split (AD10) promises.
-- **Only `workspace.py` writes the filesystem.** Everything else goes through SQLite — a greppable architectural guarantee.
+- **Only `ingest/workspace.py` writes the filesystem.** Everything else goes through SQLite — a greppable architectural guarantee.
 - **Server endpoints resolve by database key, never by filesystem path** — path traversal stays structurally impossible.
 - **The subtle SQL is confined:** multi-key `find` (per-key `INTERSECT`) lives in one well-tested `MetadataStore` method; GC reachability lives in `maintenance.py`.
-- **File count is a budget, not a goal.** ~21 focused modules; resist both God-classes and one-file-per-40-lines fragmentation.
+- **Layer packages, lean root.** The root holds entry points and cross-cutting leaves (`store`, `maintenance`, `errors`, `util`, `__main__`); everything else lives in `domain/`, `db/`, `ingest/`, or `web/`. Resist both God-classes and one-file-per-40-lines fragmentation.
 
 ---
 
@@ -505,9 +512,9 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 **Safety-net policy:** the 0.1.x modules and their tests stay in place and green until Phase 9 — the new package grows alongside them, and nothing is deleted until the migration tool round-trips a real old store.
 
 ### Phase 0 — Scaffolding
-- [ ] Create the new package skeleton (empty modules per [§5.1](#51-package-layout)) alongside the current code.
-- [ ] Add this blueprint to the repo; set up a `rebuild` tracking branch.
-- [ ] Confirm CI (ruff, mypy `strict`, pytest) green on unchanged code.
+- [x] Create the new package skeleton (empty modules per [§5.1](#51-package-layout)) alongside the current code.
+- [x] Add this blueprint to the repo; set up a `rebuild` tracking branch.
+- [x] Confirm CI (ruff, mypy `strict`, pytest) green on unchanged code.
 - **Exit:** skeleton imports; CI green.
 
 ### Phase 1 — Persistence foundation
@@ -516,29 +523,29 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - **Exit:** create/open a `.db`, schema verified, connection & fork-safety unit tests pass.
 
 ### Phase 2 — Metadata store & queries
-- [ ] `errors.py`, `provenance.py`, `util.py`.
+- [ ] `errors.py`, `util.py`, `domain/provenance.py`.
 - [ ] `db/metadata_store.py` — `add_node`, `find`, `lineage` (recursive CTE), `children`, `most_recent`, `find_by_hash`, `remove`.
 - **Exit:** query/lineage tests ported (`test_querying_and_search.py`, `test_dag.py`) pass against SQLite.
 
 ### Phase 3 — CDC Layer 1, chunk store & sync packing
-- [ ] `cdc.py` chunker section (FastCDC lifted from `chunkstore.py`) + fixed-boundary large-file fallback (AD4).
-- [ ] `db/chunk_store.py` (SQLite BLOBs, exact dedup, reassembly, session read cache in system temp), `workspace.py` (incl. the scratch seed file).
-- [ ] `packing.py` — synchronous ingest at block-exit.
+- [ ] `ingest/cdc.py` chunker section (FastCDC lifted from `chunkstore.py`) + fixed-boundary large-file fallback (AD4).
+- [ ] `db/chunk_store.py` (SQLite BLOBs, exact dedup, reassembly, session read cache in system temp), `ingest/workspace.py` (incl. the scratch seed file).
+- [ ] `ingest/packing.py` — synchronous ingest at block-exit.
 - **Exit:** `test_chunking.py` (exact-dedup parts) passes; artifacts round-trip through SQLite; round-trip property tests (random data & mutations) green.
 
 ### Phase 4 — Domain decomposition & facade
-- [ ] `metadata.py`, `rules.py`, `node.py`, `store.py`.
+- [ ] `domain/{metadata,rules,node}.py`, `store.py`.
 - [ ] Wire `create_node`, context-manager, `add_meta`, `artifacts`, `__truediv__`.
 - [ ] `store.sql()` read-only escape hatch (`query_only` connection) and `store.stats()` (counts, sizes, dedup ratio).
 - **Exit:** the test suite — rewritten to the redesigned API ([§11](#11-public-api-and-migration)) — is green against the new backend (`test_store_api.py`, `test_models.py`, `test_node_creation_edge_cases.py`).
 
 ### Phase 5 — Node dedup & maintenance
-- [ ] `fingerprint.py`; `content_hash` column; adopt/rebind on identical content.
+- [ ] `domain/fingerprint.py`; `content_hash` column; adopt/rebind on identical content.
 - [ ] `maintenance.py` — `Pruner` (SQL cascade prune), `compact()` (orphan-chunk GC + `incremental_vacuum`), orphan-scratch sweep at store open.
 - **Exit:** `test_dedupe.py` fully green (completes the current feature branch's goal); prune/compact/sweep tests pass.
 
 ### Phase 6 — CDC Layer 2 (advanced dedup)
-- [ ] `cdc.py` resemblance + delta sections (super-features computed in the chunking pass; zlib-`zdict` codec); wire into `packing`/`ChunkStore` behind the `chunk` policy.
+- [ ] `ingest/cdc.py` resemblance + delta sections (super-features computed in the chunking pass; zlib-`zdict` codec); wire into `packing`/`ChunkStore` behind the `chunk` policy.
 - [ ] Enforce delta depth 1 (bases are raw); extend `compact()` reachability to live bases; round-trip property tests through the delta path.
 - [ ] **Benchmark gate:** measure dedup ratio and ingest/read overhead on near-duplicate fixtures (`store.stats()` supplies the instrumentation); set the Layer-2 default from the data (AD5).
 - **Exit:** benchmark results recorded in the repo; delta/resemblance tests green; `test_adversarial.py` green.
@@ -632,6 +639,7 @@ The on-disk format changes (per-node directories → `ancestree.db`), so this is
 | 2026-07-07 | v1.3 — Static export decided: **view-only snapshot** (option b) — graph + click-to-view metadata, no query box; JS query engine removed entirely, leaving one query grammar (Python → SQL). Updated AD8 + AD11. Clarified §7.3 artifact resolution (per-node scratch lifecycle; loose → cache → reassemble precedence). |
 | 2026-07-07 | v2.0 — Architect review pass over the whole plan. **AD5 reworked:** the pure-Python copy/insert delta codec (would have been the slowest component in the build) is replaced by **zlib `zdict` dictionary compression** — C-speed, ~20 lines — with **delta depth capped at 1** (bases always raw; one-hop GC; ≤2 fetches per read), and Layer 2's default is now set by a **Phase 6 benchmark gate**. **AD4 honesty pass:** Gear-loop throughput corrected to ~3–10 MB/s and a **fixed-boundary large-file fallback** added so huge ingests stay at C speed. **Crash forensics promoted** from Future Work into the plan: scratch **seed file** + startup **orphan-scratch sweep** adopt hard-killed partial work as unhealthy nodes (stronger than 0.1.x). **Schema:** `auto_vacuum=INCREMENTAL` set at creation. **Roadmap:** maintenance moved from Phase 9 to Phase 5; Phase 9 is now migration & release (ships as **0.2.0**; README marketing claims updated). Considered and deliberately kept: chunks in SQLite, synchronous-by-default CDC, lambda predicates in `find`, view-only static export. |
 | 2026-07-07 | v2.1 — Soundness-review refinements and additions. **Read cache relocated** to the system temp dir (OS-cleaned; the store root at rest is just the database). **Structure trimmed** (~26 → ~21 files): `readcache.py` folded into `db/chunk_store.py`; the `cdc/` package collapsed into one sectioned `cdc.py`. **Added:** `store.sql()` read-only escape hatch (schema becomes a versioned public contract), `store.stats()` (feeds the Phase 6 gate), a stdlib CLI (`python -m ancestree serve|export|compact|migrate`), and §5.5 code conventions (frozen dataclasses; only `workspace.py` touches the filesystem; DB-keyed server endpoints). **Hardening:** multi-key `find` = per-key `INTERSECT` confined to one method; WAL checkpoint after large ingests; explicit safety-net policy (old modules/tests stay green until Phase 9; new Rewrite-risk row in §9). AD1 gains the one-transactional-domain argument. |
+| 2026-07-07 | v2.2 — Layered package layout (Phase 0 feedback: too many flat root modules). The root keeps entry points and cross-cutting leaves (`store`, `maintenance`, `errors`, `util`, `__main__`); everything else moves into layer packages: **`domain/`** (node, metadata, rules, fingerprint, provenance — pure logic), **`db/`** (unchanged), **`ingest/`** (workspace, cdc, packing — the write path), **`web/`** (unchanged). Root shrinks from ~19 flat modules to 6 (12 during the transition, while the 0.1.x modules coexist). §5.1/§5.3/§5.4/§5.5 and roadmap paths updated. |
 
 ---
 
