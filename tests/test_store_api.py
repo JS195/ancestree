@@ -51,19 +51,33 @@ class TestRules:
             with bare_store.create_node(step_type="clean"):
                 pass
 
-    def test_unknown_parent_id_treated_as_root(self, bare_store):
-        # A typo'd parent resolves to None: rules then judge it as a root
-        with pytest.raises(ValueError, match="Invalid transition"):
+    def test_unknown_parent_id_raises_clearly(self, bare_store):
+        # An unknown parent id raises a clear error naming the parent — it is no
+        # longer silently treated as a root (which later broke get_lineage).
+        with pytest.raises(ValueError, match="not present in this store"):
             with bare_store.create_node(step_type="clean", parent="zzzzzzzz"):
                 pass
 
-    def test_unrestricted_type_with_unknown_parent_becomes_root(
-        self, bare_store, make_node
+    def test_unknown_parent_id_raises_even_without_a_rule(self, bare_store):
+        # Also raises for a step type that has no rule, where it used to silently
+        # produce a root node.
+        with pytest.raises(ValueError, match="not present in this store"):
+            with bare_store.create_node(step_type="freeform", parent="zzzzzzzz"):
+                pass
+
+    def test_parent_from_another_store_is_rejected(
+        self, bare_store, tmp_path, make_node
     ):
-        # Sharp edge, pinned: for a type with no rule, a bad parent id
-        # silently produces a root node rather than raising.
-        node = make_node(bare_store, "freeform", parent="zzzzzzzz")
-        assert bare_store.get_node(node.node_id).parent_id is None
+        other = LineageStore(tmp_path / "other")
+        foreign = make_node(other, "ingest")
+        with pytest.raises(ValueError, match="not present in this store"):
+            with bare_store.create_node(step_type="ingest", parent=foreign):
+                pass
+
+    def test_parent_given_as_id_string_is_accepted(self, bare_store, make_node):
+        ingest = make_node(bare_store, "ingest")
+        child = make_node(bare_store, "clean", parent=ingest.node_id)
+        assert child.parent_id == [ingest.node_id]
 
     def test_failed_creation_leaves_no_trace(self, bare_store):
         before = set(bare_store.database.cache)
@@ -261,6 +275,36 @@ class TestPrune:
         with pytest.raises(PermissionError):
             bare_store.prune(impostor, dry_run=False)
 
+    def test_prune_handles_chains_deeper_than_recursion_limit(
+        self, tmp_path, monkeypatch
+    ):
+        # A linear lineage longer than the interpreter recursion limit must
+        # prune (and preview) without RecursionError — _prune is iterative.
+        # Provenance is stubbed out so building a very deep chain is fast (it
+        # otherwise shells out to git per node); it is irrelevant here.
+        import sys
+
+        monkeypatch.setattr("ancestree.models.get_provenance", lambda: {})
+        store = LineageStore(tmp_path / "deep", dedupe=False, chunk=False)
+        depth = sys.getrecursionlimit() + 200
+
+        with store.create_node(step_type="s") as root:
+            root.add_meta("i", 0)
+        prev = root.node_id
+        for i in range(1, depth):
+            with store.create_node(step_type="s", parent=prev) as n:
+                n.add_meta("i", i)
+            prev = n.node_id
+
+        preview = store.prune(root.node_id, dry_run=True)  # was RecursionError
+        assert len(preview) == depth
+        assert preview[0].node_id == prev  # deepest first
+        assert preview[-1].node_id == root.node_id  # target last
+
+        deleted = store.prune(root.node_id, dry_run=False)
+        assert len(deleted) == depth
+        assert store.find_node() == []
+
 
 class TestCrashSafety:
     def test_failure_persists_partial_work_unhealthy(self, bare_store):
@@ -377,6 +421,76 @@ class TestAutoDataType:
     def test_table_rejects_non_dataframe(self, node):
         with pytest.raises(TypeError, match="DataFrame"):
             node.add_meta("bad", [[1, 2]], data_type="table")
+
+
+class TestMetadataCoercion:
+    """add_meta coerces common non-JSON types (numpy/pandas scalars, datetimes,
+    sets) to native Python and warns; anything uncoercible is rejected at the
+    call site, not later at the meta.json write. Numpy/pandas are optional deps,
+    so the numpy-shaped cases are duck-typed fakes (as test_dataframe does)."""
+
+    @pytest.fixture
+    def node(self, bare_store):
+        with bare_store.create_node(step_type="ingest") as node:
+            yield node
+
+    def test_set_coerced_to_list_with_warning(self, node):
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("tags", {3, 1, 2})
+        assert sorted(node.metadata["tags"]["value"]) == [1, 2, 3]
+
+    def test_datetime_coerced_to_isoformat(self, node):
+        from datetime import datetime
+
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("when", datetime(2024, 1, 2, 3, 4, 5))
+        assert node.metadata["when"]["value"] == "2024-01-02T03:04:05"
+
+    def test_numpy_like_scalar_coerced(self, node):
+        class FakeScalar:  # numpy scalar shape: .item() + .dtype
+            dtype = "int64"
+
+            def item(self):
+                return 42
+
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("n", FakeScalar())
+        assert node.metadata["n"]["value"] == 42
+
+    def test_numpy_like_array_coerced(self, node):
+        class FakeArray:  # ndarray shape: .tolist() + ndim
+            dtype = "int64"
+            ndim = 1
+
+            def tolist(self):
+                return [1, 2, 3]
+
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("arr", FakeArray())
+        assert node.metadata["arr"]["value"] == [1, 2, 3]
+
+    def test_nested_value_is_coerced(self, node):
+        with pytest.warns(UserWarning, match="coerced"):
+            node.add_meta("cfg", {"vals": {1, 2}}, data_type="json")
+        assert node.metadata["cfg"]["value"] == {"vals": [1, 2]}
+
+    def test_native_values_do_not_warn(self, node, recwarn):
+        node.add_meta("a", 5)
+        node.add_meta("b", [1, 2, 3])
+        node.add_meta("c", {"k": "v"})
+        assert [w for w in recwarn if "coerced" in str(w.message)] == []
+
+    def test_uncoercible_value_rejected_at_call_time(self, node):
+        # Fires here at add_meta — not at block exit where the traceback misleads.
+        with pytest.raises(
+            TypeError, match="not JSON-serialisable even after coercion"
+        ):
+            node.add_meta("bad", object())
+
+    def test_rejected_value_leaves_no_partial_entry(self, node):
+        with pytest.raises(TypeError):
+            node.add_meta("bad", object())
+        assert "bad" not in node.metadata
 
 
 class TestWebGraph:
