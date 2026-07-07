@@ -12,13 +12,9 @@
         <meta name="author" content="Joshua Smith">
       
       
-        <link rel="canonical" href="https://js195.github.io/ancestree/examples/basic_usage/">
+        <link rel="canonical" href="https://js195.github.io/ancestree/examples/stress_3_dedupe_quirks/">
       
       
-        <link rel="prev" href="../">
-      
-      
-        <link rel="next" href="../ML_pipeline/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Getting started with - Ancestree Documentation</title>
+        <title>Stress test 3 — deduplication behaviour & surprises - Ancestree Documentation</title>
       
     
     
@@ -67,17 +63,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Getting started with - Ancestree Documentation" />
+<meta property="og:title" content="Stress test 3 — deduplication behaviour &amp; surprises - Ancestree Documentation" />
 <meta property="og:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/basic_usage.png" />
+<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/stress_3_dedupe_quirks.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://js195.github.io/ancestree/examples/basic_usage/" />
+<meta property="og:url" content="https://js195.github.io/ancestree/examples/stress_3_dedupe_quirks/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="Getting started with - Ancestree Documentation" />
+<meta property="twitter:title" content="Stress test 3 — deduplication behaviour &amp; surprises - Ancestree Documentation" />
 <meta property="twitter:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/basic_usage.png" />
+<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/stress_3_dedupe_quirks.png" />
 </head>
   
   
@@ -97,7 +93,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#getting-started-with" class="md-skip">
+        <a href="#stress-test-3-deduplication-behaviour-surprises" class="md-skip">
           Skip to content
         </a>
       
@@ -133,7 +129,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Getting started with
+              Stress test 3 — deduplication behaviour &amp; surprises
             
           </span>
         </div>
@@ -310,20 +306,20 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -344,7 +340,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -387,37 +383,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Getting started with
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../basic_usage/" class="md-nav__link">
         
   
   
@@ -433,92 +402,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-imports" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Imports
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-define-a-ruleset" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Define a ruleset
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-create-the-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Create the store
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-write-a-node" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Write a node
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-look-the-node-back-up" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Look the node back up
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-visualise-the-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Visualise the store
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -723,10 +606,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-imports" class="md-nav__link">
+  <a href="#finding-4-identical-re-runs-silently-merge-distinct-events-are-lost" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Imports
+        ⚠️ Finding #4 — identical re-runs silently merge (distinct events are lost)
       
     </span>
   </a>
@@ -734,10 +617,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-define-a-ruleset" class="md-nav__link">
+  <a href="#provenance-time-are-excluded-from-identity-by-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Define a ruleset
+        Provenance / time are excluded from identity (by design)
       
     </span>
   </a>
@@ -745,10 +628,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-create-the-store" class="md-nav__link">
+  <a href="#correct-distinctness-same-content-different-parent-stays-separate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Create the store
+        Correct distinctness: same content, different parent stays separate
       
     </span>
   </a>
@@ -756,32 +639,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-write-a-node" class="md-nav__link">
+  <a href="#finding-5-fixed-a-parent-from-another-store-or-a-bad-id-is-rejected" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Write a node
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-look-the-node-back-up" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Look the node back up
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-visualise-the-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Visualise the store
+        ✅ Finding #5 (FIXED) — a parent from another store (or a bad id) is rejected
       
     </span>
   </a>
@@ -1529,34 +1390,18 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7fb27b941602401d91542211134fc71a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="getting-started-with-ancestree">Getting started with <code>ancestree</code><a class="anchor-link" href="#getting-started-with-ancestree">¶</a></h1><p><code>ancestree</code> records the <em>lineage</em> of the artifacts a pipeline produces: every step is
-saved as a <strong>node</strong> that knows which node it came from, what files it wrote and what
-metadata describes it.</p>
-<p>This notebook covers the essentials — defining a ruleset, creating a store, writing
-a node, looking it back up and rendering the result — using nothing more than a
-single synthetic array.</p>
+<h1 id="stress-test-3-deduplication-behaviour-surprises">Stress test 3 — deduplication behaviour &amp; surprises<a class="anchor-link" href="#stress-test-3-deduplication-behaviour-surprises">¶</a></h1><p><code>dedupe=True</code> merges content-identical nodes. Powerful for idempotent re-runs, but it has surprises worth understanding.</p>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="1-imports">1. Imports<a class="anchor-link" href="#1-imports">¶</a></h2>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=acae54e37e7d407bbb7b55eff062a284">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1574,38 +1419,78 @@ single synthetic array.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import numpy as np
-import pandas as pd
+<span class="kn">from</span><span class="w"> </span><span class="nn">ancestree</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineageStore</span>
 
-import ancestree</div>
+<span class="n">SCRATCH</span> <span class="o">=</span> <span class="s2">"_stress"</span>  <span class="c1"># all stores written here; safe to delete</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">SCRATCH</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">SCRATCH</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">store</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">LineageStore</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">SCRATCH</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">node_dirs</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">d</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">)]</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ancestree"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ancestree</span><span class="p">,</span> <span class="s2">"__version__"</span><span class="p">,</span> <span class="s2">"?"</span><span class="p">))</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-1">import shutil
+import os
+import time
+import ancestree
+from ancestree import LineageStore
+
+SCRATCH = "_stress"  # all stores written here; safe to delete
+shutil.rmtree(SCRATCH, ignore_errors=True)
+os.makedirs(SCRATCH, exist_ok=True)
+
+
+def store(name, **kw):
+    return LineageStore(f"{SCRATCH}/{name}", **kw)
+
+
+def node_dirs(s):
+    return [d for d in os.listdir(s.root) if not d.startswith(".")]
+
+
+print("ancestree", getattr(ancestree, "__version__", "?"))</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>ancestree 0.1.0
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9a63283cbaf04dbcab1f6479b197f3a8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="2-define-a-ruleset">2. Define a ruleset<a class="anchor-link" href="#2-define-a-ruleset">¶</a></h2><p>The ruleset describes how a pipeline is allowed to progress. Each key is a step type and
-its value lists the step types it may follow, where <code>[None]</code> marks a valid starting point.
-Separately, <code>trigger</code> names the step(s) that begin a new <em>generation</em> — a fresh run
-of the pipeline.</p>
-<p>You only need to declare this once: it is written to <code>.lineage_config.json</code> inside the
-store and read back automatically whenever the store is reopened by name.</p>
+<h2 id="finding-4-identical-re-runs-silently-merge-distinct-events-are-lost">⚠️ Finding #4 — identical re-runs silently merge (distinct events are lost)<a class="anchor-link" href="#finding-4-identical-re-runs-silently-merge-distinct-events-are-lost">¶</a></h2>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8dd0d8092fe74a7c96281538738b07e2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1623,33 +1508,78 @@ store and read back automatically whenever the store is reopened by name.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">RULES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"import data"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span>  <span class="c1"># a pipeline starts by importing data</span>
-<span class="p">}</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"runs"</span><span class="p">,</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_experiment</span><span class="p">(</span><span class="n">tag</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"run"</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"out.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"result</span><span class="se">\n</span><span class="s2">1</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># identical output each run</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"pipeline"</span><span class="p">,</span> <span class="s2">"v1"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">n</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">run_experiment</span><span class="p">(</span><span class="s2">"monday"</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">run_experiment</span><span class="p">(</span><span class="s2">"tuesday"</span><span class="p">)</span>  <span class="c1"># same content a day later</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"two runs, same node_id?"</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"run nodes on disk:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_dirs</span><span class="p">(</span><span class="n">s</span><span class="p">)),</span> <span class="s2">"(expected 2 distinct events, got 1)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">"Tuesday's run reports Monday's timestamp:"</span><span class="p">,</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"timestamp"</span><span class="p">][</span><span class="s2">"value"</span><span class="p">],</span>
+<span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">RULES = {
-    "import data": [None],  # a pipeline starts by importing data
-}</div>
+<div class="clipboard-copy-txt" id="cell-2">s = store("runs", dedupe=True, chunk=False)
+
+
+def run_experiment(tag):
+    with s.create_node(step_type="run") as n:
+        (n / "out.csv").write_text("result\n1\n")  # identical output each run
+        n.add_meta("pipeline", "v1")
+    return n
+
+
+a = run_experiment("monday")
+time.sleep(0.01)
+b = run_experiment("tuesday")  # same content a day later
+print("two runs, same node_id?", a.node_id == b.node_id)
+print("run nodes on disk:", len(node_dirs(s)), "(expected 2 distinct events, got 1)")
+print(
+    "Tuesday's run reports Monday's timestamp:",
+    s.get_node(b.node_id).metadata["timestamp"]["value"],
+)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>two runs, same node_id? True
+run nodes on disk: 1 (expected 2 distinct events, got 1)
+Tuesday's run reports Monday's timestamp: 2026-06-25T14:29:47.523209+00:00
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=72eea5119410473aa328ad9291626812">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="3-create-the-store">3. Create the store<a class="anchor-link" href="#3-create-the-store">¶</a></h2><p>The store lives in a folder of its own. Its name can be a <code>str</code> or a <code>Path</code>. Passing the
-<code>rules</code> and <code>gen_triggers</code> here writes the configuration to disk; from then on
-<code>ancestree.LineageStore("basic_usage")</code> is enough to reopen it.</p>
+<p>If you need to <strong>count or audit every run</strong>, dedupe will undercount — the second <code>with ... as node</code> hands you the <em>original</em> node, including its original timestamp and provenance. Add a distinguishing metadata value (e.g. a run id or timestamp) if every run must stay distinct.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8edb47106e1a46a883d545849b8ab81b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1667,30 +1597,64 @@ store and read back automatically whenever the store is reopened by name.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"basic_usage"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Make runs distinct by adding a unique field -&gt; dedupe no longer merges</span>
+<span class="n">s2</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"runs_distinct"</span><span class="p">,</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_unique</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">s2</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"run"</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"out.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"result</span><span class="se">\n</span><span class="s2">1</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"run_id"</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>  <span class="c1"># unique per run</span>
+    <span class="k">return</span> <span class="n">n</span>
+
+
+<span class="n">ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">run_unique</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">node_id</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)}</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"distinct run nodes:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">store = ancestree.LineageStore("basic_usage", rules=RULES)</div>
+<div class="clipboard-copy-txt" id="cell-3"># Make runs distinct by adding a unique field -&gt; dedupe no longer merges
+s2 = store("runs_distinct", dedupe=True)
+
+
+def run_unique(i):
+    with s2.create_node(step_type="run") as n:
+        (n / "out.csv").write_text("result\n1\n")
+        n.add_meta("run_id", i)  # unique per run
+    return n
+
+
+ids = {run_unique(i).node_id for i in range(3)}
+print("distinct run nodes:", len(ids))</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>distinct run nodes: 3
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=10185d26023b46108eb7d9f57d49d2b3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4-write-a-node">4. Write a node<a class="anchor-link" href="#4-write-a-node">¶</a></h2><p><code>store.create_node(...)</code> opens a node as a context manager. Inside the block, writing
-files uses familiar syntax — the store handles pathing via <code>node / "filename"</code> —
-and <code>node.add_meta(...)</code> attaches searchable, displayable metadata. Here a pandas DataFrame
-is stored as metadata (it renders as a table in the web graph) alongside a saved array.</p>
+<h2 id="provenance-time-are-excluded-from-identity-by-design">Provenance / time are excluded from identity (by design)<a class="anchor-link" href="#provenance-time-are-excluded-from-identity-by-design">¶</a></h2>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8763a12b2bbd4a93a75aff182afb95dc">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1708,39 +1672,52 @@ is stored as metadata (it renders as a table in the web graph) alongside a saved
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"import data"</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
-    <span class="c1"># Save a file</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span> <span class="o">/</span> <span class="s2">"samples.npy"</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
-
-    <span class="c1"># Add some metadata</span>
-    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"something"</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"key"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">"other"</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]}))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Same content produced under different git commits / times still merges.</span>
+<span class="n">s3</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"prov"</span><span class="p">,</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">s3</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span> <span class="k">as</span> <span class="n">a</span><span class="p">:</span>
+    <span class="n">a</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"k"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">s3</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span> <span class="k">as</span> <span class="n">b</span><span class="p">:</span>
+    <span class="n">b</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"k"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"merged across (hypothetically) different env/commit:"</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">with store.create_node(step_type="import data") as node:
-    # Save a file
-    X = np.random.randint(0, 100, (5, 5))
-    np.save(node / "samples.npy", X)
-
-    # Add some metadata
-    node.add_meta("something", pd.DataFrame({"key": [1, 2, 3], "other": [4, 5, 6]}))</div>
+<div class="clipboard-copy-txt" id="cell-4"># Same content produced under different git commits / times still merges.
+s3 = store("prov", dedupe=True)
+with s3.create_node(step_type="x") as a:
+    a.add_meta("k", 1)
+with s3.create_node(step_type="x") as b:
+    b.add_meta("k", 1)
+print("merged across (hypothetically) different env/commit:", a.node_id == b.node_id)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>merged across (hypothetically) different env/commit: True
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7623eae2785240b9bd12b16a66d81610">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5-look-the-node-back-up">5. Look the node back up<a class="anchor-link" href="#5-look-the-node-back-up">¶</a></h2><p><code>get_most_recent_node()</code> returns the last node written to the store.</p>
+<h2 id="correct-distinctness-same-content-different-parent-stays-separate">Correct distinctness: same content, different parent stays separate<a class="anchor-link" href="#correct-distinctness-same-content-different-parent-stays-separate">¶</a></h2>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7cdc8c89c7104fffa095e18ddfef8986">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1758,11 +1735,27 @@ is stored as metadata (it renders as a table in the web graph) alongside a saved
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">()</span>
-<span class="n">n</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s4</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"branch"</span><span class="p">,</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">s4</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"ingest"</span><span class="p">)</span> <span class="k">as</span> <span class="n">r1</span><span class="p">:</span>
+    <span class="p">(</span><span class="n">r1</span> <span class="o">/</span> <span class="s2">"a"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">s4</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"ingest"</span><span class="p">)</span> <span class="k">as</span> <span class="n">r2</span><span class="p">:</span>
+    <span class="p">(</span><span class="n">r2</span> <span class="o">/</span> <span class="s2">"b"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">s4</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"clean"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">r1</span><span class="p">)</span> <span class="k">as</span> <span class="n">c1</span><span class="p">:</span>
+    <span class="p">(</span><span class="n">c1</span> <span class="o">/</span> <span class="s2">"c"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"SAME"</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">s4</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"clean"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">r2</span><span class="p">)</span> <span class="k">as</span> <span class="n">c2</span><span class="p">:</span>
+    <span class="p">(</span><span class="n">c2</span> <span class="o">/</span> <span class="s2">"c"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"SAME"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"same content, different parent -&gt; distinct:"</span><span class="p">,</span> <span class="n">c1</span><span class="o">.</span><span class="n">node_id</span> <span class="o">!=</span> <span class="n">c2</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">n = store.get_most_recent_node()
-n</div>
+<div class="clipboard-copy-txt" id="cell-5">s4 = store("branch", dedupe=True)
+with s4.create_node(step_type="ingest") as r1:
+    (r1 / "a").write_text("A")
+with s4.create_node(step_type="ingest") as r2:
+    (r2 / "b").write_text("B")
+with s4.create_node(step_type="clean", parent=r1) as c1:
+    (c1 / "c").write_text("SAME")
+with s4.create_node(step_type="clean", parent=r2) as c2:
+    (c2 / "c").write_text("SAME")
+print("same content, different parent -&gt; distinct:", c1.node_id != c2.node_id)</div>
 </div>
 </div>
 </div>
@@ -1771,29 +1764,29 @@ n</div>
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>Node = b4143d71, path = b4143d71, generation = 0</pre>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>same content, different parent -&gt; distinct: True
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b118ea5561624da68c537baed56e602f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="6-visualise-the-store">6. Visualise the store<a class="anchor-link" href="#6-visualise-the-store">¶</a></h2><p><code>generate_web_graph()</code> writes a self-contained, interactive HTML page showing every node,
-its lineage and its metadata.</p>
+<h2 id="finding-5-fixed-a-parent-from-another-store-or-a-bad-id-is-rejected">✅ Finding #5 (FIXED) — a parent from another store (or a bad id) is rejected<a class="anchor-link" href="#finding-5-fixed-a-parent-from-another-store-or-a-bad-id-is-rejected">¶</a></h2>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=938c804e27f84196a10c8828c723f798">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1811,9 +1804,39 @@ its lineage and its metadata.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"storeA"</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"storeB"</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">A</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span> <span class="k">as</span> <span class="n">a</span><span class="p">:</span>
+    <span class="n">a</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"k"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">B</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">a</span><span class="p">)</span> <span class="k">as</span> <span class="n">b</span><span class="p">:</span>  <span class="c1"># parent belongs to store A!</span>
+        <span class="n">b</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"k"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"rejected at create_node:"</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+<span class="c1"># An unknown id is rejected the same clear way (was: misleading error / silent root)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">B</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s2">"deadbeef"</span><span class="p">):</span>
+        <span class="k">pass</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"unknown id:"</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">store.generate_web_graph()</div>
+<div class="clipboard-copy-txt" id="cell-6">A = store("storeA")
+B = store("storeB")
+with A.create_node(step_type="x") as a:
+    a.add_meta("k", 1)
+try:
+    with B.create_node(step_type="x", parent=a) as b:  # parent belongs to store A!
+        b.add_meta("k", 1)
+except ValueError as e:
+    print("rejected at create_node:", e)
+
+# An unknown id is rejected the same clear way (was: misleading error / silent root)
+try:
+    with B.create_node(step_type="x", parent="deadbeef"):
+        pass
+except ValueError as e:
+    print("unknown id:", e)</div>
 </div>
 </div>
 </div>
@@ -1825,14 +1848,9 @@ its lineage and its metadata.</p>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Graph generated at basic_usage/interactive_pipeline.html
+<pre>rejected at create_node: Parent node 'b14b616a' is not present in this store. A parent must be a node already created in or loaded from this store; pass parent=None to create a root node.
+unknown id: Parent node 'deadbeef' is not present in this store. A parent must be a node already created in or loaded from this store; pass parent=None to create a root node.
 </pre>
-</div>
-</div>
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>PosixPath('basic_usage/interactive_pipeline.html')</pre>
 </div>
 </div>
 </div>
@@ -1866,7 +1884,7 @@ its lineage and its metadata.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 14, 2026 12:15:23 UTC">June 14, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 25, 2026 21:31:34 UTC">June 25, 2026</span>
   </span>
 
     

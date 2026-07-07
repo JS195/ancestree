@@ -12,13 +12,9 @@
         <meta name="author" content="Joshua Smith">
       
       
-        <link rel="canonical" href="https://js195.github.io/ancestree/examples/basic_usage/">
+        <link rel="canonical" href="https://js195.github.io/ancestree/examples/load_timing_benchmark/">
       
       
-        <link rel="prev" href="../">
-      
-      
-        <link rel="next" href="../ML_pipeline/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Getting started with - Ancestree Documentation</title>
+        <title>Load-out-of-store vs direct-path timing - Ancestree Documentation</title>
       
     
     
@@ -67,17 +63,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Getting started with - Ancestree Documentation" />
+<meta property="og:title" content="Load-out-of-store vs direct-path timing - Ancestree Documentation" />
 <meta property="og:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/basic_usage.png" />
+<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/load_timing_benchmark.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://js195.github.io/ancestree/examples/basic_usage/" />
+<meta property="og:url" content="https://js195.github.io/ancestree/examples/load_timing_benchmark/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="Getting started with - Ancestree Documentation" />
+<meta property="twitter:title" content="Load-out-of-store vs direct-path timing - Ancestree Documentation" />
 <meta property="twitter:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/basic_usage.png" />
+<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/load_timing_benchmark.png" />
 </head>
   
   
@@ -97,7 +93,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#getting-started-with" class="md-skip">
+        <a href="#load-out-of-store-vs-direct-path-timing" class="md-skip">
           Skip to content
         </a>
       
@@ -133,7 +129,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Getting started with
+              Load-out-of-store vs direct-path timing
             
           </span>
         </div>
@@ -310,20 +306,20 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -344,7 +340,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -387,37 +383,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Getting started with
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../basic_usage/" class="md-nav__link">
         
   
   
@@ -433,92 +402,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-imports" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Imports
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-define-a-ruleset" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Define a ruleset
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-create-the-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Create the store
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-write-a-node" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Write a node
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-look-the-node-back-up" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Look the node back up
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-visualise-the-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Visualise the store
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -723,10 +606,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-imports" class="md-nav__link">
+  <a href="#1-build-a-store-with-real-artifacts-plain-copies-for-the-baseline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Imports
+        1. Build a store with real artifacts (+ plain copies for the baseline)
       
     </span>
   </a>
@@ -734,10 +617,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-define-a-ruleset" class="md-nav__link">
+  <a href="#2-baseline-the-file-is-already-at-a-known-path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Define a ruleset
+        2. Baseline — the file is already at a known path
       
     </span>
   </a>
@@ -745,10 +628,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-create-the-store" class="md-nav__link">
+  <a href="#3-retrieve-through-the-store-by-known-id-every-step" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Create the store
+        3. Retrieve through the store, by known id — every step
       
     </span>
   </a>
@@ -756,10 +639,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-write-a-node" class="md-nav__link">
+  <a href="#4-retrieve-through-the-store-by-metadata-search-every-step" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Write a node
+        4. Retrieve through the store, by metadata search — every step
       
     </span>
   </a>
@@ -767,10 +650,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-look-the-node-back-up" class="md-nav__link">
+  <a href="#5-the-convenience-path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Look the node back up
+        5. The convenience path:
       
     </span>
   </a>
@@ -778,10 +661,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-visualise-the-store" class="md-nav__link">
+  <a href="#6-summary-store-overhead-over-a-direct-path-read" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Visualise the store
+        6. Summary — store overhead over a direct path read
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-readwrite-penalty-by-data-type-and-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Read/write penalty by data type and size
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Read/write penalty by data type and size">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Takeaways
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-deferred-packing-what-the-write-path-actually-costs-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Deferred packing — what the write path actually costs now
       
     </span>
   </a>
@@ -1529,34 +1462,25 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7fb27b941602401d91542211134fc71a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="getting-started-with-ancestree">Getting started with <code>ancestree</code><a class="anchor-link" href="#getting-started-with-ancestree">¶</a></h1><p><code>ancestree</code> records the <em>lineage</em> of the artifacts a pipeline produces: every step is
-saved as a <strong>node</strong> that knows which node it came from, what files it wrote and what
-metadata describes it.</p>
-<p>This notebook covers the essentials — defining a ruleset, creating a store, writing
-a node, looking it back up and rendering the result — using nothing more than a
-single synthetic array.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="1-imports">1. Imports<a class="anchor-link" href="#1-imports">¶</a></h2>
+<h1 id="load-out-of-store-vs-direct-path-timing">Load-out-of-store vs direct-path timing<a class="anchor-link" href="#load-out-of-store-vs-direct-path-timing">¶</a></h1><p>How much does going <em>through the store</em> cost versus just reading a file that is already sitting at a known path? This times <strong>every step</strong> of retrieving an artifact through the API —</p>
+<ol>
+<li><strong>finding</strong> the node (by id, and by metadata search),</li>
+<li><strong>discovering</strong> its artifact with <code>.artifacts()</code> (which, for a chunked store, also <em>reassembles</em> the file from the chunk pool),</li>
+<li><strong>reading / parsing</strong> the returned path,</li>
+</ol>
+<p>— and compares the total against <code>pd.read_csv(path)</code> on a plain copy of the same file. Because reads route through a session cache, the store path has two regimes: <strong>cold</strong> (first touch — decompress from the pool) and <strong>warm</strong> (cache hit — a plain file read). Both are measured.</p>
+<p>Re-run top to bottom; the stores are wiped at the start.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=967df407">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1574,38 +1498,75 @@ single synthetic array.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
 <span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import numpy as np
-import pandas as pd
 
-import ancestree</div>
+<span class="n">ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"load_benchmark_store"</span><span class="p">)</span>  <span class="c1"># the lineage store (chunk=True)</span>
+<span class="n">BASE</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"load_benchmark_direct"</span><span class="p">)</span>  <span class="c1"># plain copies of the same files, no store</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ROOT</span><span class="p">,</span> <span class="n">BASE</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">BASE</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">ROOT</span><span class="p">,</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">timed</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">reps</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">reps</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">fn</span><span class="p">()</span>
+        <span class="n">ts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">&lt;44</span><span class="si">}</span><span class="s2"> median </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="si">:</span><span class="s2">8.3f</span><span class="si">}</span><span class="s2"> ms   (best </span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-1">import shutil
+import time
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import ancestree
+
+ROOT = Path("load_benchmark_store")  # the lineage store (chunk=True)
+BASE = Path("load_benchmark_direct")  # plain copies of the same files, no store
+for d in (ROOT, BASE):
+    if d.exists():
+        shutil.rmtree(d)
+BASE.mkdir(parents=True)
+
+store = ancestree.LineageStore(ROOT, dedupe=True, chunk=True)
+
+
+def timed(label, fn, reps=50):
+    ts = []
+    for _ in range(reps):
+        t = time.perf_counter()
+        fn()
+        ts.append((time.perf_counter() - t) * 1000)
+    print(f"{label:&lt;44} median {np.median(ts):8.3f} ms   (best {min(ts):.3f})")
+    return float(np.median(ts))</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f51bb75e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="2-define-a-ruleset">2. Define a ruleset<a class="anchor-link" href="#2-define-a-ruleset">¶</a></h2><p>The ruleset describes how a pipeline is allowed to progress. Each key is a step type and
-its value lists the step types it may follow, where <code>[None]</code> marks a valid starting point.
-Separately, <code>trigger</code> names the step(s) that begin a new <em>generation</em> — a fresh run
-of the pipeline.</p>
-<p>You only need to declare this once: it is written to <code>.lineage_config.json</code> inside the
-store and read back automatically whenever the store is reopened by name.</p>
+<h2 id="1-build-a-store-with-real-artifacts-plain-copies-for-the-baseline">1. Build a store with real artifacts (+ plain copies for the baseline)<a class="anchor-link" href="#1-build-a-store-with-real-artifacts-plain-copies-for-the-baseline">¶</a></h2><p>Most nodes are metadata-only (to give the index a realistic size for the search step); a handful hold a ~2 MB CSV. Each artifact is also written verbatim to <code>BASE/</code> so we can read the <em>identical bytes</em> directly, with no store involved.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9fc14ec4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1623,33 +1584,117 @@ store and read back automatically whenever the store is reopened by name.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">RULES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"import data"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span>  <span class="c1"># a pipeline starts by importing data</span>
-<span class="p">}</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">N_TOTAL</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># nodes in the store (search scans the whole index)</span>
+<span class="n">N_ART</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># of those, how many hold a real artifact we will load</span>
+<span class="n">ROWS</span> <span class="o">=</span> <span class="mi">95_000</span>  <span class="c1"># ~2 MB per CSV</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">make_csv</span><span class="p">(</span><span class="n">nrows</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">"ts"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nrows</span><span class="p">),</span>
+            <span class="s2">"a"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">nrows</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
+            <span class="s2">"b"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">nrows</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
+            <span class="s2">"label"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">nrows</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+
+<span class="n">target_ids</span><span class="p">,</span> <span class="n">direct_paths</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_TOTAL</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"run"</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"run_id"</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"accuracy"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">()),</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N_ART</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">make_csv</span><span class="p">(</span><span class="n">ROWS</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"data.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># stored (chunked)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">BASE</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"run_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.csv"</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># plain copy</span>
+            <span class="n">target_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+            <span class="n">direct_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+<span class="n">art_mb</span> <span class="o">=</span> <span class="n">direct_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">/</span> <span class="mf">1e6</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"built </span><span class="si">{</span><span class="n">N_TOTAL</span><span class="si">}</span><span class="s2"> nodes (</span><span class="si">{</span><span class="n">N_ART</span><span class="si">}</span><span class="s2"> with ~</span><span class="si">{</span><span class="n">art_mb</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB CSVs) in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">"node dir of a target holds only:"</span><span class="p">,</span>
+    <span class="nb">sorted</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ROOT</span> <span class="o">/</span> <span class="n">target_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()),</span>
+<span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">RULES = {
-    "import data": [None],  # a pipeline starts by importing data
-}</div>
+<div class="clipboard-copy-txt" id="cell-2">N_TOTAL = 1000  # nodes in the store (search scans the whole index)
+N_ART = 30  # of those, how many hold a real artifact we will load
+ROWS = 95_000  # ~2 MB per CSV
+rng = np.random.default_rng(0)
+
+
+def make_csv(nrows):
+    return pd.DataFrame(
+        {
+            "ts": np.arange(nrows),
+            "a": rng.normal(size=nrows).round(4),
+            "b": rng.normal(size=nrows).round(4),
+            "label": rng.integers(0, 3, nrows),
+        }
+    )
+
+
+target_ids, direct_paths = [], []
+t0 = time.perf_counter()
+for i in range(N_TOTAL):
+    with store.create_node(step_type="run") as n:
+        n.add_meta("run_id", i)
+        n.add_meta("accuracy", round(float(rng.random()), 4))
+        if i &lt; N_ART:
+            df = make_csv(ROWS)
+            df.to_csv(n / "data.csv", index=False)  # stored (chunked)
+            p = BASE / f"run_{i}.csv"
+            df.to_csv(p, index=False)  # plain copy
+            target_ids.append(n.node_id)
+            direct_paths.append(p)
+
+art_mb = direct_paths[0].stat().st_size / 1e6
+print(
+    f"built {N_TOTAL} nodes ({N_ART} with ~{art_mb:.1f} MB CSVs) in {time.perf_counter() - t0:.0f}s"
+)
+print(
+    "node dir of a target holds only:",
+    sorted(p.name for p in (ROOT / target_ids[0]).iterdir()),
+)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>built 1000 nodes (30 with ~2.2 MB CSVs) in 28s
+node dir of a target holds only: ['.artifacts.json', 'data.csv', 'meta.json']
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=fd12ce46">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="3-create-the-store">3. Create the store<a class="anchor-link" href="#3-create-the-store">¶</a></h2><p>The store lives in a folder of its own. Its name can be a <code>str</code> or a <code>Path</code>. Passing the
-<code>rules</code> and <code>gen_triggers</code> here writes the configuration to disk; from then on
-<code>ancestree.LineageStore("basic_usage")</code> is enough to reopen it.</p>
+<h2 id="2-baseline-the-file-is-already-at-a-known-path">2. Baseline — the file is already at a known path<a class="anchor-link" href="#2-baseline-the-file-is-already-at-a-known-path">¶</a></h2><p>No store, no lineage, no decompression: just read the bytes / parse the CSV sitting on disk. This is the bar everything else is compared against.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c27c7a4a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1667,30 +1712,43 @@ store and read back automatically whenever the store is reopened by name.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"basic_usage"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">direct_bytes</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"direct  path.read_bytes()"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">direct_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span>
+<span class="n">direct_parse</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="s2">"direct  pd.read_csv(path)"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">direct_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">store = ancestree.LineageStore("basic_usage", rules=RULES)</div>
+<div class="clipboard-copy-txt" id="cell-3">direct_bytes = timed("direct  path.read_bytes()", lambda: direct_paths[0].read_bytes())
+direct_parse = timed("direct  pd.read_csv(path)", lambda: pd.read_csv(direct_paths[0]))</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>direct  path.read_bytes()                    median    0.075 ms   (best 0.062)
+direct  pd.read_csv(path)                    median   12.178 ms   (best 12.009)
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bc768ea2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4-write-a-node">4. Write a node<a class="anchor-link" href="#4-write-a-node">¶</a></h2><p><code>store.create_node(...)</code> opens a node as a context manager. Inside the block, writing
-files uses familiar syntax — the store handles pathing via <code>node / "filename"</code> —
-and <code>node.add_meta(...)</code> attaches searchable, displayable metadata. Here a pandas DataFrame
-is stored as metadata (it renders as a table in the web graph) alongside a saved array.</p>
+<h2 id="3-retrieve-through-the-store-by-known-id-every-step">3. Retrieve through the store, by known id — every step<a class="anchor-link" href="#3-retrieve-through-the-store-by-known-id-every-step">¶</a></h2><p>You already know the node id. Time each step: <code>get_node</code> (loads <code>meta.json</code>), <code>.artifacts()</code> (discovers the file and, on a cold cache, reassembles it from chunks), then <code>pd.read_csv</code> on the returned path. Cold clears the cache first so every artifact is a fresh miss; warm runs straight after, all cache hits.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=12fa7ec1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1708,39 +1766,87 @@ is stored as metadata (it renders as a table in the web graph) alongside a saved
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"import data"</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
-    <span class="c1"># Save a file</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span> <span class="o">/</span> <span class="s2">"samples.npy"</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">breakdown_by_id</span><span class="p">(</span><span class="n">clear</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">tid</span> <span class="ow">in</span> <span class="n">target_ids</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">tid</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">artifacts</span><span class="p">(</span><span class="s2">"data.csv"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">a</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_ids</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">g</span> <span class="o">/</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">a</span> <span class="o">/</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">r</span> <span class="o">/</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">1000</span>
 
-    <span class="c1"># Add some metadata</span>
-    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"something"</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"key"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">"other"</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]}))</span>
+
+<span class="n">id_cold</span> <span class="o">=</span> <span class="n">breakdown_by_id</span><span class="p">(</span><span class="n">clear</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># .artifacts() decompresses from the pool</span>
+<span class="n">id_warm</span> <span class="o">=</span> <span class="n">breakdown_by_id</span><span class="p">(</span><span class="n">clear</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># .artifacts() is a cache hit</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"COLD (cache miss)"</span><span class="p">,</span> <span class="n">id_cold</span><span class="p">),</span> <span class="p">(</span><span class="s2">"WARM (cache hit)"</span><span class="p">,</span> <span class="n">id_warm</span><span class="p">)]:</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  get_node </span><span class="si">{</span><span class="n">g</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2">  | artifacts() </span><span class="si">{</span><span class="n">a</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2">  | read_csv </span><span class="si">{</span><span class="n">r</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2">  | TOTAL </span><span class="si">{</span><span class="n">g</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">r</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2"> ms"</span>
+    <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">with store.create_node(step_type="import data") as node:
-    # Save a file
-    X = np.random.randint(0, 100, (5, 5))
-    np.save(node / "samples.npy", X)
+<div class="clipboard-copy-txt" id="cell-4">def breakdown_by_id(clear):
+    if clear:
+        store.clear_cache()
+    g = a = r = 0.0
+    for tid in target_ids:
+        t = time.perf_counter()
+        node = store.get_node(tid)
+        g += time.perf_counter() - t
+        t = time.perf_counter()
+        path = node.artifacts("data.csv")[0]
+        a += time.perf_counter() - t
+        t = time.perf_counter()
+        _ = pd.read_csv(path)
+        r += time.perf_counter() - t
+    n = len(target_ids)
+    return g / n * 1000, a / n * 1000, r / n * 1000
 
-    # Add some metadata
-    node.add_meta("something", pd.DataFrame({"key": [1, 2, 3], "other": [4, 5, 6]}))</div>
+
+id_cold = breakdown_by_id(clear=True)  # .artifacts() decompresses from the pool
+id_warm = breakdown_by_id(clear=False)  # .artifacts() is a cache hit
+for label, (g, a, r) in [("COLD (cache miss)", id_cold), ("WARM (cache hit)", id_warm)]:
+    print(
+        f"{label:&lt;20}  get_node {g:7.3f}  | artifacts() {a:7.3f}  | read_csv {r:7.3f}  | TOTAL {g + a + r:7.3f} ms"
+    )</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>COLD (cache miss)     get_node   0.100  | artifacts()   0.167  | read_csv  12.470  | TOTAL  12.737 ms
+WARM (cache hit)      get_node   0.074  | artifacts()   0.130  | read_csv  12.240  | TOTAL  12.444 ms
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e03b87fa">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5-look-the-node-back-up">5. Look the node back up<a class="anchor-link" href="#5-look-the-node-back-up">¶</a></h2><p><code>get_most_recent_node()</code> returns the last node written to the store.</p>
+<h2 id="4-retrieve-through-the-store-by-metadata-search-every-step">4. Retrieve through the store, by metadata search — every step<a class="anchor-link" href="#4-retrieve-through-the-store-by-metadata-search-every-step">¶</a></h2><p>The realistic case where you <em>don't</em> know the id: <code>find_node(run_id=...)</code> scans the index, then the same discover + read. Shows what the search itself adds on top of section 3.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=13934987">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1758,11 +1864,55 @@ is stored as metadata (it renders as a table in the web graph) alongside a saved
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">()</span>
-<span class="n">n</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">breakdown_by_search</span><span class="p">(</span><span class="n">clear</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">target_ids</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">artifacts</span><span class="p">(</span><span class="s2">"data.csv"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">a</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_ids</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">s</span> <span class="o">/</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">a</span> <span class="o">/</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">r</span> <span class="o">/</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">1000</span>
+
+
+<span class="n">se_cold</span> <span class="o">=</span> <span class="n">breakdown_by_search</span><span class="p">(</span><span class="n">clear</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">se_warm</span> <span class="o">=</span> <span class="n">breakdown_by_search</span><span class="p">(</span><span class="n">clear</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"COLD"</span><span class="p">,</span> <span class="n">se_cold</span><span class="p">),</span> <span class="p">(</span><span class="s2">"WARM"</span><span class="p">,</span> <span class="n">se_warm</span><span class="p">)]:</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">&lt;6</span><span class="si">}</span><span class="s2"> find_node </span><span class="si">{</span><span class="n">s</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2">  | artifacts() </span><span class="si">{</span><span class="n">a</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2">  | read_csv </span><span class="si">{</span><span class="n">r</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2">  | TOTAL </span><span class="si">{</span><span class="n">s</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">r</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2"> ms"</span>
+    <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">n = store.get_most_recent_node()
-n</div>
+<div class="clipboard-copy-txt" id="cell-5">def breakdown_by_search(clear):
+    if clear:
+        store.clear_cache()
+    s = a = r = 0.0
+    for i, _ in enumerate(target_ids):
+        t = time.perf_counter()
+        node = store.find_node(run_id=i)[0]
+        s += time.perf_counter() - t
+        t = time.perf_counter()
+        path = node.artifacts("data.csv")[0]
+        a += time.perf_counter() - t
+        t = time.perf_counter()
+        _ = pd.read_csv(path)
+        r += time.perf_counter() - t
+    n = len(target_ids)
+    return s / n * 1000, a / n * 1000, r / n * 1000
+
+
+se_cold = breakdown_by_search(clear=True)
+se_warm = breakdown_by_search(clear=False)
+for label, (s, a, r) in [("COLD", se_cold), ("WARM", se_warm)]:
+    print(
+        f"{label:&lt;6} find_node {s:7.3f}  | artifacts() {a:7.3f}  | read_csv {r:7.3f}  | TOTAL {s + a + r:7.3f} ms"
+    )</div>
 </div>
 </div>
 </div>
@@ -1771,29 +1921,30 @@ n</div>
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>Node = b4143d71, path = b4143d71, generation = 0</pre>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>COLD   find_node   0.221  | artifacts()   0.169  | read_csv  12.128  | TOTAL  12.519 ms
+WARM   find_node   0.215  | artifacts()   0.147  | read_csv  12.049  | TOTAL  12.410 ms
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ad4b0a47">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="6-visualise-the-store">6. Visualise the store<a class="anchor-link" href="#6-visualise-the-store">¶</a></h2><p><code>generate_web_graph()</code> writes a self-contained, interactive HTML page showing every node,
-its lineage and its metadata.</p>
+<h2 id="5-the-convenience-path-node-datacsv">5. The convenience path: <code>node / "data.csv"</code><a class="anchor-link" href="#5-the-convenience-path-node-datacsv">¶</a></h2><p>When you know the filename you skip <code>.artifacts()</code> and index it directly. Same materialization underneath.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=4dc70878">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1811,9 +1962,35 @@ its lineage and its metadata.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">by_slash</span><span class="p">(</span><span class="n">clear</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span>
+    <span class="n">tot</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">tid</span> <span class="ow">in</span> <span class="n">target_ids</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">tid</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"data.csv"</span><span class="p">)</span>
+        <span class="n">tot</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+    <span class="k">return</span> <span class="n">tot</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_ids</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"node / 'data.csv' then read  COLD </span><span class="si">{</span><span class="n">by_slash</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2"> ms   WARM </span><span class="si">{</span><span class="n">by_slash</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2"> ms"</span>
+<span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">store.generate_web_graph()</div>
+<div class="clipboard-copy-txt" id="cell-6">def by_slash(clear):
+    if clear:
+        store.clear_cache()
+    tot = 0.0
+    for tid in target_ids:
+        t = time.perf_counter()
+        _ = pd.read_csv(store.get_node(tid) / "data.csv")
+        tot += time.perf_counter() - t
+    return tot / len(target_ids) * 1000
+
+
+print(
+    f"node / 'data.csv' then read  COLD {by_slash(True):7.3f} ms   WARM {by_slash(False):7.3f} ms"
+)</div>
 </div>
 </div>
 </div>
@@ -1825,14 +2002,814 @@ its lineage and its metadata.</p>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Graph generated at basic_usage/interactive_pipeline.html
+<pre>node / 'data.csv' then read  COLD  12.366 ms   WARM  12.303 ms
 </pre>
 </div>
 </div>
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>PosixPath('basic_usage/interactive_pipeline.html')</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=870d08b4">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="6-summary-store-overhead-over-a-direct-path-read">6. Summary — store overhead over a direct path read<a class="anchor-link" href="#6-summary-store-overhead-over-a-direct-path-read">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=62ed9e08">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">row</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">total</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;34</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">total</span><span class="si">:</span><span class="s2">8.3f</span><span class="si">}</span><span class="s2"> ms   (</span><span class="si">{</span><span class="n">total</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">direct_parse</span><span class="si">:</span><span class="s2">5.1f</span><span class="si">}</span><span class="s2">x direct)"</span><span class="p">)</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Reading one ~</span><span class="si">{</span><span class="n">art_mb</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB CSV (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">target_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples averaged)</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="s1">'direct pd.read_csv(path)'</span><span class="si">:</span><span class="s2">&lt;34</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">direct_parse</span><span class="si">:</span><span class="s2">8.3f</span><span class="si">}</span><span class="s2"> ms   (baseline)"</span><span class="p">)</span>
+<span class="n">row</span><span class="p">(</span><span class="s2">"store by id   — COLD (first touch)"</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">id_cold</span><span class="p">))</span>
+<span class="n">row</span><span class="p">(</span><span class="s2">"store by id   — WARM (cache hit)"</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">id_warm</span><span class="p">))</span>
+<span class="n">row</span><span class="p">(</span><span class="s2">"store by search — COLD"</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">se_cold</span><span class="p">))</span>
+<span class="n">row</span><span class="p">(</span><span class="s2">"store by search — WARM"</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">se_warm</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"  decompression cost (artifacts COLD - WARM): </span><span class="si">{</span><span class="n">id_cold</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">id_warm</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> ms / artifact"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"  index search cost  (find_node):             </span><span class="si">{</span><span class="n">se_cold</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> ms over </span><span class="si">{</span><span class="n">N_TOTAL</span><span class="si">}</span><span class="s2"> nodes"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  meta.json load     (get_node):              </span><span class="si">{</span><span class="n">id_cold</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Takeaways:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">" - WARM store reads ~= a direct read: once cached, the store adds almost nothing."</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">" - The COLD premium is the chunk decompression, paid once per artifact per session."</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">" - Finding a node (id load or index search) is sub-millisecond and dwarfed by I/O."</span>
+<span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-7">def row(name, total):
+    print(f"  {name:&lt;34} {total:8.3f} ms   ({total / direct_parse:5.1f}x direct)")
+
+
+print(f"Reading one ~{art_mb:.1f} MB CSV ({len(target_ids)} samples averaged)\n")
+print(f"  {'direct pd.read_csv(path)':&lt;34} {direct_parse:8.3f} ms   (baseline)")
+row("store by id   — COLD (first touch)", sum(id_cold))
+row("store by id   — WARM (cache hit)", sum(id_warm))
+row("store by search — COLD", sum(se_cold))
+row("store by search — WARM", sum(se_warm))
+print()
+print(
+    f"  decompression cost (artifacts COLD - WARM): {id_cold[1] - id_warm[1]:.3f} ms / artifact"
+)
+print(
+    f"  index search cost  (find_node):             {se_cold[0]:.3f} ms over {N_TOTAL} nodes"
+)
+print(f"  meta.json load     (get_node):              {id_cold[0]:.3f} ms")
+print()
+print("Takeaways:")
+print(
+    " - WARM store reads ~= a direct read: once cached, the store adds almost nothing."
+)
+print(
+    " - The COLD premium is the chunk decompression, paid once per artifact per session."
+)
+print(
+    " - Finding a node (id load or index search) is sub-millisecond and dwarfed by I/O."
+)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Reading one ~2.2 MB CSV (30 samples averaged)
+
+  direct pd.read_csv(path)             12.178 ms   (baseline)
+  store by id   — COLD (first touch)   12.737 ms   (  1.0x direct)
+  store by id   — WARM (cache hit)     12.444 ms   (  1.0x direct)
+  store by search — COLD               12.519 ms   (  1.0x direct)
+  store by search — WARM               12.410 ms   (  1.0x direct)
+
+  decompression cost (artifacts COLD - WARM): 0.037 ms / artifact
+  index search cost  (find_node):             0.221 ms over 1000 nodes
+  meta.json load     (get_node):              0.100 ms
+
+Takeaways:
+ - WARM store reads ~= a direct read: once cached, the store adds almost nothing.
+ - The COLD premium is the chunk decompression, paid once per artifact per session.
+ - Finding a node (id load or index search) is sub-millisecond and dwarfed by I/O.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1c5ef985">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="7-readwrite-penalty-by-data-type-and-size">7. Read/write penalty by data type and size<a class="anchor-link" href="#7-readwrite-penalty-by-data-type-and-size">¶</a></h2><p>The headline table: for a spread of file types and sizes, how long does it take to <strong>write</strong> and <strong>read</strong> the file <em>directly</em> (a plain path) versus <em>through the store</em> (chunked into the pool on write; reassembled from the pool into the read cache on a cold read; a plain cache read when warm)?</p>
+<ul>
+<li><strong>W store</strong> = the loose-file write <strong>+</strong> packing it into the chunk pool. It excludes node creation (a fixed ~16 ms of git provenance — a separate issue), so this is purely the storage-layer penalty on the bytes.</li>
+<li><strong>R cold</strong> = first touch in a session (decompress every chunk → cache).</li>
+<li><strong>R warm</strong> = a second read in the same session (cache hit).</li>
+</ul>
+<p>All <code>x</code> columns are the multiple over the <em>direct</em> operation. The largest rows take a few seconds (packing thousands of chunks).</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=555d8965">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
+
+<span class="n">DT_ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"dt_bench_store"</span><span class="p">)</span>
+<span class="n">DT_BASE</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"dt_bench_direct"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DT_ROOT</span><span class="p">,</span> <span class="n">DT_BASE</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">DT_BASE</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">dt_store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">DT_ROOT</span><span class="p">,</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">dt_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_med</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">reps</span><span class="p">):</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">reps</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">fn</span><span class="p">()</span>
+        <span class="n">ts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_npy_w</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_npy_r</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_npz_w</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_npz_r</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="s2">"a"</span><span class="p">]</span>
+
+
+<span class="n">FORMATS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"bytes"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">fn</span><span class="o">=</span><span class="s2">"d.bin"</span><span class="p">,</span>
+        <span class="n">make</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span>
+        <span class="n">w</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">d</span><span class="p">),</span>
+        <span class="n">r</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(),</span>
+    <span class="p">),</span>
+    <span class="s2">"npy"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">"d.npy"</span><span class="p">,</span> <span class="n">make</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">_npy_w</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">_npy_r</span><span class="p">),</span>
+    <span class="s2">"npz"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">"d.npz"</span><span class="p">,</span> <span class="n">make</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">_npz_w</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">_npz_r</span><span class="p">),</span>
+    <span class="s2">"csv"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">fn</span><span class="o">=</span><span class="s2">"d.csv"</span><span class="p">,</span>
+        <span class="n">make</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">a</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="s2">"abcd"</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">w</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">r</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">p</span><span class="p">),</span>
+    <span class="p">),</span>
+    <span class="s2">"pickle"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">fn</span><span class="o">=</span><span class="s2">"d.pkl"</span><span class="p">,</span>
+        <span class="n">make</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span>
+        <span class="n">w</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">d</span><span class="p">)),</span>
+        <span class="n">r</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()),</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+<span class="n">SIZES_MB</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="mf">0.25</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">,</span>
+    <span class="mi">16</span><span class="p">,</span>
+    <span class="mi">64</span><span class="p">,</span>
+<span class="p">]</span>  <span class="c1"># underlying float64 array size; file sizes differ per format</span>
+
+<span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">size_mb</span> <span class="ow">in</span> <span class="n">SIZES_MB</span><span class="p">:</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">dt_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">size_mb</span> <span class="o">*</span> <span class="mf">1e6</span> <span class="o">/</span> <span class="mi">8</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">F</span> <span class="ow">in</span> <span class="n">FORMATS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="s2">"make"</span><span class="p">](</span><span class="n">arr</span><span class="p">)</span>
+        <span class="n">dpath</span> <span class="o">=</span> <span class="n">DT_BASE</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">size_mb</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">F</span><span class="p">[</span><span class="s1">'fn'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">wd</span> <span class="o">=</span> <span class="n">_med</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">F</span><span class="p">[</span><span class="s2">"w"</span><span class="p">](</span><span class="n">dpath</span><span class="p">,</span> <span class="n">data</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># direct write</span>
+        <span class="n">file_mb</span> <span class="o">=</span> <span class="n">dpath</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">/</span> <span class="mf">1e6</span>
+        <span class="n">rd</span> <span class="o">=</span> <span class="n">_med</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">F</span><span class="p">[</span><span class="s2">"r"</span><span class="p">](</span><span class="n">dpath</span><span class="p">),</span> <span class="mi">7</span><span class="p">)</span>  <span class="c1"># direct read</span>
+        <span class="k">with</span> <span class="n">dt_store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span>
+            <span class="n">step_type</span><span class="o">=</span><span class="s2">"blob"</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>  <span class="c1"># store write = write + pack</span>
+            <span class="n">F</span><span class="p">[</span><span class="s2">"w"</span><span class="p">](</span><span class="n">node</span> <span class="o">/</span> <span class="n">F</span><span class="p">[</span><span class="s2">"fn"</span><span class="p">],</span> <span class="n">data</span><span class="p">)</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">_pack</span><span class="p">()</span>
+            <span class="n">pack</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+        <span class="n">nid</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">node_id</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_cold</span><span class="p">():</span>
+            <span class="n">dt_store</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">F</span><span class="p">[</span><span class="s2">"r"</span><span class="p">](</span><span class="n">dt_store</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">nid</span><span class="p">)</span> <span class="o">/</span> <span class="n">F</span><span class="p">[</span><span class="s2">"fn"</span><span class="p">])</span>
+
+        <span class="n">rc</span> <span class="o">=</span> <span class="n">_med</span><span class="p">(</span><span class="n">_cold</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># cold read (materialize + parse)</span>
+        <span class="n">rw</span> <span class="o">=</span> <span class="n">_med</span><span class="p">(</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">F</span><span class="p">[</span><span class="s2">"r"</span><span class="p">](</span><span class="n">dt_store</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">nid</span><span class="p">)</span> <span class="o">/</span> <span class="n">F</span><span class="p">[</span><span class="s2">"fn"</span><span class="p">]),</span> <span class="mi">7</span>
+        <span class="p">)</span>  <span class="c1"># warm read (cache hit)</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">file_mb</span><span class="o">=</span><span class="n">file_mb</span><span class="p">,</span>
+                <span class="n">wd</span><span class="o">=</span><span class="n">wd</span><span class="p">,</span>
+                <span class="n">pack</span><span class="o">=</span><span class="n">pack</span><span class="p">,</span>
+                <span class="n">ws</span><span class="o">=</span><span class="n">wd</span> <span class="o">+</span> <span class="n">pack</span><span class="p">,</span>
+                <span class="n">rd</span><span class="o">=</span><span class="n">rd</span><span class="p">,</span>
+                <span class="n">rc</span><span class="o">=</span><span class="n">rc</span><span class="p">,</span>
+                <span class="n">rw</span><span class="o">=</span><span class="n">rw</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  done size </span><span class="si">{</span><span class="n">size_mb</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"measurements complete"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-8">import shutil
+import time
+import pickle
+from pathlib import Path
+import numpy as np
+import ancestree
+
+DT_ROOT = Path("dt_bench_store")
+DT_BASE = Path("dt_bench_direct")
+for d in (DT_ROOT, DT_BASE):
+    if d.exists():
+        shutil.rmtree(d)
+DT_BASE.mkdir(parents=True)
+dt_store = ancestree.LineageStore(DT_ROOT, dedupe=False, chunk=True)
+dt_rng = np.random.default_rng(0)
+
+
+def _med(fn, reps):
+    ts = []
+    for _ in range(reps):
+        t = time.perf_counter()
+        fn()
+        ts.append((time.perf_counter() - t) * 1000)
+    return float(np.median(ts))
+
+
+def _npy_w(p, d):
+    with open(p, "wb") as f:
+        np.save(f, d)
+
+
+def _npy_r(p):
+    with open(p, "rb") as f:
+        return np.load(f)
+
+
+def _npz_w(p, d):
+    with open(p, "wb") as f:
+        np.savez_compressed(f, a=d)
+
+
+def _npz_r(p):
+    with open(p, "rb") as f:
+        return np.load(f)["a"]
+
+
+FORMATS = {
+    "bytes": dict(
+        fn="d.bin",
+        make=lambda a: a.tobytes(),
+        w=lambda p, d: Path(p).write_bytes(d),
+        r=lambda p: Path(p).read_bytes(),
+    ),
+    "npy": dict(fn="d.npy", make=lambda a: a, w=_npy_w, r=_npy_r),
+    "npz": dict(fn="d.npz", make=lambda a: a, w=_npz_w, r=_npz_r),
+    "csv": dict(
+        fn="d.csv",
+        make=lambda a: pd.DataFrame(
+            a[: len(a) // 4 * 4].reshape(-1, 4), columns=list("abcd")
+        ),
+        w=lambda p, d: d.to_csv(p, index=False),
+        r=lambda p: pd.read_csv(p),
+    ),
+    "pickle": dict(
+        fn="d.pkl",
+        make=lambda a: a,
+        w=lambda p, d: Path(p).write_bytes(pickle.dumps(d)),
+        r=lambda p: pickle.loads(Path(p).read_bytes()),
+    ),
+}
+SIZES_MB = [
+    0.25,
+    1,
+    4,
+    16,
+    64,
+]  # underlying float64 array size; file sizes differ per format
+
+rows = []
+for size_mb in SIZES_MB:
+    arr = dt_rng.standard_normal(int(size_mb * 1e6 / 8))
+    for name, F in FORMATS.items():
+        data = F["make"](arr)
+        dpath = DT_BASE / f"{name}_{size_mb}_{F['fn']}"
+        wd = _med(lambda: F["w"](dpath, data), 5)  # direct write
+        file_mb = dpath.stat().st_size / 1e6
+        rd = _med(lambda: F["r"](dpath), 7)  # direct read
+        with dt_store.create_node(
+            step_type="blob"
+        ) as node:  # store write = write + pack
+            F["w"](node / F["fn"], data)
+            t0 = time.perf_counter()
+            node._pack()
+            pack = (time.perf_counter() - t0) * 1000
+        nid = node.node_id
+
+        def _cold():
+            dt_store.clear_cache()
+            return F["r"](dt_store.get_node(nid) / F["fn"])
+
+        rc = _med(_cold, 5)  # cold read (materialize + parse)
+        rw = _med(
+            lambda: F["r"](dt_store.get_node(nid) / F["fn"]), 7
+        )  # warm read (cache hit)
+        rows.append(
+            dict(
+                type=name,
+                file_mb=file_mb,
+                wd=wd,
+                pack=pack,
+                ws=wd + pack,
+                rd=rd,
+                rc=rc,
+                rw=rw,
+            )
+        )
+    print(f"  done size {size_mb} MB")
+print("measurements complete")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>  done size 0.25 MB
+  done size 1 MB
+  done size 4 MB
+  done size 16 MB
+  done size 64 MB
+measurements complete
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8d241f7a">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="the-table">The table<a class="anchor-link" href="#the-table">¶</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=19508be5">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">hdr</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'type'</span><span class="si">:</span><span class="s2">7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'file MB'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="s1">'W direct'</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'pack'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'W store'</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'W x'</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> | "</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'R direct'</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'R cold'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'R warm'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'cold x'</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'warm x'</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2">"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">hdr</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdr</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span><span class="si">:</span><span class="s2">7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'file_mb'</span><span class="p">]</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'wd'</span><span class="p">]</span><span class="si">:</span><span class="s2">9.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'pack'</span><span class="p">]</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'ws'</span><span class="p">]</span><span class="si">:</span><span class="s2">9.2f</span><span class="si">}</span><span class="s2"> "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'ws'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">[</span><span class="s1">'wd'</span><span class="p">]</span><span class="si">:</span><span class="s2">5.0f</span><span class="si">}</span><span class="s2">x | </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'rd'</span><span class="p">]</span><span class="si">:</span><span class="s2">9.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'rc'</span><span class="p">]</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'rw'</span><span class="p">]</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'rc'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">[</span><span class="s1">'rd'</span><span class="p">]</span><span class="si">:</span><span class="s2">6.0f</span><span class="si">}</span><span class="s2">x </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'rw'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">[</span><span class="s1">'rd'</span><span class="p">]</span><span class="si">:</span><span class="s2">6.1f</span><span class="si">}</span><span class="s2">x"</span>
+    <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">"</span><span class="se">\n</span><span class="s2">Readings are milliseconds (median). W store excludes ~16 ms/node of git provenance."</span>
+<span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-9">hdr = (
+    f"{'type':7} {'file MB':&gt;8} | {'W direct':&gt;9} {'pack':&gt;8} {'W store':&gt;9} {'W x':&gt;6} | "
+    f"{'R direct':&gt;9} {'R cold':&gt;8} {'R warm':&gt;8} {'cold x':&gt;7} {'warm x':&gt;7}"
+)
+print(hdr)
+print("-" * len(hdr))
+for r in rows:
+    print(
+        f"{r['type']:7} {r['file_mb']:8.2f} | {r['wd']:9.2f} {r['pack']:8.2f} {r['ws']:9.2f} "
+        f"{r['ws'] / r['wd']:5.0f}x | {r['rd']:9.2f} {r['rc']:8.2f} {r['rw']:8.2f} "
+        f"{r['rc'] / r['rd']:6.0f}x {r['rw'] / r['rd']:6.1f}x"
+    )
+
+print(
+    "\nReadings are milliseconds (median). W store excludes ~16 ms/node of git provenance."
+)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>type     file MB |  W direct     pack   W store    W x |  R direct   R cold   R warm  cold x  warm x
+----------------------------------------------------------------------------------------------------
+bytes       0.25 |      0.14    27.48     27.61   202x |      0.03     0.21     0.15      8x    5.7x
+npy         0.25 |      0.11    23.10     23.21   207x |      0.04     0.27     0.22      6x    4.9x
+npz         0.24 |      5.65    24.60     30.26     5x |      0.59     0.77     0.70      1x    1.2x
+csv         0.61 |     17.80    74.12     91.92     5x |      2.24     2.40     2.31      1x    1.0x
+pickle      0.25 |      0.11    22.55     22.66   209x |      0.03     0.19     0.15      6x    4.8x
+bytes       1.00 |      0.22   110.11    110.33   495x |      0.05     0.28     0.21      6x    4.7x
+npy         1.00 |      0.26    89.31     89.56   351x |      0.07     0.29     0.23      4x    3.4x
+npz         0.96 |     23.63   102.73    126.36     5x |      2.10     2.32     2.25      1x    1.1x
+csv         2.45 |     70.63   291.04    361.67     5x |      8.30     8.61     8.52      1x    1.0x
+pickle      1.00 |      0.31    83.88     84.19   272x |      0.07     0.29     0.23      4x    3.2x
+bytes       4.00 |      0.69   425.05    425.74   616x |      0.12     0.35     0.28      3x    2.3x
+npy         4.00 |      0.73   328.73    329.45   454x |      0.17     0.42     0.32      3x    1.9x
+npz         3.84 |     93.75   384.45    478.21     5x |      8.18     8.44     8.31      1x    1.0x
+csv         9.81 |    278.27  1218.52   1496.79     5x |     34.11    35.49    35.32      1x    1.0x
+pickle      4.00 |      1.00   347.08    348.08   347x |      0.24     0.41     0.34      2x    1.4x
+bytes      16.00 |      2.50  1742.27   1744.77   698x |      1.28     1.74     1.62      1x    1.3x
+npy        16.00 |      2.54  1324.72   1327.25   523x |      1.47     1.75     1.79      1x    1.2x
+npz        15.37 |    377.04  1522.48   1899.53     5x |     32.71    33.54    33.37      1x    1.0x
+csv        39.26 |   1106.46  4676.53   5782.98     5x |    129.26   132.54   136.21      1x    1.1x
+pickle     16.00 |      3.18  1374.97   1378.15   433x |      1.93     2.21     2.11      1x    1.1x
+bytes      64.00 |      7.53  7055.67   7063.20   937x |      7.74     8.04     8.00      1x    1.0x
+npy        64.00 |      7.60  5323.89   5331.49   701x |      7.80     8.02     7.93      1x    1.0x
+npz        61.48 |   1493.01  6185.80   7678.80     5x |    131.29   131.61   135.42      1x    1.0x
+csv       157.06 |   4432.81 18224.66  22657.48     5x |    515.11   514.26   514.82      1x    1.0x
+pickle     64.00 |     12.00  5145.48   5157.49   430x |      8.89     9.08     9.10      1x    1.0x
+
+Readings are milliseconds (median). W store excludes ~16 ms/node of git provenance.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=26650717">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="takeaways">Takeaways<a class="anchor-link" href="#takeaways">¶</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f9d7f0ac">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">fast</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"bytes"</span><span class="p">,</span> <span class="s2">"npy"</span><span class="p">,</span> <span class="s2">"pickle"</span><span class="p">)]</span>
+<span class="n">slow</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"csv"</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"WRITE penalty is the big one:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"  packing turns a ~</span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">'wd'</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fast</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">'wd'</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fast</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms direct write into"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">'ws'</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fast</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">'ws'</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fast</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> ms — up to </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">'ws'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">[</span><span class="s1">'wd'</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fast</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">x — because each ~32 KB chunk"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">"  is a separate compress+temp-write+rename. Bigger artifacts pay proportionally more."</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"READ penalty depends entirely on the format:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"  fast binary (npy/bytes/pickle): cold read up to </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">'rc'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">[</span><span class="s1">'rd'</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fast</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">x direct"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"     (the decompression dwarfs the ~0-1 ms raw read), warm ~1x once cached."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"  slow text (csv): cold only ~</span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">'rc'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">[</span><span class="s1">'rd'</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">slow</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">x — the parse hides the decompression."</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"So: the store is cheap when your I/O is already slow (csv), and expensive"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"relative to fast formats (npy) — especially on WRITE. Warm re-reads are ~free."</span><span class="p">)</span>
+
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">DT_ROOT</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">DT_BASE</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-10">fast = [r for r in rows if r["type"] in ("bytes", "npy", "pickle")]
+slow = [r for r in rows if r["type"] == "csv"]
+print("WRITE penalty is the big one:")
+print(
+    f"  packing turns a ~{min(r['wd'] for r in fast):.2f}-{max(r['wd'] for r in fast):.1f} ms direct write into"
+)
+print(
+    f"  {min(r['ws'] for r in fast):.0f}-{max(r['ws'] for r in fast):.0f} ms — up to {max(r['ws'] / r['wd'] for r in fast):.0f}x — because each ~32 KB chunk"
+)
+print(
+    "  is a separate compress+temp-write+rename. Bigger artifacts pay proportionally more."
+)
+print()
+print("READ penalty depends entirely on the format:")
+print(
+    f"  fast binary (npy/bytes/pickle): cold read up to {max(r['rc'] / r['rd'] for r in fast):.0f}x direct"
+)
+print("     (the decompression dwarfs the ~0-1 ms raw read), warm ~1x once cached.")
+print(
+    f"  slow text (csv): cold only ~{max(r['rc'] / r['rd'] for r in slow):.1f}x — the parse hides the decompression."
+)
+print()
+print("So: the store is cheap when your I/O is already slow (csv), and expensive")
+print("relative to fast formats (npy) — especially on WRITE. Warm re-reads are ~free.")
+
+shutil.rmtree(DT_ROOT, ignore_errors=True)
+shutil.rmtree(DT_BASE, ignore_errors=True)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>WRITE penalty is the big one:
+  packing turns a ~0.11-12.0 ms direct write into
+  23-7063 ms — up to 937x — because each ~32 KB chunk
+  is a separate compress+temp-write+rename. Bigger artifacts pay proportionally more.
+
+READ penalty depends entirely on the format:
+  fast binary (npy/bytes/pickle): cold read up to 8x direct
+     (the decompression dwarfs the ~0-1 ms raw read), warm ~1x once cached.
+  slow text (csv): cold only ~1.1x — the parse hides the decompression.
+
+So: the store is cheap when your I/O is already slow (csv), and expensive
+relative to fast formats (npy) — especially on WRITE. Warm re-reads are ~free.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=13448d55">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="8-deferred-packing-what-the-write-path-actually-costs-now">8. Deferred packing — what the write path <em>actually</em> costs now<a class="anchor-link" href="#8-deferred-packing-what-the-write-path-actually-costs-now">¶</a></h2><p>Section 7's <strong>W store</strong> column packed the artifact synchronously, on the write path. Packing is now <strong>deferred</strong>: <code>create_node</code> writes the artifact as a normal file and returns; a background worker chunks it off the write path. This cell times the real <code>create_node</code> block (<strong>W deferred</strong>) against a direct write, and separately surfaces the <strong>background pack</strong> cost that <code>flush()</code> blocks on — the work that used to be section 7's <strong>W store</strong>, now moved off the critical path.</p>
+<p>Reuses <code>FORMATS</code>, <code>_med</code>, <code>dt_rng</code> from section 7, so run that first. <code>dedupe=False</code> here so the table isolates the storage write path; with <code>dedupe=True</code> the block also does a content-hash pass that scales with size.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=697ca59e">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-11">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
+
+<span class="n">DEF_STORE</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"deferred_store"</span><span class="p">)</span>
+<span class="n">DEF_DIRECT</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"deferred_direct"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DEF_STORE</span><span class="p">,</span> <span class="n">DEF_DIRECT</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">DEF_DIRECT</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">dstore</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">DEF_STORE</span><span class="p">,</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">DEFER_SIZES</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">]</span>  <span class="c1"># MB; a representative span (packing scales with size)</span>
+<span class="n">hdr</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'type'</span><span class="si">:</span><span class="s2">7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'file MB'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="s1">'W direct'</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'W deferred'</span><span class="si">:</span><span class="s2">&gt;11</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'defer x'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> "</span>
+    <span class="sa">f</span><span class="s2">"| </span><span class="si">{</span><span class="s1">'bg pack'</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'(was W store)'</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2">"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">hdr</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdr</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">size_mb</span> <span class="ow">in</span> <span class="n">DEFER_SIZES</span><span class="p">:</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">dt_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">size_mb</span> <span class="o">*</span> <span class="mf">1e6</span> <span class="o">/</span> <span class="mi">8</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">F</span> <span class="ow">in</span> <span class="n">FORMATS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="s2">"make"</span><span class="p">](</span><span class="n">arr</span><span class="p">)</span>
+        <span class="n">dpath</span> <span class="o">=</span> <span class="n">DEF_DIRECT</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">size_mb</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">F</span><span class="p">[</span><span class="s1">'fn'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">wd</span> <span class="o">=</span> <span class="n">_med</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">F</span><span class="p">[</span><span class="s2">"w"</span><span class="p">](</span><span class="n">dpath</span><span class="p">,</span> <span class="n">data</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># direct write</span>
+        <span class="n">file_mb</span> <span class="o">=</span> <span class="n">dpath</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">/</span> <span class="mf">1e6</span>
+        <span class="c1"># Store write through the real API: native write + enqueue, returns now.</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">dstore</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"blob"</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
+            <span class="n">F</span><span class="p">[</span><span class="s2">"w"</span><span class="p">](</span><span class="n">node</span> <span class="o">/</span> <span class="n">F</span><span class="p">[</span><span class="s2">"fn"</span><span class="p">],</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">w_defer</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+        <span class="c1"># The chunking the worker does off-path; flush() blocks until it's done.</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">dstore</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">bg_pack</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">file_mb</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">wd</span><span class="si">:</span><span class="s2">9.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">w_defer</span><span class="si">:</span><span class="s2">11.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">w_defer</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">wd</span><span class="si">:</span><span class="s2">6.1f</span><span class="si">}</span><span class="s2">x "</span>
+            <span class="sa">f</span><span class="s2">"| </span><span class="si">{</span><span class="n">bg_pack</span><span class="si">:</span><span class="s2">9.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'(off path)'</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">W deferred = the create_node block you actually wait for (native write +"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"enqueue + ~16 ms/node provenance). bg pack = chunking moved to the background"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"worker (section 7 paid this ON the write path). The write LATENCY is what"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"dropped; the packing still happens, just off the critical path."</span><span class="p">)</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">DEF_STORE</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">DEF_DIRECT</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-11">import shutil
+import time
+from pathlib import Path
+import ancestree
+
+DEF_STORE = Path("deferred_store")
+DEF_DIRECT = Path("deferred_direct")
+for d in (DEF_STORE, DEF_DIRECT):
+    if d.exists():
+        shutil.rmtree(d)
+DEF_DIRECT.mkdir(parents=True)
+dstore = ancestree.LineageStore(DEF_STORE, dedupe=False, chunk=True)
+
+DEFER_SIZES = [1, 16, 64]  # MB; a representative span (packing scales with size)
+hdr = (
+    f"{'type':7} {'file MB':&gt;8} | {'W direct':&gt;9} {'W deferred':&gt;11} {'defer x':&gt;8} "
+    f"| {'bg pack':&gt;9} {'(was W store)':&gt;14}"
+)
+print(hdr)
+print("-" * len(hdr))
+for size_mb in DEFER_SIZES:
+    arr = dt_rng.standard_normal(int(size_mb * 1e6 / 8))
+    for name, F in FORMATS.items():
+        data = F["make"](arr)
+        dpath = DEF_DIRECT / f"{name}_{size_mb}_{F['fn']}"
+        wd = _med(lambda: F["w"](dpath, data), 5)  # direct write
+        file_mb = dpath.stat().st_size / 1e6
+        # Store write through the real API: native write + enqueue, returns now.
+        t0 = time.perf_counter()
+        with dstore.create_node(step_type="blob") as node:
+            F["w"](node / F["fn"], data)
+        w_defer = (time.perf_counter() - t0) * 1000
+        # The chunking the worker does off-path; flush() blocks until it's done.
+        t0 = time.perf_counter()
+        dstore.flush()
+        bg_pack = (time.perf_counter() - t0) * 1000
+        print(
+            f"{name:7} {file_mb:8.2f} | {wd:9.2f} {w_defer:11.2f} {w_defer / wd:6.1f}x "
+            f"| {bg_pack:9.1f} {'(off path)':&gt;14}"
+        )
+
+print("\nW deferred = the create_node block you actually wait for (native write +")
+print("enqueue + ~16 ms/node provenance). bg pack = chunking moved to the background")
+print("worker (section 7 paid this ON the write path). The write LATENCY is what")
+print("dropped; the packing still happens, just off the critical path.")
+shutil.rmtree(DEF_STORE, ignore_errors=True)
+shutil.rmtree(DEF_DIRECT, ignore_errors=True)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>type     file MB |  W direct  W deferred  defer x |   bg pack  (was W store)
+----------------------------------------------------------------------------
+bytes       1.00 |      0.23       29.09  129.2x |     109.3     (off path)
+npy         1.00 |      0.24       27.94  115.2x |      83.5     (off path)
+npz         0.96 |     23.51       49.10    2.1x |      97.4     (off path)
+csv         2.45 |     72.04       96.62    1.3x |     290.9     (off path)
+pickle      1.00 |      0.32       25.71   80.6x |      84.1     (off path)
+bytes      16.00 |      2.41       27.34   11.4x |    1762.0     (off path)
+npy        16.00 |      2.58       34.86   13.5x |    1344.3     (off path)
+npz        15.37 |    375.32      400.12    1.1x |    1501.4     (off path)
+csv        39.26 |   1102.39     1134.24    1.0x |    4641.5     (off path)
+pickle     16.00 |      2.99       30.19   10.1x |    1314.3     (off path)
+bytes      64.00 |      7.47       31.86    4.3x |    6743.3     (off path)
+npy        64.00 |      7.53       33.29    4.4x |    5257.2     (off path)
+npz        61.48 |   1488.25     1516.46    1.0x |    6163.8     (off path)
+csv       157.05 |   4385.29     4436.99    1.0x |   17947.3     (off path)
+pickle     64.00 |     11.97       46.53    3.9x |    5412.9     (off path)
+
+W deferred = the create_node block you actually wait for (native write +
+enqueue + ~16 ms/node provenance). bg pack = chunking moved to the background
+worker (section 7 paid this ON the write path). The write LATENCY is what
+dropped; the packing still happens, just off the critical path.
+</pre>
 </div>
 </div>
 </div>
@@ -1866,7 +2843,7 @@ its lineage and its metadata.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 14, 2026 12:15:23 UTC">June 14, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 25, 2026 21:31:34 UTC">June 25, 2026</span>
   </span>
 
     

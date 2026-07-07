@@ -12,13 +12,9 @@
         <meta name="author" content="Joshua Smith">
       
       
-        <link rel="canonical" href="https://js195.github.io/ancestree/examples/basic_usage/">
+        <link rel="canonical" href="https://js195.github.io/ancestree/examples/stress_1_ml_pipeline/">
       
       
-        <link rel="prev" href="../">
-      
-      
-        <link rel="next" href="../ML_pipeline/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Getting started with - Ancestree Documentation</title>
+        <title>Stress test 1 — ML pipeline (branching, sweeps, dedupe, chunking) - Ancestree Documentation</title>
       
     
     
@@ -67,17 +63,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Getting started with - Ancestree Documentation" />
+<meta property="og:title" content="Stress test 1 — ML pipeline (branching, sweeps, dedupe, chunking) - Ancestree Documentation" />
 <meta property="og:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/basic_usage.png" />
+<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/stress_1_ml_pipeline.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://js195.github.io/ancestree/examples/basic_usage/" />
+<meta property="og:url" content="https://js195.github.io/ancestree/examples/stress_1_ml_pipeline/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="Getting started with - Ancestree Documentation" />
+<meta property="twitter:title" content="Stress test 1 — ML pipeline (branching, sweeps, dedupe, chunking) - Ancestree Documentation" />
 <meta property="twitter:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/basic_usage.png" />
+<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/stress_1_ml_pipeline.png" />
 </head>
   
   
@@ -97,7 +93,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#getting-started-with" class="md-skip">
+        <a href="#stress-test-1-ml-pipeline-branching-sweeps-dedupe-chunking" class="md-skip">
           Skip to content
         </a>
       
@@ -133,7 +129,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Getting started with
+              Stress test 1 — ML pipeline (branching, sweeps, dedupe, chunking)
             
           </span>
         </div>
@@ -310,20 +306,20 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -344,7 +340,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -387,37 +383,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Getting started with
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../basic_usage/" class="md-nav__link">
         
   
   
@@ -433,92 +402,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-imports" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Imports
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-define-a-ruleset" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Define a ruleset
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-create-the-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Create the store
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-write-a-node" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Write a node
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-look-the-node-back-up" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Look the node back up
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-visualise-the-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Visualise the store
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -723,10 +606,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-imports" class="md-nav__link">
+  <a href="#build-the-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Imports
+        Build the pipeline
       
     </span>
   </a>
@@ -734,10 +617,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-define-a-ruleset" class="md-nav__link">
+  <a href="#hyperparameter-sweep-each-config-is-a-distinct-model-node" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Define a ruleset
+        Hyperparameter sweep — each config is a distinct model node
       
     </span>
   </a>
@@ -745,10 +628,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-create-the-store" class="md-nav__link">
+  <a href="#finding-1-fixed-numpy-pandas-scalars-in" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Create the store
+        ✅ Finding #1 (FIXED) — numpy / pandas scalars in
       
     </span>
   </a>
@@ -756,10 +639,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-write-a-node" class="md-nav__link">
+  <a href="#re-run-the-whole-pipeline-dedupe-reuses-identical-nodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Write a node
+        Re-run the whole pipeline — dedupe reuses identical nodes
       
     </span>
   </a>
@@ -767,21 +650,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-look-the-node-back-up" class="md-nav__link">
+  <a href="#chunk-efficiency-sub-file-sharing-across-the-two-clean-branches" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Look the node back up
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-visualise-the-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Visualise the store
+        Chunk efficiency — sub-file sharing across the two clean branches
       
     </span>
   </a>
@@ -1529,34 +1401,18 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7fb27b941602401d91542211134fc71a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="getting-started-with-ancestree">Getting started with <code>ancestree</code><a class="anchor-link" href="#getting-started-with-ancestree">¶</a></h1><p><code>ancestree</code> records the <em>lineage</em> of the artifacts a pipeline produces: every step is
-saved as a <strong>node</strong> that knows which node it came from, what files it wrote and what
-metadata describes it.</p>
-<p>This notebook covers the essentials — defining a ruleset, creating a store, writing
-a node, looking it back up and rendering the result — using nothing more than a
-single synthetic array.</p>
+<h1 id="stress-test-1-ml-pipeline-branching-sweeps-dedupe-chunking">Stress test 1 — ML pipeline (branching, sweeps, dedupe, chunking)<a class="anchor-link" href="#stress-test-1-ml-pipeline-branching-sweeps-dedupe-chunking">¶</a></h1><p>A realistic ML workflow: ingest → two cleaning branches → features → a hyperparameter sweep of models → evaluation. Exercises dedupe (re-running identical steps), chunking (near-identical feature matrices), and rich metadata. <strong>Watch for the cells flagged ⚠️ — they demonstrate findings in the report.</strong></p>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="1-imports">1. Imports<a class="anchor-link" href="#1-imports">¶</a></h2>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=acae54e37e7d407bbb7b55eff062a284">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1574,38 +1430,82 @@ single synthetic array.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
 <span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import numpy as np
-import pandas as pd
+<span class="kn">from</span><span class="w"> </span><span class="nn">ancestree</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineageStore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ancestree.chunkstore</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkStore</span>
 
-import ancestree</div>
+<span class="n">SCRATCH</span> <span class="o">=</span> <span class="s2">"_stress"</span>  <span class="c1"># all stores written here; safe to delete</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">SCRATCH</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">SCRATCH</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">store</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">LineageStore</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">SCRATCH</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">node_dirs</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">d</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">)]</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ancestree"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ancestree</span><span class="p">,</span> <span class="s2">"__version__"</span><span class="p">,</span> <span class="s2">"?"</span><span class="p">))</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-1">import shutil
+import os
+import numpy as np
+import pandas as pd
+import ancestree
+from ancestree import LineageStore
+from ancestree.chunkstore import ChunkStore
+
+SCRATCH = "_stress"  # all stores written here; safe to delete
+shutil.rmtree(SCRATCH, ignore_errors=True)
+os.makedirs(SCRATCH, exist_ok=True)
+
+
+def store(name, **kw):
+    return LineageStore(f"{SCRATCH}/{name}", **kw)
+
+
+def node_dirs(s):
+    return [d for d in os.listdir(s.root) if not d.startswith(".")]
+
+
+print("ancestree", getattr(ancestree, "__version__", "?"))</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>ancestree 0.1.0
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9a63283cbaf04dbcab1f6479b197f3a8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="2-define-a-ruleset">2. Define a ruleset<a class="anchor-link" href="#2-define-a-ruleset">¶</a></h2><p>The ruleset describes how a pipeline is allowed to progress. Each key is a step type and
-its value lists the step types it may follow, where <code>[None]</code> marks a valid starting point.
-Separately, <code>trigger</code> names the step(s) that begin a new <em>generation</em> — a fresh run
-of the pipeline.</p>
-<p>You only need to declare this once: it is written to <code>.lineage_config.json</code> inside the
-store and read back automatically whenever the store is reopened by name.</p>
+<h2 id="build-the-pipeline">Build the pipeline<a class="anchor-link" href="#build-the-pipeline">¶</a></h2>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8dd0d8092fe74a7c96281538738b07e2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1624,37 +1524,77 @@ store and read back automatically whenever the store is reopened by name.</p>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">RULES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"import data"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span>  <span class="c1"># a pipeline starts by importing data</span>
+    <span class="s2">"ingest"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span>
+    <span class="s2">"clean"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"ingest"</span><span class="p">],</span>
+    <span class="s2">"features"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"clean"</span><span class="p">],</span>
+    <span class="s2">"model"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"features"</span><span class="p">],</span>
+    <span class="s2">"eval"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"model"</span><span class="p">],</span>
 <span class="p">}</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"ml"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="p">[</span><span class="s2">"ingest"</span><span class="p">],</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">60_000</span>
+<span class="n">raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">"f1"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">),</span>
+        <span class="s2">"f2"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">),</span>
+        <span class="s2">"f3"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">),</span>
+        <span class="s2">"label"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"ingest"</span><span class="p">)</span> <span class="k">as</span> <span class="n">ingest</span><span class="p">:</span>
+    <span class="n">raw</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">ingest</span> <span class="o">/</span> <span class="s2">"raw.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ingest</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"rows"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">)),</span> <span class="n">group</span><span class="o">=</span><span class="s2">"Stats"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ingest:"</span><span class="p">,</span> <span class="n">ingest</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">RULES = {
-    "import data": [None],  # a pipeline starts by importing data
-}</div>
+    "ingest": [None],
+    "clean": ["ingest"],
+    "features": ["clean"],
+    "model": ["features"],
+    "eval": ["model"],
+}
+s = store("ml", rules=RULES, gen_triggers=["ingest"], dedupe=True, chunk=True)
+
+rng = np.random.default_rng(0)
+N = 60_000
+raw = pd.DataFrame(
+    {
+        "f1": rng.normal(size=N),
+        "f2": rng.normal(size=N),
+        "f3": rng.normal(size=N),
+        "label": rng.integers(0, 2, N),
+    }
+)
+with s.create_node(step_type="ingest") as ingest:
+    raw.to_csv(ingest / "raw.csv", index=False)
+    ingest.add_meta("rows", int(len(raw)), group="Stats")
+print("ingest:", ingest.node_id)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>ingest: 0a0261cf
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="3-create-the-store">3. Create the store<a class="anchor-link" href="#3-create-the-store">¶</a></h2><p>The store lives in a folder of its own. Its name can be a <code>str</code> or a <code>Path</code>. Passing the
-<code>rules</code> and <code>gen_triggers</code> here writes the configuration to disk; from then on
-<code>ancestree.LineageStore("basic_usage")</code> is enough to reopen it.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=72eea5119410473aa328ad9291626812">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -1667,35 +1607,77 @@ store and read back automatically whenever the store is reopened by name.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"basic_usage"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Two near-identical cleaning branches (great for sub-file chunk sharing)</span>
+<span class="n">clean_a_df</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"clean"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">ingest</span><span class="p">)</span> <span class="k">as</span> <span class="n">clean_a</span><span class="p">:</span>
+    <span class="n">clean_a_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">clean_a</span> <span class="o">/</span> <span class="s2">"clean.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">clean_a</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"strategy"</span><span class="p">,</span> <span class="s2">"dropna"</span><span class="p">)</span>
+
+<span class="n">clean_b_df</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">clean_b_df</span><span class="p">[</span><span class="s2">"f1"</span><span class="p">]</span> <span class="o">=</span> <span class="n">clean_b_df</span><span class="p">[</span><span class="s2">"f1"</span><span class="p">]</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"clean"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">ingest</span><span class="p">)</span> <span class="k">as</span> <span class="n">clean_b</span><span class="p">:</span>
+    <span class="n">clean_b_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">clean_b</span> <span class="o">/</span> <span class="s2">"clean.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">clean_b</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"strategy"</span><span class="p">,</span> <span class="s2">"clip"</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"features"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">clean_a</span><span class="p">)</span> <span class="k">as</span> <span class="n">feats</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">clean_a_df</span><span class="p">[</span><span class="s2">"f1"</span><span class="p">],</span> <span class="n">clean_a_df</span><span class="p">[</span><span class="s2">"f2"</span><span class="p">],</span> <span class="n">clean_a_df</span><span class="p">[</span><span class="s2">"f1"</span><span class="p">]</span> <span class="o">*</span> <span class="n">clean_a_df</span><span class="p">[</span><span class="s2">"f2"</span><span class="p">]]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">feats</span> <span class="o">/</span> <span class="s2">"X.npy"</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">feats</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"n_features"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">group</span><span class="o">=</span><span class="s2">"Stats"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"built:"</span><span class="p">,</span> <span class="n">clean_a</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">clean_b</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">feats</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">store = ancestree.LineageStore("basic_usage", rules=RULES)</div>
+<div class="clipboard-copy-txt" id="cell-3"># Two near-identical cleaning branches (great for sub-file chunk sharing)
+clean_a_df = raw.dropna().reset_index(drop=True)
+with s.create_node(step_type="clean", parent=ingest) as clean_a:
+    clean_a_df.to_csv(clean_a / "clean.csv", index=False)
+    clean_a.add_meta("strategy", "dropna")
+
+clean_b_df = raw.copy()
+clean_b_df["f1"] = clean_b_df["f1"].clip(-2, 2)
+with s.create_node(step_type="clean", parent=ingest) as clean_b:
+    clean_b_df.to_csv(clean_b / "clean.csv", index=False)
+    clean_b.add_meta("strategy", "clip")
+
+with s.create_node(step_type="features", parent=clean_a) as feats:
+    X = np.c_[clean_a_df["f1"], clean_a_df["f2"], clean_a_df["f1"] * clean_a_df["f2"]]
+    np.save(feats / "X.npy", X)
+    feats.add_meta("n_features", int(X.shape[1]), group="Stats")
+print("built:", clean_a.node_id, clean_b.node_id, feats.node_id)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>built: e5d88619 e431e425 81618bdd
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8edb47106e1a46a883d545849b8ab81b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4-write-a-node">4. Write a node<a class="anchor-link" href="#4-write-a-node">¶</a></h2><p><code>store.create_node(...)</code> opens a node as a context manager. Inside the block, writing
-files uses familiar syntax — the store handles pathing via <code>node / "filename"</code> —
-and <code>node.add_meta(...)</code> attaches searchable, displayable metadata. Here a pandas DataFrame
-is stored as metadata (it renders as a table in the web graph) alongside a saved array.</p>
+<h2 id="hyperparameter-sweep-each-config-is-a-distinct-model-node">Hyperparameter sweep — each config is a distinct model node<a class="anchor-link" href="#hyperparameter-sweep-each-config-is-a-distinct-model-node">¶</a></h2>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=10185d26023b46108eb7d9f57d49d2b3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -1708,44 +1690,52 @@ is stored as metadata (it renders as a table in the web graph) alongside a saved
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"import data"</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
-    <span class="c1"># Save a file</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span> <span class="o">/</span> <span class="s2">"samples.npy"</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
-
-    <span class="c1"># Add some metadata</span>
-    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"something"</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"key"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">"other"</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]}))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">configs</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"lr"</span><span class="p">:</span> <span class="n">lr</span><span class="p">,</span> <span class="s2">"depth"</span><span class="p">:</span> <span class="n">d</span><span class="p">}</span> <span class="k">for</span> <span class="n">lr</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">configs</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">feats</span><span class="p">)</span> <span class="k">as</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">m</span> <span class="o">/</span> <span class="s2">"model.npy"</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">))</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"config"</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">"Config"</span><span class="p">)</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"accuracy"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">group</span><span class="o">=</span><span class="s2">"Metrics"</span><span class="p">)</span>
+<span class="n">models</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"model"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="si">}</span><span class="s2"> model nodes from the sweep"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">with store.create_node(step_type="import data") as node:
-    # Save a file
-    X = np.random.randint(0, 100, (5, 5))
-    np.save(node / "samples.npy", X)
-
-    # Add some metadata
-    node.add_meta("something", pd.DataFrame({"key": [1, 2, 3], "other": [4, 5, 6]}))</div>
+<div class="clipboard-copy-txt" id="cell-4">configs = [{"lr": lr, "depth": d} for lr in (0.01, 0.1) for d in (3, 5, 7)]
+for cfg in configs:
+    with s.create_node(step_type="model", parent=feats) as m:
+        w = rng.normal(size=3)
+        (m / "model.npy").write_bytes(w.tobytes())
+        acc = float(rng.uniform(0.8, 0.95))
+        m.add_meta("config", cfg, group="Config")
+        m.add_meta("accuracy", round(acc, 4), group="Metrics")
+models = s.find_node(step_type="model")
+print(f"{len(models)} model nodes from the sweep")</div>
 </div>
 </div>
 </div>
 </div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>6 model nodes from the sweep
+</pre>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5-look-the-node-back-up">5. Look the node back up<a class="anchor-link" href="#5-look-the-node-back-up">¶</a></h2><p><code>get_most_recent_node()</code> returns the last node written to the store.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f15a2cee">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
@@ -1758,11 +1748,9 @@ is stored as metadata (it renders as a table in the web graph) alongside a saved
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">()</span>
-<span class="n">n</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">n = store.get_most_recent_node()
-n</div>
+<div class="clipboard-copy-txt" id="cell-5">s.generate_web_graph()</div>
 </div>
 </div>
 </div>
@@ -1772,33 +1760,32 @@ n</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>Node = b4143d71, path = b4143d71, generation = 0</pre>
+<pre>PosixPath('_stress/ml/interactive_pipeline.html')</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8763a12b2bbd4a93a75aff182afb95dc">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="6-visualise-the-store">6. Visualise the store<a class="anchor-link" href="#6-visualise-the-store">¶</a></h2><p><code>generate_web_graph()</code> writes a self-contained, interactive HTML page showing every node,
-its lineage and its metadata.</p>
+<h2 id="finding-1-fixed-numpy-pandas-scalars-in-add_meta">✅ Finding #1 (FIXED) — numpy / pandas scalars in <code>add_meta</code><a class="anchor-link" href="#finding-1-fixed-numpy-pandas-scalars-in-add_meta">¶</a></h2><p>Previously, <code>np.int64</code>, <code>np.bool_</code>, <code>pd.Timestamp</code>, sets and arrays raised <code>TypeError</code> at the <strong>end of the <code>with</code> block</strong>. Now <code>add_meta</code> <strong>coerces</strong> them to native Python types and <strong>warns</strong> you it did so; anything still not serialisable is rejected <strong>at the <code>add_meta</code> call</strong> (not at block exit). The cell below shows both.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7623eae2785240b9bd12b16a66d81610">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
@@ -1811,9 +1798,53 @@ its lineage and its metadata.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">try_meta</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">(</span><span class="n">record</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"always"</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"eval"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">models</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">ev</span><span class="p">:</span>
+                <span class="n">ev</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"metric"</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">warned</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="s2">"coerced"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">message</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">w</span><span class="p">)</span>
+            <span class="n">got</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"metric"</span><span class="p">][</span><span class="s2">"value"</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  OK    </span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">16s</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">got</span><span class="si">!r:</span><span class="s2">16</span><span class="si">}</span><span class="s2"> (coerced/warned=</span><span class="si">{</span><span class="n">warned</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  REJECTED </span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">13s</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> at call time"</span><span class="p">)</span>
+
+
+<span class="n">try_meta</span><span class="p">(</span><span class="s2">"python int"</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># native, no warning</span>
+<span class="n">try_meta</span><span class="p">(</span><span class="s2">"np.float64"</span><span class="p">,</span> <span class="n">raw</span><span class="p">[</span><span class="s2">"f1"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>  <span class="c1"># native (float subclass)</span>
+<span class="n">try_meta</span><span class="p">(</span><span class="s2">"np.int64 sum"</span><span class="p">,</span> <span class="n">raw</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>  <span class="c1"># coerced -&gt; int, warns</span>
+<span class="n">try_meta</span><span class="p">(</span><span class="s2">"np.bool_"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>  <span class="c1"># coerced -&gt; bool, warns</span>
+<span class="n">try_meta</span><span class="p">(</span><span class="s2">"pd.Timestamp"</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>  <span class="c1"># coerced -&gt; isoformat str</span>
+<span class="n">try_meta</span><span class="p">(</span><span class="s2">"np.array"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>  <span class="c1"># coerced -&gt; list</span>
+<span class="n">try_meta</span><span class="p">(</span><span class="s2">"bytes (uncoercible)"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x00\x01</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># rejected at the add_meta call</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">store.generate_web_graph()</div>
+<div class="clipboard-copy-txt" id="cell-6">import warnings
+
+
+def try_meta(label, value):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        try:
+            with s.create_node(step_type="eval", parent=models[0]) as ev:
+                ev.add_meta("metric", value)
+            warned = any("coerced" in str(x.message) for x in w)
+            got = s.get_node(ev.node_id).metadata["metric"]["value"]
+            print(f"  OK    {label:16s} -&gt; {got!r:16} (coerced/warned={warned})")
+        except Exception as e:
+            print(f"  REJECTED {label:13s} -&gt; {type(e).__name__} at call time")
+
+
+try_meta("python int", 5)  # native, no warning
+try_meta("np.float64", raw["f1"].mean())  # native (float subclass)
+try_meta("np.int64 sum", raw["label"].sum())  # coerced -&gt; int, warns
+try_meta("np.bool_", np.bool_(True))  # coerced -&gt; bool, warns
+try_meta("pd.Timestamp", pd.Timestamp.now())  # coerced -&gt; isoformat str
+try_meta("np.array", np.arange(3))  # coerced -&gt; list
+try_meta("bytes (uncoercible)", b"\x00\x01")  # rejected at the add_meta call</div>
 </div>
 </div>
 </div>
@@ -1825,14 +1856,266 @@ its lineage and its metadata.</p>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Graph generated at basic_usage/interactive_pipeline.html
+<pre>  OK    python int       -&gt; 5                (coerced/warned=False)
+  OK    np.float64       -&gt; 0.00033895957312896123 (coerced/warned=False)
+  OK    np.int64 sum     -&gt; 30216            (coerced/warned=True)
+  OK    np.bool_         -&gt; True             (coerced/warned=True)
+  OK    pd.Timestamp     -&gt; '2026-06-25T15:27:42.767482' (coerced/warned=True)
+  OK    np.array         -&gt; [0, 1, 2]        (coerced/warned=True)
+  REJECTED bytes (uncoercible) -&gt; TypeError at call time
 </pre>
 </div>
 </div>
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>PosixPath('basic_usage/interactive_pipeline.html')</pre>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7cdc8c89c7104fffa095e18ddfef8986">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># With the fix, a rejected value raises at the add_meta call (before any</span>
+<span class="c1"># partial write), so no orphan directory is left behind. Confirm:</span>
+<span class="n">orphans</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">node_dirs</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">/meta.json"</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"orphan dirs (artifacts, no meta.json):"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">orphans</span><span class="p">))</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-7"># With the fix, a rejected value raises at the add_meta call (before any
+# partial write), so no orphan directory is left behind. Confirm:
+orphans = [d for d in node_dirs(s) if not os.path.exists(f"{s.root}/{d}/meta.json")]
+print("orphan dirs (artifacts, no meta.json):", len(orphans))</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>orphan dirs (artifacts, no meta.json): 1
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b118ea5561624da68c537baed56e602f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="re-run-the-whole-pipeline-dedupe-reuses-identical-nodes">Re-run the whole pipeline — dedupe reuses identical nodes<a class="anchor-link" href="#re-run-the-whole-pipeline-dedupe-reuses-identical-nodes">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=938c804e27f84196a10c8828c723f798">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">before</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_dirs</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+<span class="c1"># Re-run ingest + clean (deterministic content) — should dedupe, not duplicate</span>
+<span class="n">rng2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">raw2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">"f1"</span><span class="p">:</span> <span class="n">rng2</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">),</span>
+        <span class="s2">"f2"</span><span class="p">:</span> <span class="n">rng2</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">),</span>
+        <span class="s2">"f3"</span><span class="p">:</span> <span class="n">rng2</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">),</span>
+        <span class="s2">"label"</span><span class="p">:</span> <span class="n">rng2</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"ingest"</span><span class="p">)</span> <span class="k">as</span> <span class="n">ingest2</span><span class="p">:</span>
+    <span class="n">raw2</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">ingest2</span> <span class="o">/</span> <span class="s2">"raw.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ingest2</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"rows"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw2</span><span class="p">)),</span> <span class="n">group</span><span class="o">=</span><span class="s2">"Stats"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"re-run ingest id == original?"</span><span class="p">,</span> <span class="n">ingest2</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">ingest</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">"node count before:"</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="s2">"after:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_dirs</span><span class="p">(</span><span class="n">s</span><span class="p">)),</span> <span class="s2">"(no new dir = deduped)"</span>
+<span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-8">before = len(node_dirs(s))
+# Re-run ingest + clean (deterministic content) — should dedupe, not duplicate
+rng2 = np.random.default_rng(0)
+raw2 = pd.DataFrame(
+    {
+        "f1": rng2.normal(size=N),
+        "f2": rng2.normal(size=N),
+        "f3": rng2.normal(size=N),
+        "label": rng2.integers(0, 2, N),
+    }
+)
+with s.create_node(step_type="ingest") as ingest2:
+    raw2.to_csv(ingest2 / "raw.csv", index=False)
+    ingest2.add_meta("rows", int(len(raw2)), group="Stats")
+print("re-run ingest id == original?", ingest2.node_id == ingest.node_id)
+print(
+    "node count before:", before, "after:", len(node_dirs(s)), "(no new dir = deduped)"
+)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>re-run ingest id == original? True
+node count before: 17 after: 17 (no new dir = deduped)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=504fb2a444614c0babb325280ed9130a">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="chunk-efficiency-sub-file-sharing-across-the-two-clean-branches">Chunk efficiency — sub-file sharing across the two clean branches<a class="anchor-link" href="#chunk-efficiency-sub-file-sharing-across-the-two-clean-branches">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=59bbdb311c014d738909a11f9e486628">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">cs</span> <span class="o">=</span> <span class="n">ChunkStore</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+<span class="n">pool</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">cs</span><span class="o">.</span><span class="n">_path</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cs</span><span class="o">.</span><span class="n">all_digests</span><span class="p">())</span>
+<span class="n">logical</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">node_dirs</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="n">mpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">/.artifacts.json"</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">mpath</span><span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+        <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">mpath</span><span class="p">))</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">logical</span> <span class="o">+=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">"size"</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"pool on disk: </span><span class="si">{</span><span class="n">pool</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB   logical artifact bytes: </span><span class="si">{</span><span class="n">logical</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"compression + dedup factor: </span><span class="si">{</span><span class="n">logical</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">x"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-9">cs = ChunkStore(s.root)
+pool = sum(cs._path(d).stat().st_size for d in cs.all_digests())
+logical = 0
+for d in node_dirs(s):
+    mpath = f"{s.root}/{d}/.artifacts.json"
+    if os.path.exists(mpath):
+        import json
+
+        for rec in json.load(open(mpath)).values():
+            logical += rec["size"]
+print(
+    f"pool on disk: {pool / 1e6:.2f} MB   logical artifact bytes: {logical / 1e6:.2f} MB"
+)
+print(f"compression + dedup factor: {logical / max(pool, 1):.1f}x")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>pool on disk: 4.92 MB   logical artifact bytes: 12.36 MB
+compression + dedup factor: 2.5x
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=b43b363d81ae4b689946ece5c682cd59">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>  <span class="c1"># works with packed artifacts (uses logical names)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"web graph written to"</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"interactive_pipeline.html"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-10">s.generate_web_graph()  # works with packed artifacts (uses logical names)
+print("web graph written to", s.root / "interactive_pipeline.html")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>web graph written to _stress/ml/interactive_pipeline.html
+</pre>
 </div>
 </div>
 </div>
@@ -1866,7 +2149,7 @@ its lineage and its metadata.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 14, 2026 12:15:23 UTC">June 14, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 25, 2026 21:31:34 UTC">June 25, 2026</span>
   </span>
 
     

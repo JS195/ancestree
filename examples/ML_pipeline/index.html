@@ -18,7 +18,7 @@
         <link rel="prev" href="../basic_usage/">
       
       
-        <link rel="next" href="../timing_benchmark/">
+        <link rel="next" href="../dedupe/">
       
       
         
@@ -558,6 +558,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dedupe/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deduplicating identical nodes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1611,7 +1639,7 @@ import ancestree</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/Users/js/Documents/coding_projects/ancestree/ancestree-venv/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+<pre>/Users/js/Documents/coding_projects/de-janked/test-venv/lib/python3.12/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
   from .autonotebook import tqdm as notebook_tqdm
 </pre>
 </div>
@@ -1667,7 +1695,9 @@ is enough.</p>
 <span class="p">}</span>
 <span class="n">triggers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"scaling"</span><span class="p">,</span> <span class="s2">"embedding"</span><span class="p">,</span> <span class="s2">"clustering"</span><span class="p">]</span>
 
-<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"../assets/demo"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">)</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span>
+    <span class="s2">"../assets/demo"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="n">triggers</span><span class="p">,</span> <span class="n">dedupe</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">rules = {
     "raw data": [None],  # a pipeline starts from raw data
@@ -1677,7 +1707,9 @@ is enough.</p>
 }
 triggers = ["scaling", "embedding", "clustering"]
 
-store = ancestree.LineageStore("../assets/demo", rules=rules, gen_triggers=triggers)</div>
+store = ancestree.LineageStore(
+    "../assets/demo", rules=rules, gen_triggers=triggers, dedupe=True, chunk=True
+)</div>
 </div>
 </div>
 </div>
@@ -1853,17 +1885,17 @@ for (s_name, e_type), (e_node, embedding) in embed_nodes.items():
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/Users/js/Documents/coding_projects/ancestree/ancestree-venv/lib/python3.11/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
+<pre>/Users/js/Documents/coding_projects/de-janked/test-venv/lib/python3.12/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
   warn(
-/Users/js/Documents/coding_projects/ancestree/ancestree-venv/lib/python3.11/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
+/Users/js/Documents/coding_projects/de-janked/test-venv/lib/python3.12/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
   warn(
-/Users/js/Documents/coding_projects/ancestree/ancestree-venv/lib/python3.11/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
+/Users/js/Documents/coding_projects/de-janked/test-venv/lib/python3.12/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
   warn(
-/Users/js/Documents/coding_projects/ancestree/ancestree-venv/lib/python3.11/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
+/Users/js/Documents/coding_projects/de-janked/test-venv/lib/python3.12/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
   warn(
-/Users/js/Documents/coding_projects/ancestree/ancestree-venv/lib/python3.11/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
+/Users/js/Documents/coding_projects/de-janked/test-venv/lib/python3.12/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
   warn(
-/Users/js/Documents/coding_projects/ancestree/ancestree-venv/lib/python3.11/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
+/Users/js/Documents/coding_projects/de-janked/test-venv/lib/python3.12/site-packages/sklearn/cluster/_hdbscan/hdbscan.py:722: FutureWarning: The default value of `copy` will change from False to True in 1.10. Explicitly set a value for `copy` to silence this warning.
   warn(
 </pre>
 </div>
@@ -1972,19 +2004,23 @@ bad_nodes</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ipykernel_5772/3795479459.py:2: UserWarning: Predicate for 'CH_score' raised TypeError: '&lt;' not supported between instances of 'NoneType' and 'int'. Node treated as non-matching.
-  bad_nodes = store.find_node(CH_score=lambda x: x &lt; 1000)
+<pre>/Users/js/Documents/coding_projects/de-janked/test-venv/lib/python3.12/site-packages/IPython/core/interactiveshell.py:3748: UserWarning: Predicate for 'CH_score' raised TypeError: '&lt;' not supported between instances of 'NoneType' and 'int'. Node treated as non-matching.
+  exec(code_obj, self.user_global_ns, self.user_ns)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>[Node = 6cbfec56, path = 6cbfec56, generation = 3,
- Node = d84b41d2, path = d84b41d2, generation = 3,
- Node = 85bc7465, path = 85bc7465, generation = 3,
- Node = 6193f9d9, path = 6193f9d9, generation = 3,
- Node = db1e745f, path = db1e745f, generation = 3]</pre>
+<pre>[Node = 2d3e1947, path = 2d3e1947, generation = 3,
+ Node = c08125b5, path = c08125b5, generation = 3,
+ Node = 86a52cc0, path = 86a52cc0, generation = 3,
+ Node = 85769047, path = 85769047, generation = 3,
+ Node = bded3ca1, path = bded3ca1, generation = 3,
+ Node = 8eaaa408, path = 8eaaa408, generation = 3,
+ Node = 10b06538, path = 10b06538, generation = 3,
+ Node = dbbb57ad, path = dbbb57ad, generation = 3,
+ Node = 8dc2e76b, path = 8dc2e76b, generation = 3]</pre>
 </div>
 </div>
 </div>
@@ -2008,7 +2044,7 @@ Unpacking a dict keeps things tidy when the query is assembled programmatically.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
@@ -2041,10 +2077,10 @@ nodes_of_interest</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[ ]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>[Node = 3bf48a9c, path = 3bf48a9c, generation = 2,
- Node = 8308c358, path = 8308c358, generation = 2]</pre>
+<pre>[Node = 7fbf1ed9, path = 7fbf1ed9, generation = 2,
+ Node = 9da5ec69, path = 9da5ec69, generation = 2]</pre>
 </div>
 </div>
 </div>
@@ -2069,7 +2105,7 @@ data all the way down to the final clustering image.</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
@@ -2104,10 +2140,10 @@ for n in nodes_in_lineage:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>[PosixPath('1341e832/data.csv')]
-[PosixPath('414b65ad/scaled.csv')]
-[PosixPath('8308c358/map.npy')]
-[PosixPath('db1e745f/clustering.png')]
+<pre>[PosixPath('/Users/js/Documents/coding_projects/de-janked/docs/assets/demo/.cache/45228-ebbd112d/80bc18e4/data.csv')]
+[]
+[]
+[]
 </pre>
 </div>
 </div>
@@ -2214,7 +2250,7 @@ for n in nodes_in_lineage:
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 17, 2026 00:56:33 UTC">June 17, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 25, 2026 21:31:34 UTC">June 25, 2026</span>
   </span>
 
     
