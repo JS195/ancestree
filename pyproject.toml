@@ -46,7 +46,6 @@ Documentation = "https://js195.github.io/ancestree/"
 package-dir = {"" = "src"}
 packages = [
   "ancestree",
-  "ancestree.assets",
   "ancestree.db",
   "ancestree.domain",
   "ancestree.ingest",
@@ -55,7 +54,6 @@ packages = [
 
 [tool.setuptools.package-data]
 "ancestree" = ["py.typed"]
-"ancestree.assets" = ["*"]
 "ancestree.web" = ["assets/*"]
 
 [tool.ruff]

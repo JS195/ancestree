@@ -13,9 +13,9 @@ class AncestreeError(Exception):
     """Base class for every deliberate ancestree error."""
 
 
-class InvalidTransition(AncestreeError, ValueError):
+class InvalidTransition(AncestreeError):
     """A step_type is not allowed to follow its parents under the store's
-    rules. Also a ValueError, matching what 0.1.x raised here."""
+    rules."""
 
 
 class NodeNotFound(AncestreeError):

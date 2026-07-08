@@ -551,6 +551,46 @@ class LineageStore:
         """
         return compact_chunks(self._manager)
 
+    def export(self, dest: Optional[Union[Path, str]] = None) -> Path:
+        """Writes grep-able JSON sidecars: one ``meta.json`` per node under
+        ``<dest>/<node_id>/`` (default ``<root>/export``), holding the
+        node's structural facts, provenance, metadata envelopes and
+        artifact digests. The database remains the source of truth — this
+        is the file-portability escape hatch (AD9), so lineage stays
+        legible to grep even if ancestree is uninstalled tomorrow.
+
+        Returns:
+            The export directory.
+        """
+        dest_dir = Path(dest) if dest is not None else self.root / "export"
+        for node_id in self._metadata.all_node_ids():
+            record = self._metadata.get(node_id)
+            if record is None:
+                continue
+            document = {
+                "node_id": record.node_id,
+                "step_type": record.step_type,
+                "generation": record.generation,
+                "parent_id": list(record.parent_ids),
+                "created_utc": record.created_utc,
+                "healthy": record.healthy,
+                "duration_s": record.duration_s,
+                "size_bytes": record.size_bytes,
+                "content_hash": record.content_hash,
+                "provenance": self._to_node(record).provenance,
+                "metadata": self._metadata_envelopes(node_id),
+                "artifacts": {
+                    relpath: {"size": artifact.size, "sha256": artifact.sha256}
+                    for relpath, artifact in sorted(
+                        self._chunks.artifact_manifest(node_id).items()
+                    )
+                },
+            }
+            out = dest_dir / node_id / "meta.json"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(json.dumps(document, indent=2))
+        return dest_dir
+
     # ------------------------------------------------------------------
     # Visualisation
     # ------------------------------------------------------------------
