@@ -11,7 +11,8 @@ See REBUILD_BLUEPRINT.md section 5.3 (Phase 2, issue #13).
 from __future__ import annotations
 
 from datetime import date, datetime, time
-from typing import Any, Optional, Tuple
+from pathlib import PurePosixPath
+from typing import Any, Iterable, List, Optional, Tuple
 
 
 def to_jsonable(value: Any) -> Tuple[Any, bool]:
@@ -96,3 +97,23 @@ def format_timestamp(iso_str: Optional[str]) -> str:
         return datetime.fromisoformat(iso_str).strftime("%d %b %Y, %H:%M:%S")
     except ValueError:
         return iso_str
+
+
+def is_pandas(obj: Any) -> bool:
+    """True when `obj` walks and quacks like a pandas DataFrame. Detection
+    is by duck typing so pandas stays an optional dependency."""
+    return type(obj).__name__ == "DataFrame" and hasattr(obj, "to_dict")
+
+
+def filter_relpaths(relpaths: Iterable[str], contains: str = "*") -> List[str]:
+    """The artifact-name matcher shared by every artifacts() surface: a
+    pattern with wildcards is a glob; anything else also matches as a
+    case-insensitive substring of the filename (0.1.x semantics)."""
+    pattern = contains if ("*" in contains or "?" in contains) else f"*{contains}*"
+    lowered = contains.lower()
+    matched: List[str] = []
+    for relpath in relpaths:
+        name = relpath.rsplit("/", 1)[-1]
+        if PurePosixPath(relpath).match(pattern) or lowered in name.lower():
+            matched.append(relpath)
+    return matched

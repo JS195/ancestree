@@ -535,9 +535,9 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - **Exit:** `test_chunking.py` (exact-dedup parts) passes; artifacts round-trip through SQLite; round-trip property tests (random data & mutations) green.
 
 ### Phase 4 — Domain decomposition & facade
-- [ ] `domain/{metadata,rules,node}.py`, `store.py`.
-- [ ] Wire `create_node`, context-manager, `add_meta`, `artifacts`, `__truediv__`.
-- [ ] `store.sql()` read-only escape hatch (`query_only` connection) and `store.stats()` (counts, sizes, dedup ratio).
+- [x] `domain/{metadata,rules,node}.py`, `store.py`.
+- [x] Wire `create_node`, context-manager, `add_meta`, `artifacts`, `__truediv__`.
+- [x] `store.sql()` read-only escape hatch (`query_only` connection) and `store.stats()` (counts, sizes, dedup ratio).
 - **Exit:** the test suite — rewritten to the redesigned API ([§11](#11-public-api-and-migration)) — is green against the new backend (`test_store_api.py`, `test_models.py`, `test_node_creation_edge_cases.py`).
 
 ### Phase 5 — Node dedup & maintenance
