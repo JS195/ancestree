@@ -518,12 +518,13 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - **Exit:** skeleton imports; CI green.
 
 ### Phase 1 — Persistence foundation
-- [ ] `db/connection.py` — pragmas, per-thread/PID connections, write lock.
-- [ ] `db/schema.py` — DDL from [§6](#6-data-model--sqlite-schema), `ensure_schema`, `migrate` stub.
+- [x] `db/connection.py` — pragmas, per-thread/PID connections, write lock.
+- [x] `db/schema.py` — DDL from [§6](#6-data-model--sqlite-schema), `ensure_schema`, `migrate` stub.
+- [x] `errors.py` — pulled forward from Phase 2 (`SchemaError` backs schema verification).
 - **Exit:** create/open a `.db`, schema verified, connection & fork-safety unit tests pass.
 
 ### Phase 2 — Metadata store & queries
-- [ ] `errors.py`, `util.py`, `domain/provenance.py`.
+- [ ] `util.py`, `domain/provenance.py` (`errors.py` landed with Phase 1).
 - [ ] `db/metadata_store.py` — `add_node`, `find`, `lineage` (recursive CTE), `children`, `most_recent`, `find_by_hash`, `remove`.
 - **Exit:** query/lineage tests ported (`test_querying_and_search.py`, `test_dag.py`) pass against SQLite.
 
