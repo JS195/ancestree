@@ -556,10 +556,10 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - **Exit:** `test_vis.py` green; generated HTML opens offline with working artifact links.
 
 ### Phase 8 — Local live server
-- [ ] `web/server.py` — `host_live_graph()`; SQL-backed endpoints (`/api/graph`, `/api/node`, `/api/search`, `/api/diff`, `/api/artifact`); on-demand artifact reassembly.
-- [ ] Live front end — thin client fetching from the API; no client-side query engine (AD11).
-- [ ] **Explorer parity (gap review):** the 0.1.x file's README-marketed search, node **diff** and sortable **runs table** live HERE now — the static export stays view-only, so the live server is where that parity must land.
-- [ ] `__main__.py` CLI with the `serve` subcommand (`python -m ancestree serve <root>`).
+- [x] `web/server.py` — `host_live_graph()`; SQL-backed endpoints (`/api/graph`, `/api/node`, `/api/search`, `/api/diff`, `/api/runs`, `/api/artifact`); on-demand artifact reassembly.
+- [x] Live front end — thin client fetching from the API; no client-side query engine (AD11).
+- [x] **Explorer parity (gap review):** the 0.1.x file's README-marketed search, node **diff** and sortable **runs table** live HERE now — the static export stays view-only, so the live server is where that parity must land.
+- [x] `__main__.py` CLI with the `serve` subcommand (`python -m ancestree serve <root>`).
 - **Exit:** server serves the skeleton and streams search/diff/detail via SQL on `127.0.0.1`; runs-table and diff render from API data; smoke tests pass.
 
 ### Phase 9 — Release polish

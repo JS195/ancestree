@@ -119,6 +119,9 @@ class LineageStore:
         if self._closed:
             return
         self._closed = True
+        live_server = getattr(self, "_live_server", None)
+        if live_server is not None:
+            live_server.close()
         self._chunks.clear_cache()
         self._manager.close()
 
@@ -611,6 +614,31 @@ class LineageStore:
         ``<root>/interactive_pipeline.html``; returns the written path.
         """
         return export_static(self, dest=dest, include_artifacts=include_artifacts)
+
+    def host_live_graph(self, port: int = 0, block: bool = True) -> str:
+        """Serves the searchable explorer on ``127.0.0.1`` and returns its
+        URL. Search, node diff and the runs table are answered by the
+        server running SQL — the browser is a thin client (AD11).
+
+        Blocking by default (Ctrl+C stops it — the CLI workflow). With
+        ``block=False`` the server runs in the background until the store
+        is closed.
+        """
+        from .web.server import start_server
+
+        handle = start_server(self, port=port)
+        print(f"Ancestree explorer: {handle.url}  (Ctrl+C to stop)")
+        if not block:
+            self._live_server = handle  # closed by store.close()
+            return handle.url
+        try:
+            while True:
+                handle._thread.join(1)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            handle.close()
+        return handle.url
 
     # ------------------------------------------------------------------
     # Power tools
