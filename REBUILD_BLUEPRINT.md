@@ -524,8 +524,8 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - **Exit:** create/open a `.db`, schema verified, connection & fork-safety unit tests pass.
 
 ### Phase 2 — Metadata store & queries
-- [ ] `util.py`, `domain/provenance.py` (`errors.py` landed with Phase 1).
-- [ ] `db/metadata_store.py` — `add_node`, `find`, `lineage` (recursive CTE), `children`, `most_recent`, `find_by_hash`, `remove`.
+- [x] `util.py`, `domain/provenance.py` (`errors.py` landed with Phase 1).
+- [x] `db/metadata_store.py` — `add_node`, `find`, `lineage` (recursive CTE), `children`, `most_recent`, `find_by_hash`, `remove`.
 - **Exit:** query/lineage tests ported (`test_querying_and_search.py`, `test_dag.py`) pass against SQLite.
 
 ### Phase 3 — CDC Layer 1, chunk store & sync packing
