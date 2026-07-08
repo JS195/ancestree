@@ -264,9 +264,12 @@ def test_stats_show_dedup(store: LineageStore) -> None:
     import random
 
     payload = random.Random(3).randbytes(300_000)
-    for _ in range(2):  # two nodes, identical artifact bytes
+    # Distinct metadata keeps the two nodes separate under node-level
+    # dedup (Phase 5); their identical bytes still share every chunk.
+    for run in range(2):
         with store.create_node(step_type="ingest") as node:
             (node / "same.bin").write_bytes(payload)
+            node.add_meta("run", run)
 
     stats = store.stats()
     assert stats["nodes"] == 2
