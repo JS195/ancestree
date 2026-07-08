@@ -6,6 +6,7 @@ crash semantics, rules and generations, the query vocabulary, persisted
 policy, and the sql/stats power tools.
 """
 
+import json
 import sqlite3
 from pathlib import Path
 
@@ -279,3 +280,33 @@ def test_stats_show_dedup(store: LineageStore) -> None:
     # The second copy cost no new chunks, so logical > stored.
     assert stats["dedup_ratio"] is not None and stats["dedup_ratio"] > 1.5
     assert stats["database_bytes"] > 0
+
+
+def test_find_by_parent_id_through_the_facade(store: LineageStore) -> None:
+    ingest = _ingest(store)
+    with store.create_node(step_type="clean", parent=ingest) as clean:
+        clean.add_meta("ok", True)
+    assert store.find(parent_id=[]) == [ingest]
+    assert [n.node_id for n in store.find(parent_id=[ingest.node_id])] == [
+        clean.node_id
+    ]
+
+
+def test_export_writes_grepable_sidecars(
+    store: LineageStore, tmp_path: Path
+) -> None:
+    _ingest(store)
+    node = store.latest(step_type="ingest")
+    assert node is not None
+
+    dest = store.export()
+    assert dest == tmp_path / "proj" / "export"
+    document = json.loads((dest / node.node_id / "meta.json").read_text())
+    assert document["step_type"] == "ingest"
+    assert document["healthy"] is True
+    assert document["metadata"]["rows"]["value"] == 1
+    assert "raw.csv" in document["artifacts"]
+    assert set(document["provenance"]) >= {"user", "git_commit"}
+
+    custom = store.export(dest=tmp_path / "sidecars")
+    assert (custom / node.node_id / "meta.json").exists()

@@ -285,19 +285,32 @@ class MetadataStore:
     def find(self, **filters: Any) -> List[str]:
         """The ids of nodes matching every filter, oldest first.
 
-        A filter key is either a node column (step_type, generation,
-        healthy, ...) or a user-metadata key. Non-callable values match by
-        equality in SQL; callable values run as Python predicates over the
-        SQL-narrowed candidates, receiving the stored value or None when
-        the key is absent (or not searchable). A raising predicate warns
-        and treats that node as non-matching. No filters returns every
-        node.
+        A filter key is a node column (step_type, generation, healthy,
+        ...), the special key ``parent_id`` (matched against the node's
+        ordered parent-id list, exactly as 0.1.x's flat index did — an
+        empty list matches roots), or a user-metadata key. Non-callable
+        values match by equality in SQL; callable values run as Python
+        predicates over the SQL-narrowed candidates, receiving the stored
+        value or None when the key is absent (or not searchable; a
+        ``parent_id`` predicate receives the list, empty for roots). A
+        raising predicate warns and treats that node as non-matching. No
+        filters returns every node.
         """
         column_eq: List[Tuple[str, Any]] = []
         metadata_eq: List[Tuple[str, Any]] = []
         predicates: List[Tuple[str, Callable[[Any], Any]]] = []
+        parent_eq: Optional[List[str]] = None
+        parent_filtering = False
         for key, value in filters.items():
-            if callable(value):
+            if key == "parent_id":
+                # Parents live in the edge table, not a column: matched in
+                # Python over the SQL-narrowed candidates.
+                parent_filtering = True
+                if callable(value):
+                    predicates.append((key, value))
+                else:
+                    parent_eq = [str(item) for item in value]
+            elif callable(value):
                 predicates.append((key, value))
             elif key in _NODE_COLUMNS:
                 column_eq.append((key, value))
@@ -336,6 +349,16 @@ class MetadataStore:
         sql += " ORDER BY created_epoch, node_id"
         candidates = self._manager.read().execute(sql, params).fetchall()
 
+        parent_lists: Dict[str, List[str]] = (
+            self._parent_lists() if parent_filtering else {}
+        )
+        if parent_eq is not None:
+            candidates = [
+                row
+                for row in candidates
+                if parent_lists.get(row["node_id"], []) == parent_eq
+            ]
+
         if not predicates:
             return [row["node_id"] for row in candidates]
 
@@ -343,7 +366,7 @@ class MetadataStore:
         # one query, then evaluate in Python.
         meta_values: Dict[str, Dict[str, Any]] = {}
         for key, _ in predicates:
-            if key in _NODE_COLUMNS:
+            if key in _NODE_COLUMNS or key == "parent_id":
                 continue
             rows = self._manager.read().execute(
                 "SELECT node_id, value FROM metadata "
@@ -359,7 +382,10 @@ class MetadataStore:
             node_id = row["node_id"]
             ok = True
             for key, predicate in predicates:
-                if key in _NODE_COLUMNS:
+                stored: Any
+                if key == "parent_id":
+                    stored = parent_lists.get(node_id, [])
+                elif key in _NODE_COLUMNS:
                     stored = row[key]
                     if key == "healthy":
                         stored = bool(stored)
@@ -382,6 +408,18 @@ class MetadataStore:
             if ok:
                 matched.append(node_id)
         return matched
+
+    def _parent_lists(self) -> Dict[str, List[str]]:
+        """Every node's ordered parent ids in one query — backs the
+        ``parent_id`` filter, which cannot be a plain column because
+        parents live in the edge table."""
+        rows = self._manager.read().execute(
+            "SELECT child_id, parent_id FROM edge ORDER BY child_id, ordinal"
+        ).fetchall()
+        parents: Dict[str, List[str]] = {}
+        for row in rows:
+            parents.setdefault(row["child_id"], []).append(row["parent_id"])
+        return parents
 
     def most_recent(self, node_ids: Sequence[str]) -> Optional[str]:
         """The most recently created of the given ids, or None if empty."""

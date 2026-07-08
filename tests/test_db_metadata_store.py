@@ -276,3 +276,22 @@ def test_remove_is_a_noop_for_missing_and_cascades(
     assert store.metadata_for("a") == {}
     record = store.get("b")
     assert record is not None and record.parent_ids == ()  # edge cascaded
+
+
+def test_find_by_parent_id(store: MetadataStore) -> None:
+    # 0.1.x indexed parent_id as a searchable list; the edge-backed store
+    # must answer the same filters.
+    _add(store, "root")
+    _add(store, "other", epoch_offset=1)
+    _add(store, "kid", parents=("root",), epoch_offset=2)
+    _add(store, "join", parents=("root", "other"), epoch_offset=3)
+
+    assert store.find(parent_id=[]) == ["root", "other"]  # roots
+    assert store.find(parent_id=["root"]) == ["kid"]
+    assert store.find(parent_id=["root", "other"]) == ["join"]  # ordered
+    assert store.find(parent_id=["other", "root"]) == []
+    assert store.find(parent_id=lambda p: len(p) > 1) == ["join"]
+    assert store.find(step_type="step", parent_id=lambda p: "root" in p) == [
+        "kid",
+        "join",
+    ]
