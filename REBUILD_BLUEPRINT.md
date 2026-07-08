@@ -267,7 +267,7 @@ The reassembled-artifact **read cache** lives in the system temp directory (via 
 
 #### `db/` — persistence
 
-**`connection.py` — `ConnectionManager`.** *Contains:* opens the DB with `journal_mode=WAL`, `synchronous=NORMAL`, `foreign_keys=ON`, `busy_timeout`, `mmap_size`, `temp_store=MEMORY`; hands out thread-local read connections; exposes a serialized `write()` transaction (single writer, lock-guarded); rebinds connections if the PID changed (fork-safety, replacing `_reset_workers_after_fork`); checkpoints the WAL after large ingest transactions so the sidecar never balloons. *Why:* SQLite's threading/fork rules are the trickiest correctness surface and deserve one owner.
+**`connection.py` — `ConnectionManager`.** *Contains:* opens the DB with `journal_mode=WAL`, `synchronous=NORMAL`, `foreign_keys=ON`, `busy_timeout`, `mmap_size`, `temp_store=MEMORY`; hands out thread-local read connections; exposes a serialized, **reentrant** `write()` transaction (single writer; nested blocks join the outermost transaction, so ingest commits node row + chunks + artifacts as one atomic unit); rebinds connections if the PID changed (fork-safety, replacing `_reset_workers_after_fork`); checkpoints the WAL after large ingest transactions so the sidecar never balloons. *Why:* SQLite's threading/fork rules are the trickiest correctness surface and deserve one owner.
 
 **`schema.py`.** *Contains:* `SCHEMA_SQL`, `SCHEMA_VERSION`, `ensure_schema(conn)`, `migrate(conn)` (steps `PRAGMA user_version`). *Why:* the DDL must live in one canonical, versioned place; the current code has no schema at all.
 
@@ -529,9 +529,9 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - **Exit:** query/lineage tests ported (`test_querying_and_search.py`, `test_dag.py`) pass against SQLite.
 
 ### Phase 3 — CDC Layer 1, chunk store & sync packing
-- [ ] `ingest/cdc.py` chunker section (FastCDC lifted from `chunkstore.py`) + fixed-boundary large-file fallback (AD4).
-- [ ] `db/chunk_store.py` (SQLite BLOBs, exact dedup, reassembly, session read cache in system temp), `ingest/workspace.py` (incl. the scratch seed file).
-- [ ] `ingest/packing.py` — synchronous ingest at block-exit.
+- [x] `ingest/cdc.py` chunker section (FastCDC lifted from `chunkstore.py`) + fixed-boundary large-file fallback (AD4).
+- [x] `db/chunk_store.py` (SQLite BLOBs, exact dedup, reassembly, session read cache in system temp), `ingest/workspace.py` (incl. the scratch seed file).
+- [x] `ingest/packing.py` — synchronous ingest at block-exit.
 - **Exit:** `test_chunking.py` (exact-dedup parts) passes; artifacts round-trip through SQLite; round-trip property tests (random data & mutations) green.
 
 ### Phase 4 — Domain decomposition & facade

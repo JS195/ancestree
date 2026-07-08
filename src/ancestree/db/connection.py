@@ -57,7 +57,12 @@ class ConnectionManager:
     def __init__(self, db_path: Union[str, Path]) -> None:
         self.db_path = Path(db_path)
         self._local = threading.local()
-        self._write_lock = threading.Lock()
+        # An RLock plus per-thread depth makes write() reentrant: nested
+        # blocks join the outermost transaction, so higher layers compose
+        # one atomic unit out of several store calls (node row + chunk
+        # BLOBs + artifact rows).
+        self._write_lock = threading.RLock()
+        self._txn = threading.local()
         self._registry_lock = threading.Lock()
         # (owner pid, connection): close() must only close connections this
         # process created — entries inherited across a fork belong to the
@@ -104,19 +109,40 @@ class ConnectionManager:
         """A serialised write transaction on this thread's connection.
 
         ``BEGIN IMMEDIATE`` takes the database write lock up front, so a
-        transaction can never fail on a mid-way lock upgrade. Commits on
-        clean exit, rolls back on any exception (which is re-raised).
-        Reads inside the block see the transaction's own writes.
+        transaction can never fail on a mid-way lock upgrade. Reads inside
+        the block see the transaction's own writes.
+
+        Reentrant: a nested ``write()`` joins the outermost transaction, so
+        higher layers compose one atomic unit out of several store calls.
+        Only the outermost block issues BEGIN/COMMIT; an exception anywhere
+        poisons the whole transaction, which rolls back at the outermost
+        exit (the exception is re-raised).
         """
         conn = self.read()
         with self._write_lock:
-            conn.execute("BEGIN IMMEDIATE")
+            pid = os.getpid()
+            slot: Optional[Tuple[int, int]] = getattr(self._txn, "slot", None)
+            depth = slot[1] if slot is not None and slot[0] == pid else 0
+            if depth == 0:
+                conn.execute("BEGIN IMMEDIATE")
+                self._txn.failed = False
+            self._txn.slot = (pid, depth + 1)
             try:
                 yield conn
-                conn.execute("COMMIT")
             except BaseException:
-                conn.execute("ROLLBACK")
+                self._txn.failed = True
                 raise
+            finally:
+                self._txn.slot = (pid, depth)
+                if depth == 0:
+                    if self._txn.failed:
+                        conn.execute("ROLLBACK")
+                    else:
+                        try:
+                            conn.execute("COMMIT")
+                        except BaseException:
+                            conn.execute("ROLLBACK")
+                            raise
 
     def checkpoint(self) -> None:
         """Folds the WAL into the database file and truncates it to zero.

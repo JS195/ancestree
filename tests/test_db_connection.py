@@ -143,6 +143,28 @@ def test_closed_manager_refuses_use_and_close_is_idempotent(
         mgr.read()
 
 
+def test_write_is_reentrant_and_atomic(tmp_path: Path) -> None:
+    mgr = ConnectionManager(tmp_path / "s.db")
+    with mgr.write() as outer:
+        outer.execute("INSERT INTO config VALUES ('outer', '1')")
+        with mgr.write() as inner:
+            assert inner is outer  # same thread, same connection, one txn
+            inner.execute("INSERT INTO config VALUES ('inner', '1')")
+    count = mgr.read().execute("SELECT count(*) AS n FROM config").fetchone()
+    assert count["n"] == 2
+
+    # A failure anywhere poisons the WHOLE composed transaction.
+    with pytest.raises(RuntimeError, match="boom"):
+        with mgr.write() as outer:
+            outer.execute("INSERT INTO config VALUES ('doomed', '1')")
+            with mgr.write() as inner:
+                inner.execute("INSERT INTO config VALUES ('doomed2', '1')")
+                raise RuntimeError("boom")
+    count = mgr.read().execute("SELECT count(*) AS n FROM config").fetchone()
+    assert count["n"] == 2
+    mgr.close()
+
+
 @pytest.mark.skipif(not hasattr(os, "fork"), reason="fork is POSIX-only")
 def test_forked_child_gets_a_fresh_connection(tmp_path: Path) -> None:
     mgr = ConnectionManager(tmp_path / "s.db")
