@@ -552,7 +552,7 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - **Exit:** benchmark results recorded in the repo; delta/resemblance tests green; `test_adversarial.py` green.
 
 ### Phase 7 — Web static export
-- [ ] `web/graph.py`, `web/export.py` — structured templating + artifact materialization.
+- [x] `web/graph.py`, `web/export.py` — structured templating + artifact materialization.
 - **Exit:** `test_vis.py` green; generated HTML opens offline with working artifact links.
 
 ### Phase 8 — Local live server

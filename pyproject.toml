@@ -56,6 +56,7 @@ packages = [
 [tool.setuptools.package-data]
 "ancestree" = ["py.typed"]
 "ancestree.assets" = ["*"]
+"ancestree.web" = ["assets/*"]
 
 [tool.ruff]
 line-length = 88
