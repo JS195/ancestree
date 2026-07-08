@@ -37,6 +37,7 @@ from .ingest.packing import ingest_node
 from .ingest.workspace import NodeWorkspace
 from .maintenance import Pruner, compact_chunks, sweep_orphan_scratch
 from .util import filter_relpaths
+from .web.export import export_static
 
 DB_FILENAME = "ancestree.db"
 
@@ -549,6 +550,27 @@ class LineageStore:
             The number of chunks removed.
         """
         return compact_chunks(self._manager)
+
+    # ------------------------------------------------------------------
+    # Visualisation
+    # ------------------------------------------------------------------
+
+    def generate_web_graph(
+        self,
+        dest: Optional[Union[Path, str]] = None,
+        include_artifacts: bool = True,
+    ) -> Path:
+        """Renders the store into one shareable HTML file — a **view-only
+        snapshot**: the lineage graph plus click-to-view metadata (search
+        lives in the live server, so the query grammar exists once).
+
+        Small images inline as data URIs; other artifacts are copied
+        beside the file (``<name>_files/``) so links work offline. Pass
+        ``include_artifacts=False`` for a metadata-only snapshot of a
+        store with huge artifacts. Defaults to
+        ``<root>/interactive_pipeline.html``; returns the written path.
+        """
+        return export_static(self, dest=dest, include_artifacts=include_artifacts)
 
     # ------------------------------------------------------------------
     # Power tools
