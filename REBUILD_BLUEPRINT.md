@@ -564,9 +564,9 @@ Each phase is independently testable and leaves the suite green. I tick items as
 - **Exit:** server serves the skeleton and streams search/diff/detail via SQL on `127.0.0.1`; runs-table and diff render from API data; smoke tests pass.
 
 ### Phase 9 — Release polish
-- [ ] Complete the CLI: `export` and `compact` subcommands (`serve` landed with Phase 8).
-- [ ] Update `README.md`/docs — SQLite, the NFS caveat, the live server, and the marketing claims ("no database" becomes "no database *server*"; the static export is a view-only snapshot); park the old-API example notebooks as legacy records.
-- [ ] Version bump to **0.2.0** + CHANGELOG with the old→new API cheat-sheet.
+- [x] Complete the CLI: `export` and `compact` subcommands (`serve` landed with Phase 8).
+- [x] Update `README.md`/docs — SQLite, the NFS caveat, the live server, and the marketing claims ("no database" becomes "no database *to run*"; the static export is a view-only snapshot); park the old-API example notebooks as legacy records. *(The mkdocs pages get their refresh in the `rebuild` → `main` PR.)*
+- [x] Version bump to **0.2.0** + CHANGELOG with the old→new API cheat-sheet.
 - **Exit:** CLI complete; docs updated; CI green.
 
 *(The migration tool and the deferred legacy-code deletion left this phase at v2.5: no backwards compatibility means the 0.1.x modules, tests and assets went right after Phase 7, and no tool converts old stores.)*

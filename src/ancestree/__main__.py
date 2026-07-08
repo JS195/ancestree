@@ -1,9 +1,9 @@
 """Command-line interface: ``python -m ancestree <command> <root>``.
 
-``serve`` hosts the searchable live explorer (this phase); ``export`` and
-``compact`` complete the CLI in Phase 9. Stdlib argparse only (HC1).
+``serve`` hosts the searchable live explorer, ``export`` writes grep-able
+meta.json sidecars, ``compact`` reclaims space. Stdlib argparse only (HC1).
 
-See REBUILD_BLUEPRINT.md section 5.3 (Phase 8, issue #19).
+See REBUILD_BLUEPRINT.md section 5.3.
 """
 
 from __future__ import annotations
@@ -31,17 +31,44 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         help="port to bind on 127.0.0.1 (default: OS-assigned)",
     )
 
+    export = commands.add_parser(
+        "export",
+        help="write grep-able meta.json sidecars for every node",
+    )
+    export.add_argument("root", type=Path, help="the store's root directory")
+    export.add_argument(
+        "--dest",
+        type=Path,
+        default=None,
+        help="output directory (default: <root>/export)",
+    )
+
+    compact = commands.add_parser(
+        "compact",
+        help="reclaim space: drop unreferenced chunks and shrink the database",
+    )
+    compact.add_argument("root", type=Path, help="the store's root directory")
+
     args = parser.parse_args(argv)
 
     from .store import LineageStore
 
-    if args.command == "serve":
-        store = LineageStore(args.root)
-        try:
+    store = LineageStore(args.root)
+    try:
+        if args.command == "serve":
             store.host_live_graph(port=args.port)
-        finally:
-            store.close()
-        return 0
+            return 0
+        if args.command == "export":
+            dest = store.export(dest=args.dest)
+            count = len(store.find())
+            print(f"wrote sidecars for {count} node(s) to {dest}")
+            return 0
+        if args.command == "compact":
+            removed = store.compact()
+            print(f"removed {removed} unreferenced chunk(s)")
+            return 0
+    finally:
+        store.close()
     return 2
 
 

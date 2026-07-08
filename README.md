@@ -10,9 +10,8 @@
 **Exploratory pipeline tracking that sits in the gap between a messy folder-naming convention and a heavy lineage platform. Designed to fit around your workflow, not the other way round.**
 
 ![Pipeline Explorer](https://raw.githubusercontent.com/JS195/ancestree/main/docs/assets/preview.png)
-> 🌐 **[Click here to play with the Live Interactive Explorer Demo!](https://js195.github.io/ancestree/demo/)** Try switching to dark mode, hovering over nodes to trace ancestry, or using `Cmd+Click` to run a live metadata diff right in your browser.
 
-No server, no database, no dependencies. `pip install` + a local directory. For any workflow, not just machine learning. Runs where others aren't allowed to: air-gapped clusters, locked-down corporate environments, anywhere cloud software is banned. Safe on NFS.
+No server required, no database to run, no dependencies. `pip install` + a local directory. The entire store is one SQLite file, driven purely from the Python standard library. For any workflow, not just machine learning.
 
 ---
 
@@ -24,7 +23,8 @@ No server, no database, no dependencies. `pip install` + a local directory. For 
 - [Quick start](#quick-start)
 - [What's recorded automatically](#whats-recorded-automatically)
 - [Searching and Querying](#searching-and-querying)
-- [The Pipeline Explorer](#the-pipeline-explorer)
+- [The Explorers](#the-explorers)
+- [Coming from 0.1.x](#coming-from-01x)
 - [Development](#development)
 - [License](#license)
 
@@ -36,28 +36,29 @@ Iterative workflows are messy. You run ten variations, tweak parameters, rerun b
 
 This is a problem in machine learning, but it's just as common in simulation, optimisation, data engineering, and document processing; any workflow where steps build on each other and results branch. Tools like MLflow solve it well, but only if you're doing ML and willing to stand up a server, otherwise the options are thin.
 
-Ancestree solves this modelling the pipeline as a directed acyclic graph. **Every step of your pipeline is a local node folder**. A node is just a directory that holds the step's outputs plus a metadata record describing where it came from. Chain nodes together and you get a complete, queryable data lineage tree of your work that is durable on disk, reconstructable at any time, and visual when you want it to be.
-
-One of Ancestree's first production use cases was an iterative optimisation, with 10+ generations, 3 steps per generation, and dozens of branches.
+Ancestree solves it by modelling the pipeline as a directed acyclic graph. **Every step of your pipeline is a node**: its artifacts, its metadata, and where it came from, all recorded in a single local SQLite database. Chain nodes together and you get a complete, queryable data lineage tree of your work — durable, deduplicated, and visual when you want it to be.
 
 ---
 
 ## What makes it different
 
 **It enforces lineage — it doesn't just record it.**
-Rules are optional, but if you declare them: `rules={"model": ["clean"]}`, illegal transitions raise a `ValueError` at creation time. Every other tracker is a passive logbook. This is active grammar for your pipeline.
+Rules are optional, but if you declare them: `rules={"model": ["clean"]}`, illegal transitions raise at creation time. Every other tracker is a passive logbook. This is active grammar for your pipeline.
 
-**Files are the database. There is no lock-in.**
-Every node is a plain directory. Every record is a human-readable `meta.json` sitting next to the artifacts it describes. You can `grep` it, `rsync` it, zip it, commit it. Uninstall Ancestree tomorrow — your lineage is still legible. The index is a disposable cache; delete it and it rebuilds from disk. Safe on NFS.
+**The whole store is one SQLite file.**
+Nodes are rows, not folders. Metadata, the lineage graph and the artifact bytes all live in `<root>/ancestree.db` — back it up by copying one file, query it with real SQL (`store.sql(...)` gives you a read-only escape hatch over a documented schema), and pull grep-able `meta.json` sidecars out any time with `store.export()`. One caveat I'll state up front: SQLite and NFS don't mix — keep stores on local disk.
+
+**It deduplicates twice.**
+Rerun a step that produces identical content and you get the *same node back*, not a copy. Underneath that, artifacts are split into content-defined chunks stored once — and near-identical artifacts (a config tweaked, values re-encoded) are stored as small deltas against what's already there. On my benchmark of twelve near-duplicate versions that's 2.3× less storage for a 7% ingest cost; `store.stats()` shows you the ratio on your own data.
 
 **Forensic crash semantics.**
-A step that dies mid-run keeps its partial output, flagged `healthy=False` and searchable. A step that wrote nothing vanishes without a trace. Partial work is evidence, not garbage.
+A step that raises mid-run keeps its partial output, flagged `healthy=False` and searchable. A step that wrote nothing vanishes with a warning. And if a run gets hard-killed, the next store open adopts whatever it managed to write as an unhealthy node. Partial work is evidence, not garbage.
 
 **Reproducibility honesty, zero config.**
-Every node captures who ran it, on what platform, with what Python, at which git commit — and a dirty-worktree flag surfaced as a first-class warning in the UI.
+Every node captures who ran it, on what platform, with what Python, at which git commit — with a dirty-worktree flag so you know when a result isn't reproducible.
 
-**The UI is one file you can email.**
-The entire explorer — lineage graph, metadata search, health indicators, metric heatmap, sortable runs table, cmd-click diff, activity timeline, dark mode — is a single self-contained HTML file that opens from `file://`. Attach it to a PR, a paper, a Slack message. No login. No server. No link that expires.
+**Two ways to look at it.**
+`python -m ancestree serve` hosts a live explorer on localhost where search, node diffs and the runs table are all answered by SQL against the store. `store.generate_web_graph()` still writes a self-contained HTML snapshot you can email to a colleague or attach to a PR — view-only, opens from `file://`, no login, no link that expires.
 
 **Not ML-shaped.**
 Step types are your vocabulary — ETL, simulation, lab protocol, report generation, image processing. The "runs/experiments/models" ontology that ML tools impose isn't here.
@@ -93,7 +94,9 @@ with store.create_node(step_type="ingest") as node:
     df.to_csv(node / "raw.csv")
     node.add_meta("rows", len(df))
 
-# One call: a self-contained, interactive map of everything above.
+# The searchable explorer, live on localhost:
+store.host_live_graph()
+# ...or a self-contained snapshot you can share as-is:
 store.generate_web_graph()
 ```
 
@@ -101,55 +104,59 @@ store.generate_web_graph()
 
 ## What's recorded automatically
 
-Every node silently captures critical operational metrics and system reproducibility context without a single line of configuration.
+Every node silently captures the operational and reproducibility context without a single line of configuration.
 
-
-| Captured     | Why it matters                                                                                                                |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `parent_id`  | Where the step came from                                                                                            |
-| `generation`  | What generation the step is. Useful for iterative workflows if numerous steps happen in one generation.                          |
-| `step_type`  | The pipeline step being performed                                                                                               |
-| `timestamp`  | When the step ran                                                                                                             |
-| `duration_s` | How long it took. Find slow steps, see the pipeline getting slower                                                        |
-| `size_mb`    | Total size of the node's artifacts                                                                                            |
-| `healthy`    | Whether the step completed, or raised mid-run                                                                                 |
-| `provenance`   | User, Python version, platform, git commit/branch, and a **dirty-worktree flag** so you know when a result isn't reproducible |
+| Captured      | Why it matters                                                                 |
+| ------------- | ------------------------------------------------------------------------------ |
+| `parent_id`   | Where the step came from (a list — joins with several inputs are fine)          |
+| `generation`  | Which generation the step belongs to; useful for iterative workflows            |
+| `step_type`   | The pipeline step being performed                                               |
+| `created_utc` | When the step ran                                                               |
+| `duration_s`  | How long it took — find slow steps, watch the pipeline getting slower           |
+| `size_bytes`  | Total size of the node's artifacts                                              |
+| `healthy`     | Whether the step completed, or raised mid-run                                   |
+| `provenance`  | User, Python version, platform, git commit/branch, and the dirty-worktree flag  |
 
 ---
 
 ## Searching and Querying
 
-Because your execution history is structured as a proper lineage Directed Acyclic Graph (DAG) instead of a flat list of independent runs, you can ask your codebase complex ancestral questions using plain Python and native lambdas. Querying is optimised for speed, returning results in >5ms even with 10,000 nodes.
+Your history is a proper lineage DAG backed by SQL, so you can ask it real questions — with plain Python and native lambdas, or with SQL itself.
 
 ```python
-store.find_node(step_type="model")                          # all model runs
-store.find_node(accuracy=lambda a: a and a > 0.9)           # the good ones
-store.get_most_recent_node(step_type="clean")               # resume where you left off
-store.get_lineage(best_model)                               # its full ancestry, oldest first
-store.find_in_lineage(best_model, step_type="clean")        # which cleaning produced it?
-best_model.artifacts("*.bin")                                # locate its files
-store.prune(bad_branch)                                      # preview a deletion (dry-run first)
+store.find(step_type="model")                     # all model runs
+store.find(accuracy=lambda a: a and a > 0.9)      # the good ones
+store.latest(step_type="clean")                   # resume where you left off
+store.lineage(best_model)                         # its full ancestry, oldest first
+store.ancestors(best_model, step_type="clean")    # which cleaning produced it?
+best_model.artifacts("*.bin")                     # locate its files
+store.prune(bad_branch)                           # preview a deletion (dry-run first)
+store.compact()                                   # reclaim the space afterwards
+
+store.sql("SELECT step_type, count(*) FROM node GROUP BY 1")   # read-only SQL
+store.stats()                                     # counts, sizes, dedup ratio
 ```
 
 ---
 
-## The Pipeline Explorer
+## The Explorers
 
-![Pipeline Explorer](https://raw.githubusercontent.com/JS195/ancestree/main/docs/assets/preview.png)
+**Live** — `store.host_live_graph()` or `python -m ancestree serve ./my_project`. The lineage graph laid out by generation and coloured by step type; a search bar that understands `field=value`, numeric filters like `accuracy>0.9` and free text (every query answered by SQL on the server, not by JavaScript); click-to-inspect metadata with inline images and tables; pin two nodes for an aligned diff; and a sortable runs table for the "pick the best run" decisions. Light and dark themes.
 
-`generate_web_graph()` renders the entire store into **one self-contained HTML file** — every style and script inlined, so it opens anywhere and ships as-is to a colleague or a static site.
+**Snapshot** — `store.generate_web_graph()` renders the store into one self-contained HTML file: the graph plus click-to-view metadata, deliberately view-only. Small images ride along inside the file; anything bigger is copied next to it so links keep working offline.
 
-Inside it:
+There's also a small CLI: `python -m ancestree serve|export|compact <root>`.
 
-- **Lineage graph** — nodes laid out by generation and coloured by step type; hovering a node lights up its complete ancestry and descendants.
-- **Search that understands your metadata** — free text, `field=value`, and numeric operators like `accuracy>0.9` allow easy navigation.
-- **Compare** — cmd-click two nodes for an aligned diff: identical values recede, differences are highlighted with numeric deltas.
-- **Rich metadata** — inline images, file links, and pandas DataFrames rendered as tables (`data_type="table"`), grouped into sections you define. Light and dark themes included.
-- **Runs table** — flip the graph into a sortable table of runs × metrics: the "pick the best run" view when decisions trade accuracy against runtime against data size.
+---
+
+## Coming from 0.1.x
+
+0.2.0 is a rebuild on SQLite and a clean break: 0.1.x file-based stores are not readable by it and there is no migration tool — if you have an old store, keep 0.1.x installed for it. The API was redesigned at the same time (`find_node`→`find`, `get_lineage`→`lineage`, `get_most_recent_node`→`latest`, and so on — the renames are mechanical). The full reasoning, every decision and the old→new table live in [REBUILD_BLUEPRINT.md](https://github.com/JS195/ancestree/blob/main/REBUILD_BLUEPRINT.md).
 
 ---
 
 ## Development
+
 Issues and PRs welcome.
 
 Have a feature request or found a bug? Open an issue or reach out directly at [78921007+JS195@users.noreply.github.com](mailto:78921007+JS195@users.noreply.github.com).
@@ -157,7 +164,7 @@ Have a feature request or found a bug? Open an issue or reach out directly at [7
 ```bash
 git clone https://github.com/JS195/ancestree.git
 cd ancestree
-pip install -e .
+pip install -e ".[dev]"
 python -m pytest tests/
 ```
 
