@@ -541,8 +541,8 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - **Exit:** the test suite — rewritten to the redesigned API ([§11](#11-public-api-and-migration)) — is green against the new backend (`test_store_api.py`, `test_models.py`, `test_node_creation_edge_cases.py`).
 
 ### Phase 5 — Node dedup & maintenance
-- [ ] `domain/fingerprint.py`; `content_hash` column; adopt/rebind on identical content.
-- [ ] `maintenance.py` — `Pruner` (SQL cascade prune), `compact()` (orphan-chunk GC + `incremental_vacuum`), orphan-scratch sweep at store open.
+- [x] `domain/fingerprint.py`; `content_hash` column; adopt/rebind on identical content.
+- [x] `maintenance.py` — `Pruner` (SQL cascade prune), `compact()` (orphan-chunk GC + `incremental_vacuum`), orphan-scratch sweep at store open.
 - **Exit:** `test_dedupe.py` fully green (completes the current feature branch's goal); prune/compact/sweep tests pass.
 
 ### Phase 6 — CDC Layer 2 (advanced dedup)
