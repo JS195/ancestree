@@ -22,6 +22,10 @@ class NodeNotFound(AncestreeError):
     """A node_id does not exist in this store."""
 
 
+class ArtifactNotFound(AncestreeError):
+    """A node has no artifact at the requested relative path."""
+
+
 class SchemaError(AncestreeError):
     """The database file is not a usable ancestree store: a foreign SQLite
     file, a format newer than this package, or missing tables."""
