@@ -500,8 +500,8 @@ Removed outright by AD1–AD3 and AD6:
 | **SQLite on NFS** | Unreliable file locking | Documented non-goal; recommend local disk; `busy_timeout` for local multi-process |
 | **Packed-read latency** | First read of a packed artifact costs reassembly | Loose scratch for recent reads; read cache for repeats; delta depth capped at 1 with a C-speed codec (AD5); Layer 2 gated by benchmark |
 | **Multi-process write concurrency** | SQLite serializes writers | WAL + `busy_timeout`; acceptable for the single-writer common case |
-| **Backward incompatibility** | Existing file-based stores won't open | One-time migration tool (Phase 9) reading old node dirs → new `.db` |
-| **Rewrite risk** (rebuild + API break + test rewrite land together) | Regressions while the safety net is weakest | Old modules and tests stay green until Phase 9; migration round-trip-tested against a real 0.1.x store before any deletion |
+| **Backward incompatibility** | 0.1.x stores won't open | Accepted (v2.5): a clean break — no migration tool; 0.1.x stays installable from PyPI for old stores |
+| **Rewrite risk** (rebuild + API break + test rewrite land together) | Regressions during the transition | The rewritten suite (unit + integration + property tests over every subsystem) is the safety net; legacy code was deleted only once it was fully covered |
 
 ---
 
@@ -509,7 +509,7 @@ Removed outright by AD1–AD3 and AD6:
 
 Each phase is independently testable and leaves the suite green. Exit criteria reference the existing test files where possible. Tick items as they land.
 
-**Safety-net policy:** the 0.1.x modules and their tests stay in place and green until Phase 9 — the new package grows alongside them, and nothing is deleted until the migration tool round-trips a real old store.
+**Safety-net policy (retired at v2.5):** originally the 0.1.x modules and their tests stayed green until Phase 9. Backwards compatibility was then dropped entirely by decision, so the legacy modules, their tests and the old assets were deleted mid-rebuild after Phase 7 — the rewritten suite (unit, integration and property tests over every subsystem) is the safety net.
 
 ### Phase 0 — Scaffolding
 - [x] Create the new package skeleton (empty modules per [§5.1](#51-package-layout)) alongside the current code.
@@ -562,12 +562,13 @@ Each phase is independently testable and leaves the suite green. Exit criteria r
 - [ ] `__main__.py` CLI with the `serve` subcommand (`python -m ancestree serve <root>`).
 - **Exit:** server serves the skeleton and streams search/diff/detail via SQL on `127.0.0.1`; runs-table and diff render from API data; smoke tests pass.
 
-### Phase 9 — Migration & release polish
-- [ ] One-time migration tool: old node dirs + `meta.json` — including packed artifacts via the old manifest + `.chunks` pool — → new `.db`.
-- [ ] Complete the CLI: `export`, `compact`, `migrate` subcommands.
-- [ ] Update `README.md`/docs — SQLite, NFS caveat, live server, and the marketing claims ("no database" becomes "no database *server*"; the static export is a view-only snapshot).
-- [ ] Version bump to **0.2.0** + CHANGELOG with the old→new API cheat-sheet; delete dead modules (`database.py`, old `chunkstore.py`, `core.py`, `models.py`, `vis.py`).
-- **Exit:** migration round-trips a real old store (loose *and* packed artifacts); docs updated; dead code removed; CI green.
+### Phase 9 — Release polish
+- [ ] Complete the CLI: `export` and `compact` subcommands (`serve` lands with Phase 8).
+- [ ] Update `README.md`/docs — SQLite, NFS caveat, live server, marketing claims ("no database" becomes "no database *server*"; the static export is a view-only snapshot); refresh the example notebooks to the new API.
+- [ ] Version bump to **0.2.0** + CHANGELOG with the old→new API cheat-sheet.
+- **Exit:** CLI complete; docs updated; CI green.
+
+*(The migration tool and the deferred legacy-code deletion were removed from this phase by the v2.5 no-backwards-compatibility decision: the 0.1.x modules, tests and assets were deleted right after Phase 7, and no tool converts old stores.)*
 
 ---
 
@@ -603,9 +604,9 @@ Backward compatibility is **not** a goal (pre-1.0). The API is redesigned for on
 
 **Removed** — `Node.path`, `rebuild_db_from_disk()`, `gc()`, `flush()`, `clear_cache()` (folded into `compact()` / automatic lifecycle).
 
-### Migration from 0.1.x
+### Coming from 0.1.x
 
-The on-disk format changes (per-node directories → `ancestree.db`), so this is a breaking change to *both* the storage format and the API. The Phase 9 migration tool reads an old store (node dirs + `meta.json`) and writes a new `ancestree.db`. A short old→new API cheat-sheet ships with the release notes; the renames above are mechanical. The rebuild ships as **0.2.0** (pre-1.0, so a breaking minor release is legitimate).
+A deliberate **clean break** (v2.5): the on-disk format and the API both change, 0.1.x stores are not readable by the rebuild, and **no migration tool is provided** — anyone needing an old store keeps 0.1.x installed for it. The rebuild ships as **0.2.0** (pre-1.0, so a breaking minor release is legitimate); the renames above are the whole API delta and are mechanical.
 
 ---
 
@@ -644,6 +645,7 @@ The on-disk format changes (per-node directories → `ancestree.db`), so this is
 | 2026-07-07 | v2.2 — Layered package layout (Phase 0 feedback: too many flat root modules). The root keeps entry points and cross-cutting leaves (`store`, `maintenance`, `errors`, `util`, `__main__`); everything else moves into layer packages: **`domain/`** (node, metadata, rules, fingerprint, provenance — pure logic), **`db/`** (unchanged), **`ingest/`** (workspace, cdc, packing — the write path), **`web/`** (unchanged). Root shrinks from ~19 flat modules to 6 (12 during the transition, while the 0.1.x modules coexist). §5.1/§5.3/§5.4/§5.5 and roadmap paths updated. |
 | 2026-07-08 | v2.3 — **Layer-2 benchmark gate resolved (AD5): the `chunk` policy defaults ON.** On the target workload (12 near-duplicate versions, ~1% scattered in-place edits) Layer 2 stored **2.3× less** than Layer 1 alone (dedup ratio 2.31 vs 1.00) for 1.07× ingest and sub-millisecond read overhead — see `benchmarks/RESULTS.md`. Implementation notes: resemblance uses min-wise transforms over strided 8-byte samples (C-speed; a wrong candidate costs one trial encode, since a delta is kept only when it beats plain compression) rather than a per-byte rolling min-hash; the zdict is truncated to 32,256 bytes because zlib's usable match distance is `w_size − MIN_LOOKAHEAD` (32,506), so a full-32K dictionary leaves aligned content exactly out of reach. |
 | 2026-07-08 | v2.4 — **Mid-rebuild parity review** against the 0.1.x surface (goal check: SQL transition retains every functionality). Fixed in code: **`find(parent_id=…)` restored** (0.1.x indexed parents as a searchable list; the edge-backed store now answers the same equality/predicate filters, empty list = roots); **`store.export()` delivered** (grep-able per-node `meta.json` sidecars — promised in §11/AD9 but scheduled in no phase; Phase 9's CLI now just wraps it). Fixed in the plan: the 0.1.x explorer's **runs table and node diff** are pinned as explicit Phase 8 exit criteria (the static export is view-only by decision, so live mode is where that parity must land). Verified as deliberate, not gaps: `Node.path`, `rebuild_db_from_disk`, `gc`/`flush`/`clear_cache` → `compact` (AD10); structural fields as attributes rather than metadata entries (AD6); renames per §11. Added `docs/examples/sql_backend_quickstart.ipynb`, an executed end-to-end notebook exercising the new API. |
+| 2026-07-08 | v2.5 — **Backwards compatibility dropped entirely** (owner decision). The 0.1.x modules (`core`, `models`, `database`, `chunkstore`, `utils`, `vis`, old `assets/`), their tests and `conftest.py` are **deleted now** rather than at Phase 9; the package exports flip to the new API (`ancestree.LineageStore` is the rebuild; `Node` exported too). The Phase 9 **migration tool is dropped** — 0.1.x stores stay on 0.1.x. Compat shims removed from the new code: `InvalidTransition` no longer subclasses `ValueError`; the 0.1.x alias keys (`timestamp`, `size_mb`) leave RESERVED_KEYS. §10 safety-net policy retired (the rewritten suite is the safety net); §11 and Phase 9 rewritten accordingly. |
 
 ---
 

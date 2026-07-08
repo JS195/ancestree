@@ -62,7 +62,6 @@ class RuleEngine:
 
         Raises:
             InvalidTransition: If any parent (or rootness) is not allowed.
-                Also a ValueError, matching 0.1.x.
         """
         allowed = self.rules.get(step_type)
         if allowed is None:

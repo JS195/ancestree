@@ -1,2 +1,2 @@
-graft src/ancestree/assets
+graft src/ancestree/web/assets
 prune src/*.egg-info

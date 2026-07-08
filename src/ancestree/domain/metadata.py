@@ -24,9 +24,8 @@ VALID_DATA_TYPES: FrozenSet[str] = frozenset(
     {"auto", "image", "link", "table", "json", "code", "text"}
 )
 
-#: Keys the store owns — the structural columns (and their 0.1.x aliases),
-#: refused by add_meta so user metadata can never shadow a structural fact
-#: in queries.
+#: Keys the store owns — the structural columns and edge key — refused by
+#: add_meta so user metadata can never shadow a structural fact in queries.
 RESERVED_KEYS: FrozenSet[str] = frozenset(
     {
         "node_id",
@@ -34,12 +33,10 @@ RESERVED_KEYS: FrozenSet[str] = frozenset(
         "step_type",
         "generation",
         "healthy",
-        "timestamp",
         "created_utc",
         "created_epoch",
         "duration_s",
         "size_bytes",
-        "size_mb",
         "content_hash",
     }
 )

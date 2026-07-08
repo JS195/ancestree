@@ -111,10 +111,6 @@ def test_rules_are_enforced(store: LineageStore) -> None:
     with pytest.raises(InvalidTransition):
         with store.create_node(step_type="model", parent=ingest):
             pass
-    # InvalidTransition is still a ValueError, as in 0.1.x.
-    with pytest.raises(ValueError):
-        with store.create_node(step_type="model", parent=ingest):
-            pass
     # A rules-listed step type cannot be a root either.
     with pytest.raises(InvalidTransition):
         with store.create_node(step_type="clean"):
