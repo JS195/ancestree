@@ -21,6 +21,7 @@ The SQLite rebuild. A clean break from 0.1.x — every decision is recorded in `
 - `store.compact()` — the one space-reclamation verb (drops unreferenced chunks, shrinks the database file). Replaces `gc()`/`flush()`/`clear_cache()`.
 - Hard-kill recovery: a run killed mid-block leaves a seeded scratch directory, and the next store open adopts it as an unhealthy node. 0.1.x lost that work entirely.
 - CLI: `python -m ancestree serve|export|compact <root>`.
+- Four executed example notebooks: basic usage, a branching ML pipeline, a DAG stress test, and a CDC deep dive measuring save/load timings and storage savings per file type. The 0.1.x notebooks are kept under `docs/examples/legacy-0.1/`.
 - Reads reassemble on demand: packed artifacts rebuild from the chunk pool into a session cache in the system temp dir, so the store root at rest is just the database.
 
 ### Removed
