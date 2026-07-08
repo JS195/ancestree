@@ -80,12 +80,13 @@ class LineageStore:
         self.root.mkdir(parents=True, exist_ok=True)
         self._manager = ConnectionManager(self.root / DB_FILENAME)
         self._metadata = MetadataStore(self._manager)
-        self._chunks = ChunkStore(self._manager)
         config = self._load_or_create_config(rules, gen_triggers, dedup, chunk)
         self.rules: Dict[str, List[str]] = config["rules"]
         self.gen_triggers: List[str] = config["gen_triggers"]
         self.dedup: bool = config["dedup"]
         self.chunk: bool = config["chunk"]
+        # The chunk policy is Layer-2 (resemblance/delta) storage (AD5).
+        self._chunks = ChunkStore(self._manager, delta=self.chunk)
         self._engine = RuleEngine(self.rules, self.gen_triggers)
         self._pruner = Pruner(self._manager, self._metadata)
         self._closed = False

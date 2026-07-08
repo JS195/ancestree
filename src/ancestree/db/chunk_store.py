@@ -1,9 +1,13 @@
 """ChunkStore — chunk BLOBs, artifact recipes, reassembly and the read cache.
 
 The content-addressed pool lives in the ``chunk`` table: each chunk is
-stored once, keyed by the SHA-256 of its plaintext (``INSERT OR IGNORE`` is
-the exact dedup). This phase stores raw zlib chunks (kind 0); delta chunks
-(kind 1, zlib-zdict against a raw base) arrive in Phase 6.
+stored once, keyed by the SHA-256 of its plaintext — a repeat put is a
+no-op, which is the exact dedup (Layer 1). With the store's ``chunk``
+policy on, Layer 2 engages: a new chunk's super-features nominate a
+similar raw chunk as a delta base, and the newcomer is stored as a
+zlib-zdict delta (kind 1) when that genuinely beats plain compression.
+Depth is capped at 1 — a base is always raw — so a read costs at most two
+fetches and GC reachability is a single hop (AD5).
 
 Write methods take the caller's open write-transaction connection, so a
 node's chunks, artifact rows and metadata commit as ONE atomic unit (AD3) —
@@ -33,10 +37,16 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from ..errors import ArtifactNotFound, CorruptChunkError, IntegrityError
+from ..ingest.cdc import delta_decode, delta_encode, super_features
 from .connection import ConnectionManager
 
 _KIND_RAW = 0
-_KIND_DELTA = 1  # decode support arrives with Layer 2 (Phase 6)
+_KIND_DELTA = 1  # zlib-zdict against a raw base; depth capped at 1
+
+# Layer-2 policy knobs: tiny chunks are not worth a trial encode, and a
+# delta is kept only when it beats plain compression by a real margin.
+_DELTA_MIN_SIZE = 2048
+_DELTA_WIN = 0.8
 
 
 @dataclass(frozen=True)
@@ -53,8 +63,11 @@ class ArtifactRecord:
 class ChunkStore:
     """Reads and writes the chunk pool and artifact recipes of one store."""
 
-    def __init__(self, manager: ConnectionManager) -> None:
+    def __init__(self, manager: ConnectionManager, delta: bool = False) -> None:
+        """`delta` is the store's persisted ``chunk`` policy: when True,
+        Layer-2 resemblance/delta storage runs on every new chunk."""
         self._manager = manager
+        self._delta = delta
         self._cache_root: Optional[Path] = None
 
     # ------------------------------------------------------------------
@@ -62,19 +75,101 @@ class ChunkStore:
     # ------------------------------------------------------------------
 
     def put_chunk(self, conn: sqlite3.Connection, data: bytes) -> str:
-        """Stores one plaintext chunk (compressed) and returns its digest.
+        """Stores one plaintext chunk and returns its digest.
 
-        A chunk already in the pool is left untouched — that INSERT OR
-        IGNORE is exactly where exact deduplication happens.
+        A chunk already in the pool costs nothing — that is Layer 1, the
+        exact dedup. Otherwise, with the delta policy on, the chunk's
+        super-features nominate the most similar raw chunk as a base and a
+        trial delta is kept only when it genuinely beats plain compression
+        (Layer 2); everything else lands as a raw zlib chunk whose
+        features join the resemblance index.
         """
         digest = hashlib.sha256(data).hexdigest()
-        conn.execute(
-            "INSERT OR IGNORE INTO chunk "
-            "(digest, kind, base_digest, data, length, created_epoch) "
-            "VALUES (?, ?, NULL, ?, ?, ?)",
-            (digest, _KIND_RAW, zlib.compress(data), len(data), time.time()),
+        already = conn.execute(
+            "SELECT 1 FROM chunk WHERE digest = ? LIMIT 1", (digest,)
+        ).fetchone()
+        if already is not None:
+            return digest  # Layer 1: the second copy is free
+
+        if self._delta and len(data) >= _DELTA_MIN_SIZE:
+            features = super_features(data)
+            if not self._try_delta(conn, digest, data, features):
+                self._insert_chunk(
+                    conn, digest, _KIND_RAW, None, zlib.compress(data), len(data)
+                )
+                self._store_features(conn, digest, features)
+            return digest
+
+        self._insert_chunk(
+            conn, digest, _KIND_RAW, None, zlib.compress(data), len(data)
         )
         return digest
+
+    def _try_delta(
+        self,
+        conn: sqlite3.Connection,
+        digest: str,
+        data: bytes,
+        features: Sequence[int],
+    ) -> bool:
+        """Stores `data` as a delta if a similar raw base exists AND the
+        delta beats plain compression by the policy margin. A nominated
+        candidate that encodes poorly just costs the trial — correctness
+        never depends on the resemblance index being right."""
+        base_digest = self._find_base(conn, features)
+        if base_digest is None:
+            return False
+        base = self.get_chunk(base_digest)
+        delta_blob = delta_encode(base, data)
+        if len(delta_blob) >= len(zlib.compress(data)) * _DELTA_WIN:
+            return False
+        self._insert_chunk(
+            conn, digest, _KIND_DELTA, base_digest, delta_blob, len(data)
+        )
+        return True
+
+    def _find_base(
+        self, conn: sqlite3.Connection, features: Sequence[int]
+    ) -> Optional[str]:
+        """The raw chunk sharing the most super-features with the newcomer.
+        Only raw chunks qualify — that is what caps delta depth at 1."""
+        if not features:
+            return None
+        placeholders = ",".join("?" for _ in features)
+        row = conn.execute(
+            "SELECT cf.digest FROM chunk_feature cf "
+            f"JOIN chunk c ON c.digest = cf.digest AND c.kind = {_KIND_RAW} "
+            f"WHERE cf.feature IN ({placeholders}) "
+            "GROUP BY cf.digest "
+            "ORDER BY count(*) DESC, c.created_epoch LIMIT 1",
+            list(features),
+        ).fetchone()
+        return None if row is None else str(row["digest"])
+
+    def _store_features(
+        self, conn: sqlite3.Connection, digest: str, features: Sequence[int]
+    ) -> None:
+        conn.executemany(
+            "INSERT OR IGNORE INTO chunk_feature (feature, digest) "
+            "VALUES (?, ?)",
+            [(feature, digest) for feature in features],
+        )
+
+    @staticmethod
+    def _insert_chunk(
+        conn: sqlite3.Connection,
+        digest: str,
+        kind: int,
+        base_digest: Optional[str],
+        blob: bytes,
+        length: int,
+    ) -> None:
+        conn.execute(
+            "INSERT INTO chunk "
+            "(digest, kind, base_digest, data, length, created_epoch) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (digest, kind, base_digest, blob, length, time.time()),
+        )
 
     def add_artifact(
         self,
@@ -107,31 +202,53 @@ class ChunkStore:
 
     def get_chunk(self, digest: str) -> bytes:
         """The plaintext bytes of one chunk, decoded and digest-verified.
+        For a delta chunk this fetches and verifies its raw base too —
+        depth is capped at 1, so a read is never more than two fetches.
 
         Raises:
-            IntegrityError: If the chunk is missing or of an unknown kind.
-            CorruptChunkError: If the decoded bytes no longer match the
-                digest they are stored under.
+            IntegrityError: If the chunk (or its base) is missing, of an
+                unknown kind, or chained deeper than depth 1.
+            CorruptChunkError: If decoded bytes no longer match the digest
+                they are stored under.
         """
+        data = self._decode_chunk(digest, allow_delta=True)
+        if hashlib.sha256(data).hexdigest() != digest:
+            raise CorruptChunkError(
+                f"Chunk {digest[:12]}… failed its integrity check."
+            )
+        return data
+
+    def _decode_chunk(self, digest: str, allow_delta: bool) -> bytes:
         row = self._manager.read().execute(
-            "SELECT kind, data FROM chunk WHERE digest = ?", (digest,)
+            "SELECT kind, base_digest, data FROM chunk WHERE digest = ?",
+            (digest,),
         ).fetchone()
         if row is None:
             raise IntegrityError(
                 f"Chunk {digest[:12]}… is referenced but missing from the "
                 "pool; the store may be corrupt."
             )
-        if row["kind"] != _KIND_RAW:
-            raise IntegrityError(
-                f"Chunk {digest[:12]}… has kind {row['kind']!r}, which this "
-                "version cannot decode."
-            )
-        data = zlib.decompress(row["data"])
-        if hashlib.sha256(data).hexdigest() != digest:
-            raise CorruptChunkError(
-                f"Chunk {digest[:12]}… failed its integrity check."
-            )
-        return data
+        if row["kind"] == _KIND_RAW:
+            return zlib.decompress(row["data"])
+        if row["kind"] == _KIND_DELTA:
+            if not allow_delta:
+                raise IntegrityError(
+                    f"Chunk {digest[:12]}… is a delta whose base is itself "
+                    "a delta; depth is capped at 1 and the store may be "
+                    "corrupt."
+                )
+            base_digest = row["base_digest"]
+            base = self._decode_chunk(base_digest, allow_delta=False)
+            if hashlib.sha256(base).hexdigest() != base_digest:
+                raise CorruptChunkError(
+                    f"Chunk {str(base_digest)[:12]}… (a delta base) failed "
+                    "its integrity check."
+                )
+            return delta_decode(base, row["data"])
+        raise IntegrityError(
+            f"Chunk {digest[:12]}… has kind {row['kind']!r}, which this "
+            "version cannot decode."
+        )
 
     def has_artifacts(self, node_id: str) -> bool:
         row = self._manager.read().execute(

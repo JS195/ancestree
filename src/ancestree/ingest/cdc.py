@@ -11,7 +11,8 @@ issue #17).
 from __future__ import annotations
 
 import random
-from typing import Iterator
+import zlib
+from typing import Iterator, List
 
 # ---------------------------------------------------------------------------
 # Section 1 — FastCDC chunker (Layer 1)
@@ -108,13 +109,80 @@ def chunk_bytes(
 
 
 # ---------------------------------------------------------------------------
-# Section 2 — resemblance (Layer 2 discovery) — arrives in Phase 6 (#17):
-# min-wise super-features computed in the chunking pass, backing the
-# chunk_feature lookup for similar-but-not-identical base chunks.
+# Section 2 — resemblance (Layer 2 discovery)
+#
+# Cheap similarity features: min-wise transforms over strided 8-byte samples
+# of the chunk. Two chunks sharing ANY feature are delta candidates. An
+# in-place edit changes few samples, so the per-transform minimum usually
+# survives and near-duplicates keep matching; heavy rewrites change the
+# minima and correctly stop matching. Sampling (rather than a per-byte
+# rolling min-hash) keeps this at Python-loop-over-hundreds speed instead of
+# doubling the per-byte chunking cost — and a wrong candidate costs only a
+# wasted trial encode, because ChunkStore keeps a delta only when it
+# actually beats plain compression.
 # ---------------------------------------------------------------------------
 
+FEATURE_COUNT = 4
+_SAMPLE_STRIDE = 64
+_SAMPLE_WIDTH = 8
+# Fixed odd 64-bit multipliers: each defines an independent min-wise
+# transform over the same samples. Constants must never change, or stored
+# features would stop matching new ones.
+_FEATURE_MULTIPLIERS = (
+    0x9E3779B97F4A7C15,
+    0xBF58476D1CE4E5B9,
+    0x94D049BB133111EB,
+    0xD6E8FEB86659FD93,
+)
+_SIGNED_63 = (1 << 63) - 1  # features stay positive in SQLite's INTEGER
+
+
+def super_features(data: bytes, count: int = FEATURE_COUNT) -> List[int]:
+    """The chunk's similarity features (deterministic; empty for tiny
+    chunks). Stored in the chunk_feature table for raw chunks so later
+    similar chunks can find them as delta bases."""
+    if len(data) < _SAMPLE_WIDTH:
+        return []
+    samples = [
+        int.from_bytes(data[i : i + _SAMPLE_WIDTH], "little")
+        for i in range(0, len(data) - _SAMPLE_WIDTH + 1, _SAMPLE_STRIDE)
+    ]
+    return [
+        min((sample * multiplier) & _INT64 for sample in samples) & _SIGNED_63
+        for multiplier in _FEATURE_MULTIPLIERS[:count]
+    ]
+
+
 # ---------------------------------------------------------------------------
-# Section 3 — delta codec (Layer 2 storage) — arrives in Phase 6 (#17):
-# encode/decode via zlib dictionary compression with a raw base chunk as
-# zdict (AD5); delta depth is capped at 1.
+# Section 3 — delta codec (Layer 2 storage)
+#
+# A "delta" is zlib dictionary compression with the base chunk as the preset
+# dictionary: DEFLATE back-references into the base ARE the delta, at C
+# speed, in ~10 lines, stdlib-only (AD5). DEFLATE's 32 KB window means a
+# base contributes at most its trailing 32 KB of reference data — full
+# coverage at the 32 KB average chunk size. Depth is capped at 1 by the
+# store: a base is always a raw chunk, so decoding costs at most two
+# fetches.
 # ---------------------------------------------------------------------------
+
+
+# zlib only finds matches at distances <= w_size - MIN_LOOKAHEAD (32506),
+# NOT the full 32768-byte window. A full-32K dictionary therefore puts the
+# aligned counterpart of every target byte at distance exactly 32768 — one
+# step out of reach — and the "delta" silently degenerates to plain
+# compression. Truncating the dictionary's TAIL pulls aligned content back
+# inside the reachable window (the last few hundred target bytes just lose
+# their reference and emit as literals).
+_ZDICT_MAX = 32 * 1024 - 512
+
+
+def delta_encode(base: bytes, target: bytes) -> bytes:
+    """Encodes `target` against `base`. Decodable only with the same base."""
+    compressor = zlib.compressobj(zdict=base[:_ZDICT_MAX])
+    return compressor.compress(target) + compressor.flush()
+
+
+def delta_decode(base: bytes, blob: bytes) -> bytes:
+    """Reverses delta_encode. Raises zlib.error for a mismatched base."""
+    decompressor = zlib.decompressobj(zdict=base[:_ZDICT_MAX])
+    return decompressor.decompress(blob) + decompressor.flush()
