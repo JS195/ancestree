@@ -15,6 +15,7 @@ See REBUILD_BLUEPRINT.md section 5.3 (Phase 4, issue #15).
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 import time
@@ -28,11 +29,13 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 from .db.chunk_store import ChunkStore
 from .db.connection import ConnectionManager
 from .db.metadata_store import MetadataStore, NodeRecord, metadata_row
+from .domain.fingerprint import ContentSummary
 from .domain.node import Node, RecordingNode
 from .domain.provenance import capture
 from .domain.rules import RuleEngine, validate_step_type
 from .ingest.packing import ingest_node
 from .ingest.workspace import NodeWorkspace
+from .maintenance import Pruner, compact_chunks, sweep_orphan_scratch
 from .util import filter_relpaths
 
 DB_FILENAME = "ancestree.db"
@@ -84,7 +87,19 @@ class LineageStore:
         self.dedup: bool = config["dedup"]
         self.chunk: bool = config["chunk"]
         self._engine = RuleEngine(self.rules, self.gen_triggers)
+        self._pruner = Pruner(self._manager, self._metadata)
         self._closed = False
+        adopted = sweep_orphan_scratch(
+            self.root, self._manager, self._metadata, self._chunks
+        )
+        if adopted:
+            warnings.warn(
+                f"Adopted {len(adopted)} orphaned node(s) from a crashed "
+                f"session as unhealthy: {adopted}. Their partial artifacts "
+                "are preserved as evidence.",
+                UserWarning,
+                stacklevel=2,
+            )
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -197,7 +212,9 @@ class LineageStore:
             node_id = uuid.uuid4().hex[:8]
 
         parent_ids = [p.node_id for p in parents]
-        workspace = NodeWorkspace(self.root, node_id, step_type, parent_ids)
+        workspace = NodeWorkspace(
+            self.root, node_id, step_type, parent_ids, generation=generation
+        )
         handle = RecordingNode(node_id, step_type, generation, parent_ids, workspace)
 
         start = time.monotonic()
@@ -268,10 +285,40 @@ class LineageStore:
         duration: float,
     ) -> bool:
         """Ingests the node if the block recorded anything (files or
-        metadata); discards the workspace and returns False otherwise."""
-        if not workspace.files() and not handle._entries:
+        metadata); discards the workspace and returns False otherwise.
+
+        Clean completions are fingerprinted: with dedup on, a node
+        content-identical to an existing one is not persisted again — the
+        handle is rebound onto the existing node instead. Failed runs are
+        never deduplicated (partial work must not merge into a healthy
+        node) and carry no content_hash."""
+        files = workspace.files()
+        if not files and not handle._entries:
             workspace.discard()
             return False
+
+        content_hash: Optional[str] = None
+        if healthy:
+            envelopes = {
+                entry.key: {
+                    "value": entry.value,
+                    "data_type": entry.data_type,
+                    "group": entry.group,
+                    "searchable": entry.searchable,
+                }
+                for entry in handle._entries.values()
+            }
+            digests = {
+                relpath: hashlib.sha256(path.read_bytes()).hexdigest()
+                for relpath, path in files
+            }
+            summary = ContentSummary.of(
+                handle.step_type, handle.parent_id, envelopes, digests
+            )
+            content_hash = summary.digest
+            if self.dedup and self._adopt_if_duplicate(handle, workspace, summary):
+                return True
+
         prov = capture()
         record = NodeRecord(
             node_id=handle.node_id,
@@ -282,6 +329,7 @@ class LineageStore:
             healthy=healthy,
             duration_s=round(duration, 3),
             size_bytes=0,  # recomputed by ingest from the actual files
+            content_hash=content_hash,
             prov_user=prov["user"],
             prov_python=prov["python_version"],
             prov_platform=prov["platform"],
@@ -303,6 +351,44 @@ class LineageStore:
         ingest_node(
             self._manager, self._metadata, self._chunks, workspace, record, rows
         )
+        return True
+
+    def _adopt_if_duplicate(
+        self,
+        handle: RecordingNode,
+        workspace: NodeWorkspace,
+        summary: ContentSummary,
+    ) -> bool:
+        """If a persisted node is content-identical to what the block just
+        produced, rebinds the handle onto it in place (the user's
+        ``with ... as node`` variable transparently becomes the existing
+        node, including as a later parent) and discards the scratch. The
+        fingerprint only nominates a candidate; full ContentSummary
+        equality decides, so a collision can never merge distinct nodes."""
+        candidate_id = self._metadata.find_by_hash(summary.digest)
+        if candidate_id is None:
+            return False
+        record = self._metadata.get(candidate_id)
+        if record is None:
+            return False
+        existing = ContentSummary.of(
+            record.step_type,
+            record.parent_ids,
+            self._metadata_envelopes(candidate_id),
+            {
+                relpath: artifact.sha256
+                for relpath, artifact in self._chunks.artifact_manifest(
+                    candidate_id
+                ).items()
+            },
+        )
+        if existing != summary:
+            return False  # a hash collision, not a duplicate: keep both
+        handle.node_id = record.node_id
+        handle.step_type = record.step_type
+        handle.generation = record.generation
+        handle.parent_id = list(record.parent_ids)
+        workspace.discard()
         return True
 
     # ------------------------------------------------------------------
@@ -425,6 +511,43 @@ class LineageStore:
             if self._metadata.exists(parent_id):
                 paths.extend(self._artifact_paths(parent_id, filename))
         return paths
+
+    # ------------------------------------------------------------------
+    # Maintenance
+    # ------------------------------------------------------------------
+
+    def prune(self, node: NodeLike, dry_run: bool = True) -> List[Node]:
+        """Deletes a node and the descendants it solely supports.
+
+        A descendant is removed only when EVERY one of its parents is also
+        being removed — a child still reachable from an unpruned branch
+        survives, and its edge to the pruned parent disappears via the
+        foreign-key cascade. Preview with the default ``dry_run=True``;
+        chunk space is reclaimed by ``compact()``.
+
+        Returns:
+            The nodes that were (or would be) deleted, deepest first.
+        """
+        node_id = self._node_id_of(node)
+        if node_id is None:
+            return []
+        doomed = self._pruner.plan(node_id)
+        nodes = self._nodes_for_ids(doomed)  # fetched before deletion
+        if not dry_run and doomed:
+            self._pruner.delete(doomed)
+        return nodes
+
+    def compact(self) -> int:
+        """Reclaims space: deletes chunks no artifact references (a delta
+        base still in use survives — the one-hop closure of AD5), then
+        returns freed pages to the OS via ``incremental_vacuum`` and
+        truncates the WAL. The one space-reclamation verb, replacing the
+        0.1.x ``gc``/``flush``/``clear_cache`` trio.
+
+        Returns:
+            The number of chunks removed.
+        """
+        return compact_chunks(self._manager)
 
     # ------------------------------------------------------------------
     # Power tools
