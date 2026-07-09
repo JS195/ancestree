@@ -1,10 +1,12 @@
-"""The local live server: http.server on 127.0.0.1 + a SQL-backed JSON API.
+"""The local live server: http.server on 127.0.0.1 serving the explorer.
 
-The searchable explorer. The browser is a thin client: layout comes from
-``/api/graph``, node details from ``/api/node/<id>``, and **search, diff
-and the runs table are all answered by the server running SQL** through
-the one query grammar (compiled onto ``store.find``) — no client-side
-query engine exists anywhere (AD11).
+Serves the classic explorer (the 0.1.x ``template_new.html`` with
+``styles.css`` and ``actions.js`` inlined) with the whole store baked into
+``window.PIPELINE_DATA`` — rendered fresh on every page load, so a browser
+refresh shows nodes created since the server started. Search, diff and the
+runs table run client-side in the template's JS; the JSON API below stays
+for programmatic use and answers the same questions by SQL through the one
+query grammar (compiled onto ``store.find``).
 
 Every endpoint resolves by database key (node_id, relpath) — never a
 filesystem path — so path traversal is structurally impossible. The server
@@ -29,15 +31,32 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Set, Type
 from urllib.parse import parse_qs, unquote, urlparse
 
 from ..errors import AncestreeError
-from .graph import build_graph, node_detail
+from .graph import build_graph, explorer_graph, node_detail
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from ..store import LineageStore
 
-_ASSETS = Path(__file__).parent / "assets"
-_PAGE_PATH = _ASSETS / "live.html"
-_VIS_JS_PATH = _ASSETS / "vis-network.min.js"
-_VIS_MARKER = "__ANCESTREE_VIS_JS__"
+# The classic explorer's assets, shared with the 0.1.x repo verbatim. The
+# template references them by the old repo's relative paths; the server
+# inlines each one at those exact markers.
+_ASSETS = Path(__file__).parent.parent / "assets"
+_TEMPLATE_PATH = _ASSETS / "template_new.html"
+_INLINED_ASSETS = {
+    '<script type="text/javascript" src="../../web_app/vis-network.min.js"></script>': (
+        "vis-network.min.js",
+        '<script type="text/javascript">{}</script>',
+    ),
+    '<link rel="stylesheet" href ="../../web_app/styles.css">': (
+        "styles.css",
+        "<style>{}</style>",
+    ),
+    '<script src="../../web_app/actions.js"></script>': (
+        "actions.js",
+        "<script>{}</script>",
+    ),
+}
+_NODES_MARKER = "{{PYTHON_NODES}}"
+_EDGES_MARKER = "{{PYTHON_EDGES}}"
 
 # ---------------------------------------------------------------------------
 # The query grammar (server-side; the ONE place queries are parsed)
@@ -218,19 +237,40 @@ class ServerHandle:
         self.close()
 
 
-def _render_page() -> str:
-    page = _PAGE_PATH.read_text(encoding="utf-8")
-    if page.count(_VIS_MARKER) != 1:
-        raise RuntimeError(
-            f"Template marker {_VIS_MARKER!r} appears "
-            f"{page.count(_VIS_MARKER)} times; live.html is out of sync "
-            "with the server."
-        )
-    return page.replace(_VIS_MARKER, _VIS_JS_PATH.read_text(encoding="utf-8"))
+def _load_template() -> str:
+    """template_new.html with every asset reference inlined, the
+    ``{{PYTHON_NODES}}``/``{{PYTHON_EDGES}}`` markers left for per-request
+    substitution. Each marker must appear exactly once — a template
+    drifting out of sync with the server fails loudly at startup."""
+    page = _TEMPLATE_PATH.read_text(encoding="utf-8")
+    markers = list(_INLINED_ASSETS) + [_NODES_MARKER, _EDGES_MARKER]
+    for marker in markers:
+        if page.count(marker) != 1:
+            raise RuntimeError(
+                f"Template marker {marker!r} appears "
+                f"{page.count(marker)} times; template_new.html is out of "
+                "sync with the server."
+            )
+    for marker, (filename, wrapper) in _INLINED_ASSETS.items():
+        content = (_ASSETS / filename).read_text(encoding="utf-8")
+        page = page.replace(marker, wrapper.format(content))
+    return page
+
+
+def _script_json(payload: Any) -> str:
+    # "</" must never appear raw inside the inline JSON or the browser
+    # would end the script element mid-payload; "<\/" is the same JSON.
+    return json.dumps(payload).replace("</", "<\\/")
+
+
+def _render_page(store: "LineageStore", template: str) -> str:
+    graph = explorer_graph(store)
+    page = template.replace(_NODES_MARKER, _script_json(graph["nodes"]))
+    return page.replace(_EDGES_MARKER, _script_json(graph["edges"]))
 
 
 def _make_handler(
-    store: "LineageStore", page: str
+    store: "LineageStore", template: str
 ) -> Type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args: Any) -> None:
@@ -253,6 +293,9 @@ def _make_handler(
             path = unquote(parsed.path)
             params = parse_qs(parsed.query)
             if path == "/":
+                # Rendered per request: a refresh picks up nodes created
+                # since the server started (the assets stay pre-inlined).
+                page = _render_page(store, template)
                 self._send(page.encode("utf-8"), "text/html; charset=utf-8")
                 return
             if path == "/api/graph":
@@ -276,17 +319,24 @@ def _make_handler(
                 return
             artifact_match = re.match(r"^/api/artifact/([^/]+)/(.+)$", path)
             if artifact_match:
-                node_id, relpath = artifact_match.groups()
-                # A pure database lookup: whatever the "path" says, it is
-                # only ever a key — traversal cannot reach the filesystem.
-                data = store._chunks.artifact_bytes(node_id, relpath)
-                content_type = (
-                    mimetypes.guess_type(relpath)[0]
-                    or "application/octet-stream"
-                )
-                self._send(data, content_type)
+                self._send_artifact(*artifact_match.groups())
+                return
+            link_match = re.match(r"^/([^/]+)/(.+)$", path)
+            if link_match:
+                # The template links each artifact as "<node_id>/<relpath>",
+                # which the browser resolves against "/".
+                self._send_artifact(*link_match.groups())
                 return
             self._send_json({"error": "not found"}, 404)
+
+        def _send_artifact(self, node_id: str, relpath: str) -> None:
+            # A pure database lookup: whatever the "path" says, it is
+            # only ever a key — traversal cannot reach the filesystem.
+            data = store._chunks.artifact_bytes(node_id, relpath)
+            content_type = (
+                mimetypes.guess_type(relpath)[0] or "application/octet-stream"
+            )
+            self._send(data, content_type)
 
         def _send(
             self, body: bytes, content_type: str, status: int = 200
@@ -312,7 +362,7 @@ def start_server(store: "LineageStore", port: int = 0) -> ServerHandle:
     is 0) and returns its handle. The caller stops it with
     ``handle.close()``; ``store.host_live_graph`` wraps this for the
     blocking Ctrl+C workflow."""
-    server = HTTPServer(("127.0.0.1", port), _make_handler(store, _render_page()))
+    server = HTTPServer(("127.0.0.1", port), _make_handler(store, _load_template()))
     thread = threading.Thread(
         target=server.serve_forever, name="ancestree-server", daemon=True
     )

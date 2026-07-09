@@ -58,7 +58,7 @@ A step that raises mid-run keeps its partial output, flagged `healthy=False` and
 Every node captures who ran it, on what platform, with what Python, at which git commit — with a dirty-worktree flag so you know when a result isn't reproducible.
 
 **Two ways to look at it.**
-`python -m ancestree serve` hosts a live explorer on localhost where search, node diffs and the runs table are all answered by SQL against the store. `store.generate_web_graph()` still writes a self-contained HTML snapshot you can email to a colleague or attach to a PR — view-only, opens from `file://`, no login, no link that expires.
+`store.host_live_graph()` hosts a live explorer on localhost — search, node diffs and a sortable runs table, re-rendered from the store on every refresh. `store.generate_web_graph()` still writes a self-contained HTML snapshot you can email to a colleague or attach to a PR — view-only, opens from `file://`, no login, no link that expires.
 
 **Not ML-shaped.**
 Step types are your vocabulary — ETL, simulation, lab protocol, report generation, image processing. The "runs/experiments/models" ontology that ML tools impose isn't here.
@@ -141,7 +141,7 @@ store.stats()                                     # counts, sizes, dedup ratio
 
 ## The Explorers
 
-**Live** — `store.host_live_graph()` or `python -m ancestree serve ./my_project`. The lineage graph laid out by generation and coloured by step type; a search bar that understands `field=value`, numeric filters like `accuracy>0.9` and free text (every query answered by SQL on the server, not by JavaScript); click-to-inspect metadata with inline images and tables; pin two nodes for an aligned diff; and a sortable runs table for the "pick the best run" decisions. Light and dark themes.
+**Live** — `store.host_live_graph()` or `python -m ancestree serve ./my_project`. The lineage graph laid out by generation and coloured by step type; a search bar that understands `field=value`, numeric filters like `accuracy>0.9` and free text; click-to-inspect metadata with inline images and tables; pin two nodes for an aligned diff; and a sortable runs table for the "pick the best run" decisions. Light and dark themes. From a notebook it works like a Dash app: the call returns immediately, opens your browser, and the server keeps running in the background until the store closes (re-running the cell replaces it); the CLI form blocks until Ctrl+C.
 
 **Snapshot** — `store.generate_web_graph()` renders the store into one self-contained HTML file: the graph plus click-to-view metadata, deliberately view-only. Small images ride along inside the file; anything bigger is copied next to it so links keep working offline.
 

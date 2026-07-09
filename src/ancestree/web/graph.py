@@ -3,8 +3,10 @@
 ``build_graph`` returns the lightweight skeleton (ids, labels, step types,
 levels, edges) that lays the graph out; ``node_detail`` returns one node's
 full record (structural facts, provenance, metadata envelopes, artifact
-list). The static export inlines every detail once; the live server (Phase
-8) serves them on demand — keeping its payload small (AD11).
+list). ``explorer_graph`` combines them into the payload the classic
+explorer template embeds as ``window.PIPELINE_DATA``: the skeleton plus,
+per node, the complete ``entries`` envelope dict its client-side search,
+details pane and runs table read.
 
 See REBUILD_BLUEPRINT.md section 5.3 (Phase 7, issue #18).
 """
@@ -14,7 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
 from ..errors import NodeNotFound
-from ..util import format_timestamp
+from ..util import format_timestamp, parse_iso_utc
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from ..store import LineageStore
@@ -68,6 +70,67 @@ def build_graph(store: "LineageStore") -> Dict[str, Any]:
         "nodes": nodes,
         "edges": [{"from": parent, "to": child} for parent, child in edges],
     }
+
+
+def explorer_graph(store: "LineageStore") -> Dict[str, Any]:
+    """``build_graph``'s skeleton with each node carrying its full
+    ``entries`` dict — the classic explorer's ``window.PIPELINE_DATA``
+    payload, matching the 0.1.x envelope shape key for key."""
+    payload = build_graph(store)
+    for node in payload["nodes"]:
+        node["entries"] = _node_entries(node_detail(store, node["id"]))
+    return payload
+
+
+def _node_entries(detail: Dict[str, Any]) -> Dict[str, Any]:
+    """One node's ``entries`` envelopes, in the shape the template's JS
+    reads: structural facts and provenance rebuilt as envelopes (the
+    0.1.x store wrote them that way; the database keeps them as columns),
+    user metadata as stored, and each artifact as a root-relative link
+    the server resolves by database key."""
+
+    def structural(value: Any) -> Dict[str, Any]:
+        return {
+            "value": value,
+            "data_type": "text",
+            "group": "Structural Properties",
+            "searchable": True,
+        }
+
+    # The JS reads timestamps numerically (timeline, day filter) through
+    # the attached epoch and shows the display string as the value.
+    timestamp = structural(detail["created_display"])
+    try:
+        timestamp["epoch"] = parse_iso_utc(detail["created_utc"]).timestamp()
+    except (TypeError, ValueError):
+        pass
+
+    entries = {
+        "node_id": structural(detail["node_id"]),
+        "parent_id": structural(detail["parent_id"]),
+        "generation": structural(detail["generation"]),
+        "step_type": structural(detail["step_type"]),
+        "timestamp": timestamp,
+        "healthy": structural(detail["healthy"]),
+        "duration_s": structural(detail["duration_s"]),
+        "size_bytes": structural(detail["size_bytes"]),
+    }
+    for key, value in detail["provenance"].items():
+        entries[key] = {
+            "value": value,
+            "data_type": "text",
+            "group": "Provenance",
+            "searchable": False,
+        }
+    entries.update(detail["metadata"])
+    for artifact in detail["artifacts"]:
+        relpath = artifact["relpath"]
+        entries[relpath] = {
+            "value": f"{detail['node_id']}/{relpath}",
+            "data_type": "link",
+            "group": "Artifacts",
+        }
+    return entries
 
 
 def node_detail(store: "LineageStore", node_id: str) -> Dict[str, Any]:

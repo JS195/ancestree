@@ -53,7 +53,7 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-"ancestree" = ["py.typed"]
+"ancestree" = ["py.typed", "assets/*"]
 "ancestree.web" = ["assets/*"]
 
 [tool.ruff]

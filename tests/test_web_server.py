@@ -42,14 +42,27 @@ def _get_json(url: str) -> dict:
         return json.loads(response.read())
 
 
-def test_index_serves_the_explorer(served: Env) -> None:
-    _, url = served
+def test_index_serves_the_classic_explorer(served: Env) -> None:
+    store, url = served
     with urlopen(url + "/") as response:
         html = response.read().decode()
     assert response.status == 200
-    assert "Ancestree" in html
-    assert "__ANCESTREE_VIS_JS__" not in html  # marker substituted
-    assert "/api/search" in html  # the thin client talks to the API
+    assert "window.PIPELINE_DATA" in html  # the classic template's payload
+    assert "{{PYTHON_NODES}}" not in html  # data markers substituted
+    assert "{{PYTHON_EDGES}}" not in html
+    # The old repo's relative asset references must be inlined.
+    assert "../../web_app/" not in html
+    for node in store.find():
+        assert node.node_id in html
+
+
+def test_index_rerenders_on_each_request(served: Env) -> None:
+    store, url = served
+    with store.create_node(step_type="ingest") as late:
+        late.add_meta("rows", 9)
+    with urlopen(url + "/") as response:
+        html = response.read().decode()
+    assert late.node_id in html  # created after the server started
 
 
 def test_api_graph_returns_the_skeleton(served: Env) -> None:
@@ -151,6 +164,15 @@ def test_artifacts_are_served_by_database_key(served: Env) -> None:
     assert error.value.code == 404
 
 
+def test_template_artifact_links_resolve(served: Env) -> None:
+    # The classic template links each artifact as "<node_id>/<relpath>".
+    store, url = served
+    ingest = store.latest(step_type="ingest")
+    assert ingest is not None
+    with urlopen(url + f"/{ingest.node_id}/raw.csv") as response:
+        assert response.read() == b"a,b\n1,2\n"
+
+
 def test_unknown_route_is_404_and_close_is_clean(tmp_path: Path) -> None:
     store = LineageStore(tmp_path / "proj")
     with store.create_node(step_type="ingest") as node:
@@ -167,8 +189,21 @@ def test_host_live_graph_nonblocking_closes_with_store(tmp_path: Path) -> None:
     store = LineageStore(tmp_path / "proj")
     with store.create_node(step_type="ingest") as node:
         node.add_meta("ok", True)
-    url = store.host_live_graph(block=False)
+    url = store.host_live_graph(block=False, open_browser=False)
     assert _get_json(url + "/api/graph")["nodes"]
     store.close()  # shuts the server down too
     with pytest.raises(Exception):
         urlopen(url + "/api/graph", timeout=1)
+
+
+def test_host_live_graph_rerun_replaces_previous_server(tmp_path: Path) -> None:
+    # Dash-style: re-running the cell restarts the server, no leaked thread.
+    store = LineageStore(tmp_path / "proj")
+    with store.create_node(step_type="ingest") as node:
+        node.add_meta("ok", True)
+    first = store.host_live_graph(block=False, open_browser=False)
+    second = store.host_live_graph(block=False, open_browser=False)
+    assert _get_json(second + "/api/graph")["nodes"]
+    with pytest.raises(Exception):
+        urlopen(first + "/api/graph", timeout=1)
+    store.close()

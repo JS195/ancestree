@@ -25,6 +25,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
+import weakref
 
 from .db.chunk_store import ChunkStore
 from .db.connection import ConnectionManager
@@ -90,7 +91,18 @@ class LineageStore:
         self._chunks = ChunkStore(self._manager, delta=self.chunk)
         self._engine = RuleEngine(self.rules, self.gen_triggers)
         self._pruner = Pruner(self._manager, self._metadata)
-        self._closed = False
+        # Resources are released when close() is called, when the store is
+        # garbage collected, or at interpreter exit — whichever comes first.
+        # The finalizer callback must not reference `self` (that would keep
+        # the store alive forever), so the resources travel in this dict.
+        self._resources: Dict[str, Any] = {
+            "manager": self._manager,
+            "chunks": self._chunks,
+            "live_server": None,
+        }
+        self._finalizer = weakref.finalize(
+            self, LineageStore._release, self._resources
+        )
         adopted = sweep_orphan_scratch(
             self.root, self._manager, self._metadata, self._chunks
         )
@@ -115,15 +127,18 @@ class LineageStore:
 
     def close(self) -> None:
         """Releases the store's connections and wipes the session read
-        cache. Idempotent; reopen by constructing a new LineageStore."""
-        if self._closed:
-            return
-        self._closed = True
-        live_server = getattr(self, "_live_server", None)
-        if live_server is not None:
-            live_server.close()
-        self._chunks.clear_cache()
-        self._manager.close()
+        cache. Idempotent; reopen by constructing a new LineageStore.
+        Runs automatically when the store is garbage collected or the
+        interpreter exits, so calling it explicitly is optional."""
+        self._finalizer()
+
+    @staticmethod
+    def _release(resources: Dict[str, Any]) -> None:
+        server = resources.pop("live_server", None)
+        if server is not None:
+            server.close()
+        resources["chunks"].clear_cache()
+        resources["manager"].close()
 
     def _load_or_create_config(
         self,
@@ -615,30 +630,55 @@ class LineageStore:
         """
         return export_static(self, dest=dest, include_artifacts=include_artifacts)
 
-    def host_live_graph(self, port: int = 0, block: bool = True) -> str:
-        """Serves the searchable explorer on ``127.0.0.1`` and returns its
-        URL. Search, node diff and the runs table are answered by the
-        server running SQL — the browser is a thin client (AD11).
+    def host_live_graph(self, port: int = 0, block: bool = False, open_browser: bool = True) -> str:
+        """Serves the searchable explorer on ``127.0.0.1`` and returns its URL.
+        
+        By default, this method runs non-blocking (``block=False``) and automatically
+        opens the live application graph in your default web browser (``open_browser=True``).
+        Calling it again replaces the running background server — re-running a
+        notebook cell restarts the explorer rather than leaking a second one.
 
-        Blocking by default (Ctrl+C stops it — the CLI workflow). With
-        ``block=False`` the server runs in the background until the store
-        is closed.
+        Args:
+            port: Port to bind to. Defaults to 0 (assigns an ephemeral, free port).
+            block: If True, blocks execution using a loop until a KeyboardInterrupt is received.
+            open_browser: If True, automatically launches the application in the system browser.
+
+        Returns:
+            str: The local URL running the application server.
         """
+        import webbrowser
         from .web.server import start_server
 
+        # Re-running the call (a notebook cell) replaces the previous
+        # background server instead of leaking it until close().
+        previous = self._resources.get("live_server")
+        if previous is not None:
+            self._resources["live_server"] = None
+            previous.close()
+
         handle = start_server(self, port=port)
-        print(f"Ancestree explorer: {handle.url}  (Ctrl+C to stop)")
+        url = handle.url
+        print(f"Ancestree explorer running at: {url}  (Store close will terminate background thread)")
+        
+        # Automatically launch browser window/tab if requested
+        if open_browser:
+            # A short delay can sometimes be useful if your local backend 
+            # requires split-second initialization, though start_server handles it.
+            webbrowser.open(url)
+
         if not block:
-            self._live_server = handle  # closed by store.close()
-            return handle.url
+            self._resources["live_server"] = handle  # Automatically closed when store.close() runs
+            return url
+            
         try:
             while True:
                 handle._thread.join(1)
         except KeyboardInterrupt:
-            pass
+            print("\nStopping Ancestree explorer server...")
         finally:
             handle.close()
-        return handle.url
+            
+        return url
 
     # ------------------------------------------------------------------
     # Power tools

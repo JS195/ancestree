@@ -56,7 +56,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     store = LineageStore(args.root)
     try:
         if args.command == "serve":
-            store.host_live_graph(port=args.port)
+            # The CLI has no cell to return to: block until Ctrl+C.
+            store.host_live_graph(port=args.port, block=True)
             return 0
         if args.command == "export":
             dest = store.export(dest=args.dest)
