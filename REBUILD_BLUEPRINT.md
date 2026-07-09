@@ -174,6 +174,7 @@ Each decision records what I chose, why, and what it costs. Everything in [§5](
 - **Why.** Metadata lives in SQL now. Re-inlining it all and re-implementing a query language in JavaScript would duplicate the Python query engine and does not scale — 10k annotated nodes is a multi-MB blob. One query grammar (Python → SQL) serves both `store.find(...)` and `/api/search`.
 - **Static export.** An offline single file has no server to ask, so rather than keep a second query implementation in JS, the static export is a **view-only snapshot**: graph plus click-to-view metadata, no search box. Exactly one query implementation exists as a result.
 - **Cost.** Rich search needs the server running (which is the point of live mode). The emailable file becomes a shareable snapshot rather than a search tool.
+- **Amended at v2.7.** Live mode now serves the **classic 0.1.x explorer** (`template_new.html` + `styles.css` + `actions.js`) with the whole store baked in as `window.PIPELINE_DATA`, re-rendered on every page load — I missed the old front end, and refreshing the page beats wiring a thin client for a local tool. Its search/diff/runs table run client-side in the template's JS; the SQL-backed JSON API stays for programmatic use, so the *Python* query grammar remains the single one the library itself exposes. The static export is still the view-only snapshot.
 
 ---
 
@@ -186,6 +187,7 @@ src/ancestree/
 ├── __init__.py               # public API surface (LineageStore, Node, __version__)
 ├── __main__.py               # CLI: python -m ancestree serve|export|compact
 ├── py.typed
+├── assets/                   # the classic explorer, served live (template · styles · actions · vis)
 ├── store.py                  # LineageStore — thin facade that wires the layers
 ├── maintenance.py            # Pruner + compact (chunk GC + incremental_vacuum) + orphan-scratch sweep
 ├── errors.py                 # typed exception hierarchy (cross-cutting)
@@ -219,7 +221,6 @@ src/ancestree/
     ├── server.py             # local live server (http.server) + JSON API + on-demand artifacts
     └── assets/
         ├── static.html
-        ├── live.html
         └── vis-network.min.js
 ```
 
@@ -231,10 +232,11 @@ The root holds only entry points (`store`, `__main__`) and cross-cutting leaves 
 <root>/
   ancestree.db (+ -wal, -shm)   # the entire durable store
   .scratch/<node_id>/…          # exists only mid-write, then ingested and deleted
+  .cache/<pid>-<suffix>/…       # session read cache: reassembled artifact copies
   interactive_pipeline.html     # static export, on demand
 ```
 
-The reassembled-artifact **read cache** lives in the system temp directory (via `tempfile`), *not* under the store root: leftovers from a hard kill are the OS temp-cleaner's problem (zero reaping code), and the root never collects derived data — at rest the store is just the database.
+The reassembled-artifact **read cache** lives at `<root>/.cache/<session>/` — inside the store, so the paths reads hand back make sense at a glance (v2.6; it sat in the system temp dir from v2.1 until the sweep made that unnecessary). Sessions are pid-tagged, cleaned on close/exit, and the store-open sweep reaps any whose owner died — it holds nothing but derived data, so reaping can never lose work. Reads never resolve into `.scratch` itself: the sweep adopts orphaned scratch as unhealthy *nodes*, so cache copies must not live there.
 
 ### 5.3 File-by-file — contents & rationale
 
@@ -246,7 +248,7 @@ The reassembled-artifact **read cache** lives in the system temp directory (via 
 
 **`store.py` — `LineageStore` (facade).** Construction and wiring of `ConnectionManager`, `MetadataStore`, `ChunkStore`, `RuleEngine`, `Pruner`; the context manager; and thin delegating methods (`create_node`, `get`/`find`/`latest`/`lineage`/`children`/`ancestors`, `prune`, `compact`, `sql`, `stats`, `export`, `generate_web_graph`, `host_live_graph`). The old 899-line class did everything itself; this one only orchestrates — every algorithm lives in a focused module.
 
-**`maintenance.py`.** `Pruner.prune(node_id, dry_run=True)` (DAG-aware: a child dies only if all its parents die — expressed with SQL + `ON DELETE CASCADE`); `compact()` (delete chunks nothing references — a one-hop closure under depth-1 — then `PRAGMA incremental_vacuum`, with full `VACUUM` as the deep option); and the **orphan-scratch sweep** run at store open (adopt a dead process's seeded scratch as an unhealthy node — §7.5). Destructive and space ops kept away from the read/write path; top-level because they cut across `db/` and `ingest/`. One verb (`compact`) replaces the old `gc`/`flush`/`clear_cache` trio.
+**`maintenance.py`.** `Pruner.prune(node_id, dry_run=True)` (DAG-aware: a child dies only if all its parents die — expressed with SQL + `ON DELETE CASCADE`); `compact()` (delete chunks nothing references — a one-hop closure under depth-1 — then `PRAGMA incremental_vacuum`, with full `VACUUM` as the deep option); and the **orphan-scratch sweep** run at store open (adopt a dead process's seeded scratch as an unhealthy node — §7.5 — and reap dead sessions' read-cache directories). Destructive and space ops kept away from the read/write path; top-level because they cut across `db/` and `ingest/`. One verb (`compact`) replaces the old `gc`/`flush`/`clear_cache` trio.
 
 **`errors.py`.** `AncestreeError` base plus `InvalidTransition`, `NodeNotFound`, `ArtifactNotFound`, `SchemaError`, `IntegrityError`, `CorruptChunkError` — so callers can catch selectively instead of fishing bare `ValueError`s out of library code.
 
@@ -272,7 +274,7 @@ The reassembled-artifact **read cache** lives in the system temp directory (via 
 
 **`metadata_store.py` — `MetadataStore`.** `add_node` (node row + edges + metadata rows in one transaction), `get`, `exists`, `find(**kwargs)`, `most_recent`, `children`, `lineage` (recursive CTE), `find_by_hash`, `remove`, `all_node_ids`. Replaces the old `lineage_database` and every bit of its snapshot/journal/reconcile machinery. Multi-key `find` intersects per-key subqueries on the indexed metadata table — the trickiest SQL in the build, deliberately confined to this one well-tested method. `find(parent_id=…)` matches the node's ordered parent list from the edge table (an empty list matches roots).
 
-**`chunk_store.py` — `ChunkStore`.** `put_chunk` (exact dedup first — a pooled chunk costs nothing — then, with the `chunk` policy on, super-features nominate the most similar **raw** base and a trial delta is kept only when it genuinely beats plain compression); `get_chunk` (decode and digest-verify, fetching a delta's raw base — never more than two fetches); artifact recipes; `reassemble` into the session **read cache** (a `tempfile`-managed directory in the system temp dir — leftovers after a hard kill are the OS's problem, replacing the old `fcntl` lock/reap machinery with nothing).
+**`chunk_store.py` — `ChunkStore`.** `put_chunk` (exact dedup first — a pooled chunk costs nothing — then, with the `chunk` policy on, super-features nominate the most similar **raw** base and a trial delta is kept only when it genuinely beats plain compression); `get_chunk` (decode and digest-verify, fetching a delta's raw base — never more than two fetches); artifact recipes; `reassemble` into the session **read cache** (`<root>/.cache/<pid>-<suffix>/` — pid-tagged so the store-open sweep can reap a dead session's leftovers; the old `fcntl` lock/reap machinery stays gone).
 
 #### `ingest/` — the write path (scratch → chunks → SQLite)
 
@@ -288,9 +290,9 @@ The reassembled-artifact **read cache** lives in the system temp directory (via 
 
 **`export.py`.** `export_static(store, dest)` — the **view-only** single-file HTML (graph + click-to-view metadata, no search box; AD11), rendered through validated named markers (each must appear exactly once or the export fails loudly — no more brittle exact-string tag matching). Artifact bytes live in SQLite now, so references get materialised at export time: small images inline as data URIs (the common case stays genuinely single-file), everything else lands beside the file under `<name>_files/`, and `include_artifacts=False` gives a metadata-only snapshot. The embedded JSON escapes `</` so no metadata value can break out of its script tag.
 
-**`server.py`.** The live explorer: `http.server` on `127.0.0.1` plus a JSON API answered by **server-side SQL** — `/api/graph`, `/api/node/<id>`, `/api/search` (the one query grammar, compiled onto `store.find`), `/api/diff`, `/api/runs` (the sortable runs table), `/api/artifact/<id>/<rel>` (reassembled on demand). **Every endpoint resolves by database key, never a filesystem path — traversal is structurally impossible.** Deliberately single-threaded: one SQLite read connection, trivial lifecycle, and a local single-user explorer never notices.
+**`server.py`.** The live explorer: `http.server` on `127.0.0.1` serving the **classic 0.1.x front end** (`template_new.html` with `styles.css`, `actions.js` and vis-network inlined at the template's original markers), the store baked in as `window.PIPELINE_DATA` and re-rendered on every page load — refresh the browser and nodes created since the server started appear. Artifact links resolve at `/<node_id>/<relpath>`, and the SQL-backed JSON API (`/api/graph`, `/api/node`, `/api/search`, `/api/diff`, `/api/runs`, `/api/artifact`) stays for programmatic use. **Every endpoint resolves by database key, never a filesystem path — traversal is structurally impossible.** Deliberately single-threaded: one SQLite read connection, trivial lifecycle. `host_live_graph` defaults to non-blocking + opening the browser, and re-running it replaces the previous server (notebook-friendly); the CLI passes `block=True`.
 
-**`assets/`.** `static.html` (the view-only snapshot) and `live.html` (the thin-client explorer: search bar served by SQL, pin-two diff, sortable runs tab, dark mode). No client-side query engine exists in either.
+**`web/assets/`** holds `static.html` (the view-only snapshot) and vis-network; the classic explorer's assets live at the package root (`ancestree/assets/`), shared verbatim with the 0.1.x repo.
 
 ### 5.4 God-class decomposition (old → new)
 
@@ -437,7 +439,7 @@ How it hangs together: `node` 1─N `metadata`; `node` N─N `node` via `edge` (
 |------|----------|--------------|
 | **Hot (write buffer)** | `.scratch/<id>/` plain files | Where user code writes. Native OS speed; same-session reads are native. |
 | **Durable + queryable** | `ancestree.db` (mmap'd) | Metadata: a small synchronous WAL commit. Chunks: written at ingest. Loaded via memory map, queried via indexes. |
-| **Read cache** | system temp dir (`tempfile`), plain files | First read of a packed artifact reassembles once; every read after is native. OS-cleaned; never under the store root. |
+| **Read cache** | `<root>/.cache/<session>/` plain files | First read of a packed artifact reassembles once; every read after is native. Pid-tagged; dead sessions reaped by the store-open sweep. |
 
 SQLite is the durable store and the query engine — it is never on the synchronous hot path for artifact bytes.
 
@@ -455,7 +457,7 @@ SQLite is the durable store and the query engine — it is never on the synchron
 Each node has its **own** scratch directory — there is no shared scratch, so multiple nodes in a session cannot interfere. A node's scratch is deleted once its ingest commits. Reading a logical artifact `(node_id, relpath)` always resolves in the same order:
 
 1. **Loose scratch file** — still there while the node's block is open. Native read.
-2. **Read cache** — `<system-temp>/…/<node_id>/<rel>`; reused if already reassembled this session.
+2. **Read cache** — `<root>/.cache/<session>/<node_id>/<rel>`; reused if already reassembled this session.
 3. **Reassemble from SQLite** — fetch the chunks, decode any deltas against their raw bases (depth 1), verify SHA-256, write into the cache, return that path.
 
 So reads of what a node just wrote inside its own block are native; reads of anything already ingested come out of SQLite via the cache. `node / "x"` and `artifacts()` re-resolve every call — don't hold a raw scratch `Path` across the block boundary (it gets deleted at ingest); re-fetch and you always get a valid path.
@@ -484,7 +486,7 @@ Gone outright thanks to AD1–AD3 and AD6:
 - Per-node directories, `Node.path`, and the directory walk that was copy-pasted five times.
 - The system-vs-user key bookkeeping (three key-sets + `_system_keys`).
 - `flatten_meta`, `to_db`, and most of `is_match` (→ SQL).
-- The read cache's `fcntl` lock + dead-session reaping (→ `tempfile` in the system temp dir).
+- The read cache's `fcntl` lock files (→ pid-tagged session dirs, reaped by the same sweep that already handles orphaned scratch).
 - Three Node constructors + `_hydrate`.
 - The doc drift: phantom `compact()` references, the `dedupe`/`chunk` signature-vs-docstring contradiction, the two time parsers.
 
@@ -628,7 +630,7 @@ A deliberate **clean break** (v2.5): the on-disk format and the API both change,
 - **Delta chunk** — a chunk stored as zlib dictionary-compression against a similar *raw* base chunk (Layer 2; depth capped at 1).
 - **Super-feature** — a cheap min-wise hash summarising a chunk, used to find similar chunks.
 - **Scratch** — the transient `.scratch/<node_id>/` directory a node's artifacts get written into before ingest.
-- **Read cache** — the ephemeral, session-scoped copies of reassembled packed artifacts, kept in the system temp directory (OS-cleaned).
+- **Read cache** — the ephemeral, session-scoped copies of reassembled packed artifacts, kept at `<root>/.cache/<session>/` (dead sessions reaped by the store-open sweep).
 - **Lineage** — the transitive ancestry of a node (a recursive walk over `edge`).
 
 ---
@@ -647,3 +649,5 @@ A deliberate **clean break** (v2.5): the on-disk format and the API both change,
 | 2026-07-08 | v2.3 — **Layer-2 benchmark done (AD5): `chunk` defaults ON.** On the target workload (12 near-duplicate versions, ~1% scattered in-place edits) Layer 2 stored **2.3× less** than Layer 1 alone (ratio 2.31 vs 1.00) for 1.07× ingest and sub-millisecond read overhead — `benchmarks/RESULTS.md`. Two implementation notes worth remembering: resemblance uses min-wise transforms over strided 8-byte samples (a wrong candidate only costs one trial encode, because a delta is kept solely when it beats plain compression); and the zdict has to be truncated to 32,256 bytes because zlib's usable match distance is `w_size − MIN_LOOKAHEAD` (32,506) — a full-32K dictionary leaves aligned content exactly one step out of reach and every delta silently degenerates. Found that one the hard way. |
 | 2026-07-08 | v2.4 — mid-rebuild parity review against the 0.1.x surface (the goal is an SQL transition that keeps every functionality). Fixed in code: **`find(parent_id=…)` restored** (parents live in the edge table now, so it silently matched nothing) and **`store.export()` delivered** (promised in §11 but scheduled in no phase). Fixed in the plan: the old explorer's **runs table and node diff** pinned as explicit Phase 8 exit criteria. Confirmed deliberate, not gaps: `Node.path`, `rebuild_db_from_disk`, `gc`/`flush`/`clear_cache` → `compact`, structural facts as attributes. Added `docs/examples/sql_backend_quickstart.ipynb`, executed end to end. |
 | 2026-07-08 | v2.5 — **dropped backwards compatibility entirely.** The 0.1.x modules, their tests and the old assets are deleted now rather than at Phase 9, and the package exports flip to the new API. The Phase 9 **migration tool is gone** — old stores stay on 0.1.x. Compat shims removed from the new code (`InvalidTransition` no longer subclasses `ValueError`; the alias reserved keys go). The safety-net policy is retired — the rewritten suite is the safety net. Phase 9 shrinks to release polish. |
+| 2026-07-09 | v2.6 — **read cache moved back inside the store**: `<root>/.cache/<pid>-<suffix>/` instead of the system temp dir, so the paths reads hand back make sense at a glance and the layout matches what I'm used to from 0.1.x. This partially reverses v2.1 — the reason it lived in temp was "zero reaping code", and that argument expired when the Phase 5 sweep landed: it already runs at every store open with a pid-liveness check, so reaping dead cache sessions is ~15 extra lines on machinery that exists anyway. Cache dirs hold only derived data, so reaping can never lose work. Reads deliberately do NOT resolve into `.scratch` (the other half of the question that prompted this): the sweep adopts orphaned scratch as unhealthy nodes, so cache copies there would masquerade as crashed work. |
+| 2026-07-09 | v2.7 — **the classic explorer is back as live mode** (my call): the server renders the 0.1.x `template_new.html` + `styles.css` + `actions.js` with the whole store as `window.PIPELINE_DATA`, fresh on every page load — I missed the old front end, and a refresh is all the "live" a local tool needs. Its search/diff/runs table run client-side; the SQL JSON API stays for programmatic use, so AD11 is amended rather than reversed (the Python→SQL grammar remains the one the library exposes). `live.html` deleted; `ancestree/assets/` is tracked and ships again. `host_live_graph` is now non-blocking by default, opens the browser, and re-running it replaces the previous server; store teardown runs via a `weakref` finalizer so close() is optional. Repo cleanup in the same pass: the temporarily-restored V1 modules and their test suite deleted again, and the docs site pages (index, caveats, reference, examples, mkdocs nav) rewritten for the new API — no V1 references remain outside `docs/examples/legacy-0.1/`, which stays on record. |
