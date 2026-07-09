@@ -14,10 +14,11 @@ node's chunks, artifact rows and metadata commit as ONE atomic unit (AD3) —
 the packing pipeline owns that transaction. Reads go through the manager's
 thread-local connections.
 
-Also owns the session **read cache**: reassembled artifacts land in a
-``tempfile``-managed directory in the system temp dir — never under the
-store root — so hard-killed leftovers are the OS temp-cleaner's problem and
-the store at rest stays just the database.
+Also owns the session **read cache**: reassembled artifacts land under
+``<root>/.cache/<session>/`` — inside the store, so the paths reads hand
+back make sense at a glance. Sessions are pid-tagged; one that dies without
+cleaning up leaves only derived data behind, and the sweep that already
+runs at store open (for orphaned scratch) reaps any whose owner is dead.
 
 See REBUILD_BLUEPRINT.md section 5.3 (Phase 3, issue #14).
 """
@@ -26,12 +27,13 @@ from __future__ import annotations
 
 import atexit
 import hashlib
+import os
 import shutil
 import sqlite3
-import tempfile
 import time
 import uuid
 import zlib
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -338,18 +340,25 @@ class ChunkStore:
     # ------------------------------------------------------------------
 
     def _cache_dir(self) -> Path:
-        """The session cache directory, created on first packed read. It
-        lives in the system temp dir (never under the store root), so a
-        hard-killed session's leftovers are the OS temp-cleaner's problem."""
+        """The session cache directory, created on first packed read:
+        ``<root>/.cache/<pid>-<suffix>/`` — inside the store, so the paths
+        reads return read like they belong to it. The pid tag is what lets
+        the store-open sweep reap a session whose owner died without
+        cleaning up (maintenance.sweep_orphan_scratch)."""
         if self._cache_root is None:
-            self._cache_root = Path(tempfile.mkdtemp(prefix="ancestree-cache-"))
+            session = f"{os.getpid()}-{uuid.uuid4().hex[:8]}"
+            self._cache_root = self._manager.db_path.parent / ".cache" / session
+            self._cache_root.mkdir(parents=True, exist_ok=True)
             atexit.register(self.clear_cache)
         return self._cache_root
 
     def clear_cache(self) -> None:
-        """Deletes this session's reassembled copies. Idempotent; also runs
-        at interpreter exit. Pure derived data — the next read regenerates
-        anything needed from the chunk pool."""
+        """Deletes this session's reassembled copies, and the shared
+        ``.cache/`` parent once the last session leaves. Idempotent; also
+        runs at interpreter exit. Pure derived data — the next read
+        regenerates anything needed from the chunk pool."""
         if self._cache_root is not None:
             shutil.rmtree(self._cache_root, ignore_errors=True)
+            with suppress(OSError):  # non-empty: another live session owns it
+                self._cache_root.parent.rmdir()
             self._cache_root = None

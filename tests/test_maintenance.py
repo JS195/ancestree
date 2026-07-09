@@ -1,6 +1,7 @@
 """Phase 5: prune, compact and the orphan-scratch sweep (issue #16)."""
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -198,3 +199,30 @@ def test_sweep_cleans_committed_leftovers(
 
     assert len(second.find()) == 1  # no duplicate appeared
     assert not leftovers.path.exists()
+
+
+def test_sweep_reaps_dead_cache_sessions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "proj"
+    stale = root / ".cache" / "424242-deadbeef"
+    stale.mkdir(parents=True)
+    (stale / "old.bin").write_bytes(b"stale derived data")
+    (root / ".cache" / "not-a-session").mkdir()  # litter: not pid-tagged
+
+    monkeypatch.setattr("ancestree.maintenance._pid_alive", lambda pid: False)
+    store = LineageStore(root)
+    assert not stale.exists()
+    assert not (root / ".cache" / "not-a-session").exists()
+    store.close()
+
+
+def test_sweep_keeps_live_cache_sessions(tmp_path: Path) -> None:
+    root = tmp_path / "proj"
+    live = root / ".cache" / f"{os.getpid()}-abc12345"
+    live.mkdir(parents=True)
+    (live / "in-use.bin").write_bytes(b"another session is reading this")
+
+    store = LineageStore(root)  # our pid is alive: never touched
+    assert live.exists()
+    store.close()

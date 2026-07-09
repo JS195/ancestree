@@ -67,7 +67,13 @@ def test_create_node_persists_everything(
     assert not (root / node.node_id).exists()
     assert list((root / ".scratch").iterdir()) == []
     names = {p.name for p in root.iterdir()}
-    assert names <= {"ancestree.db", "ancestree.db-wal", "ancestree.db-shm", ".scratch"}
+    assert names <= {
+        "ancestree.db",
+        "ancestree.db-wal",
+        "ancestree.db-shm",
+        ".scratch",
+        ".cache",  # the session read cache (reassembled artifact copies)
+    }
 
 
 def test_untouched_node_is_discarded_with_warning(store: LineageStore) -> None:

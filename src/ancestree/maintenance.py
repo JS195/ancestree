@@ -5,7 +5,8 @@ metadata DAG and deletes rows (edges, metadata and artifact recipes cascade
 via foreign keys); ``compact_chunks`` removes chunks nothing references any
 more and returns freed pages to the OS; ``sweep_orphan_scratch`` runs at
 store open and adopts a dead process's seeded scratch as an unhealthy node
-— partial work stays evidence even across a SIGKILL, which 0.1.x lost.
+— partial work stays evidence even across a SIGKILL, which 0.1.x lost —
+and reaps read-cache sessions (``<root>/.cache/``) whose owner is gone.
 
 No lock files and no grace windows: synchronous ingest commits a node's
 chunks and recipes atomically, so compact can never observe a chunk whose
@@ -150,13 +151,37 @@ def _pid_alive(pid: int) -> bool:
     return True
 
 
+def _sweep_stale_cache(root: Path) -> None:
+    """Reaps read-cache sessions whose owning process is dead.
+
+    Cache directories are pid-tagged (``<pid>-<suffix>``) and hold pure
+    derived data — anything removed regenerates from the chunk pool on the
+    next read — so removal can never lose work. Directories that are not
+    session-shaped are litter and go too. Live sessions are never touched.
+    """
+    cache_root = root / ".cache"
+    if not cache_root.exists():
+        return
+    for entry in cache_root.iterdir():
+        if not entry.is_dir():
+            continue
+        try:
+            pid = int(entry.name.split("-", 1)[0])
+        except ValueError:
+            shutil.rmtree(entry, ignore_errors=True)
+            continue
+        if not _pid_alive(pid):
+            shutil.rmtree(entry, ignore_errors=True)
+
+
 def sweep_orphan_scratch(
     root: Union[str, Path],
     manager: ConnectionManager,
     metadata: MetadataStore,
     chunks: ChunkStore,
 ) -> List[str]:
-    """Adopts scratch directories orphaned by a hard-killed session.
+    """Adopts scratch directories orphaned by a hard-killed session, and
+    reaps dead sessions' read-cache directories.
 
     Runs at store open. For each ``.scratch/<id>/`` whose seed names a dead
     process: a directory holding artifacts and no committed row becomes an
@@ -164,6 +189,7 @@ def sweep_orphan_scratch(
     whose node already committed is just deleted; unseeded, unreadable or
     empty directories are litter and are removed. Directories owned by a
     live process are never touched. Returns the adopted node ids."""
+    _sweep_stale_cache(Path(root))
     scratch_root = Path(root) / ".scratch"
     if not scratch_root.exists():
         return []
