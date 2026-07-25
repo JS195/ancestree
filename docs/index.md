@@ -44,11 +44,11 @@
 
     Nodes are created in a context manager. If your code fails, partial work is kept and flagged unhealthy; untouched nodes vanish without a trace.
 
-- :material-folder-outline:{ .lg .middle } **Just files on disk**
+- :material-database-outline:{ .lg .middle } **One SQLite file**
 
     ---
 
-    Every node is a plain directory with a `meta.json`. No server, no database. Lineage survives restarts, is evaluated lazily, and can always be rebuilt from disk. Safe on NFS.
+    The whole store — metadata, lineage and deduplicated artifact bytes — is a single `ancestree.db`. No server, no database to run, nothing to configure. Back it up by copying one file, or query it directly with `store.sql(...)`.
 
 </div>
 
@@ -62,20 +62,19 @@ pip install ancestree-track
 
 ## How it works
 
-There is no hidden state: a `LineageStore` is just a root directory, and every node is a subdirectory holding your artifacts plus a `meta.json` describing where it came from.
+There is no hidden state: a `LineageStore` is a root directory holding one SQLite database, and every node is a row in it — its artifacts stored as deduplicated, content-addressed chunks alongside its metadata and lineage.
 
 ```
 my_store/
-├── 1f3a9c2e/                    # ingest
-│   ├── raw.csv
-│   └── meta.json
-├── 8b07d41a/                    # clean
-│   ├── cleaned.csv
-│   └── meta.json
-└── interactive_pipeline.html    # generated web graph
+├── ancestree.db                 # the entire store: nodes, metadata, artifacts
+├── interactive_pipeline.html    # generated web graph (optional snapshot)
+├── .scratch/                    # a node's files, only while its block runs
+└── .cache/                      # artifacts reassembled for reading, per session
 ```
 
-The store keeps a lightweight search index alongside, and because the directories are the source of truth, the index can always be rebuilt with `rebuild_db_from_disk()`. Delete a branch with `prune()`, hand the directory to a colleague, or version it — it's just files.
+Only `ancestree.db` holds anything you cannot regenerate. The two dotted directories are working space: `.scratch/` holds a node's files while its `with` block runs and is emptied when the node commits, and `.cache/` holds artifacts reassembled for reading and is cleared when the session ends. Deleting either at rest costs you nothing. While a store is *open*, SQLite also keeps `ancestree.db-wal` and `-shm` beside the database — see [Caveats](caveats.md#one-file-is-the-whole-store--but-a-live-store-is-three) before you back one up.
+
+Every write is a real transaction, so a node is either committed whole or not at all. Delete a branch with `prune()` — it reclaims the space for you; pull grep-able `meta.json` sidecars out any time with `export()`; or ask the database anything with `store.sql(...)` — the schema is documented and versioned.
 
 ## Track, search, and visualise your pipeline:
 
@@ -92,22 +91,20 @@ The store keeps a lightweight search index alongside, and because the directorie
 
     with store.create_node(step_type="ingest") as node:
         node.add_meta("source", "warehouse")
-
-
     ```
 
 === ":material-magnify: Search"
 
     ```python
     # Match metadata by value, or by predicate
-    cleaned = store.find_node(step_type="clean")
-    big = store.find_node(rows=lambda r: r and r > 1000)
+    cleaned = store.find(step_type="clean")
+    big = store.find(rows=lambda r: r and r > 1000)
 
     # Pick up where you left off
-    latest = store.get_most_recent_node(step_type="clean")
+    latest = store.latest(step_type="clean")
 
     # Trace a node's full ancestry, oldest first
-    history = store.get_lineage(latest)
+    history = store.lineage(latest)
     ```
 
 === ":material-chart-timeline-variant: Visualise"
@@ -127,18 +124,25 @@ Metadata isn't just a search index — it's also the instruction set for how eac
 with store.create_node(step_type="model", parent=parent) as node:
     fig.savefig(node / "confusion.png")
 
-    node.add_meta("accuracy", 0.94, group="Metrics")          # searchable, shown as text
+    node.add_meta("accuracy", 0.94, group="Metrics")  # searchable, shown as text
 
-    node.add_meta("confusion_matrix", node / "confusion.png", # rendered inline as a figure
-                  data_type="auto", group="Figures")
+    node.add_meta(
+        "confusion_matrix",
+        node / "confusion.png",  # rendered inline as a figure
+        data_type="auto",
+        group="Figures",
+    )
 
-    node.add_meta("notes", "rerun after fix",                 # display-only, excluded from search
-                  searchable=False)
+    node.add_meta(
+        "notes",
+        "rerun after fix",  # display-only, excluded from search
+        searchable=False,
+    )
 ```
 
 You don't need metadata to expose your files: every artifact a node contains automatically appears as a clickable link under its **Artifacts** heading. Use `data_type="image"` when you want a figure actually displayed inline — a confusion matrix, a loss curve, a sample plot — so the graph doubles as a visual report of your pipeline.
 
 ## Next steps
 
-- Walk through the [Examples](examples.md) to see complete pipelines, including a full [machine learning workflow](examples/ML_pipeline.ipynb).
+- Walk through the [Examples](examples.md) to see complete pipelines, including a full [machine learning workflow](examples/ml_pipeline.ipynb).
 - Browse the [API Reference](reference.md) for full details on `LineageStore` and `Node`.

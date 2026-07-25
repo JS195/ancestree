@@ -5,7 +5,7 @@ hide:
 
 # Live Demo
 
-This is a real, unmodified `interactive_pipeline.html` produced by the [Machine Learning Pipeline example](examples/ML_pipeline.ipynb) — the iris dataset run through two scalers, three embedding methods, and two clustering algorithms, tracked as 21 nodes across four generations.
+This is a real, unmodified `interactive_pipeline.html` produced by the [Machine Learning Pipeline example](examples/ml_pipeline.ipynb) — the iris dataset run through two scalers, three embedding methods, and two clustering algorithms, tracked as 21 nodes across four generations.
 
 Explore it exactly as you would on your own machine: drag to pan, scroll to zoom, and **click any node** to inspect its metadata — hyperparameters, scores, the cluster plots rendered inline as figures, and links to every artifact the node produced.
 

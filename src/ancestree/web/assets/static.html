@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ancestree — pipeline snapshot</title>
+<style>
+:root {
+  --bg: #f7f7f8; --panel: #ffffff; --ink: #1c2024; --muted: #6b7280;
+  --line: #e0e2e6; --accent: #3b6ea5; --bad: #e5484d; --chip: #eef1f5;
+}
+html[data-theme="dark"] {
+  --bg: #16181d; --panel: #1f2229; --ink: #e6e8eb; --muted: #9aa0a8;
+  --line: #33373f; --accent: #7aa7d4; --bad: #ff6b70; --chip: #2a2e36;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  height: 100vh; display: flex; flex-direction: column;
+}
+header {
+  display: flex; align-items: center; gap: 14px; padding: 10px 16px;
+  background: var(--panel); border-bottom: 1px solid var(--line);
+}
+header h1 { font-size: 16px; margin: 0; }
+#summary { color: var(--muted); }
+.hint { margin-left: auto; color: var(--muted); font-size: 12px; }
+#theme {
+  border: 1px solid var(--line); background: var(--chip); color: var(--ink);
+  border-radius: 6px; padding: 3px 10px; cursor: pointer; font-size: 14px;
+}
+main { flex: 1; display: flex; min-height: 0; }
+#graph { flex: 1; min-width: 0; }
+#panel {
+  width: 380px; overflow-y: auto; background: var(--panel);
+  border-left: 1px solid var(--line); padding: 14px 16px;
+}
+#panel .placeholder { color: var(--muted); margin-top: 20px; }
+#panel h2 { font-size: 15px; margin: 0 0 2px; word-break: break-all; }
+#panel h3 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); margin: 18px 0 6px;
+}
+.badge {
+  display: inline-block; font-size: 11px; border-radius: 10px;
+  padding: 1px 8px; background: var(--chip); color: var(--muted);
+}
+.badge.bad { background: var(--bad); color: #fff; }
+table.kv { width: 100%; border-collapse: collapse; }
+table.kv td { padding: 3px 0; vertical-align: top; border-bottom: 1px solid var(--line); }
+table.kv td.k { color: var(--muted); width: 38%; padding-right: 8px; word-break: break-all; }
+table.kv td.v { word-break: break-word; }
+pre {
+  background: var(--chip); border-radius: 6px; padding: 8px;
+  overflow-x: auto; font-size: 12px; margin: 4px 0;
+}
+table.data { border-collapse: collapse; font-size: 12px; margin: 4px 0; max-width: 100%; display: block; overflow-x: auto; }
+table.data th, table.data td { border: 1px solid var(--line); padding: 3px 7px; }
+img.meta { max-width: 100%; border-radius: 6px; border: 1px solid var(--line); margin: 4px 0; }
+a { color: var(--accent); }
+ul.arts { list-style: none; padding: 0; margin: 0; }
+ul.arts li { padding: 3px 0; border-bottom: 1px solid var(--line); display: flex; gap: 8px; }
+ul.arts .size { margin-left: auto; color: var(--muted); white-space: nowrap; }
+.parent-link { cursor: pointer; color: var(--accent); text-decoration: underline; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ancestree</h1>
+  <div id="summary"></div>
+  <span class="hint">view-only snapshot — the searchable explorer is the live server</span>
+  <button id="theme" title="toggle dark mode">&#9681;</button>
+</header>
+<main>
+  <div id="graph"></div>
+  <aside id="panel"><div class="placeholder">Click a node to inspect it.</div></aside>
+</main>
+<script>__ANCESTREE_VIS_JS__</script>
+<script id="graph-data" type="application/json">__ANCESTREE_GRAPH_JSON__</script>
+<script>
+"use strict";
+var GRAPH = JSON.parse(document.getElementById("graph-data").textContent);
+
+/* ---- helpers (textContent everywhere: metadata can hold anything) ---- */
+function el(tag, cls, text) {
+  var node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined && text !== null) node.textContent = String(text);
+  return node;
+}
+function fmtBytes(n) {
+  if (n === null || n === undefined) return "";
+  var units = ["B", "KiB", "MiB", "GiB"]; var i = 0;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i += 1; }
+  return (i === 0 ? n : n.toFixed(1)) + " " + units[i];
+}
+
+/* ---------------------------- the graph ----------------------------- */
+var unhealthyCount = GRAPH.nodes.filter(function (n) { return !n.healthy; }).length;
+document.getElementById("summary").textContent =
+  GRAPH.store + " · " + GRAPH.nodes.length + " nodes" +
+  (unhealthyCount ? " · " + unhealthyCount + " unhealthy" : "");
+
+var visNodes = new vis.DataSet(GRAPH.nodes.map(function (n) {
+  var spec = { id: n.id, label: n.label, group: n.group, level: n.level, shape: "box", margin: 8 };
+  if (!n.healthy) { spec.color = { border: "#e5484d" }; spec.borderWidth = 3; spec.shapeProperties = { borderDashes: [6, 4] }; }
+  return spec;
+}));
+var visEdges = new vis.DataSet(GRAPH.edges.map(function (e, i) {
+  return { id: "e" + i, from: e.from, to: e.to, arrows: "to" };
+}));
+var network = new vis.Network(
+  document.getElementById("graph"),
+  { nodes: visNodes, edges: visEdges },
+  {
+    layout: { hierarchical: { enabled: true, direction: "LR", sortMethod: "directed", levelSeparation: 190, nodeSpacing: 70 } },
+    physics: false,
+    interaction: { hover: true },
+    edges: { color: { opacity: 0.65 }, smooth: { type: "cubicBezier", forceDirection: "horizontal" } }
+  }
+);
+
+/* ancestry highlight: parents up + children down from the selection */
+var parentsOf = {}, childrenOf = {};
+GRAPH.edges.forEach(function (e) {
+  (parentsOf[e.to] = parentsOf[e.to] || []).push(e.from);
+  (childrenOf[e.from] = childrenOf[e.from] || []).push(e.to);
+});
+function related(id) {
+  var keep = {}; var stack = [id]; keep[id] = true;
+  var walk = function (map) {
+    stack = [id];
+    while (stack.length) {
+      var current = stack.pop();
+      (map[current] || []).forEach(function (next) {
+        if (!keep[next]) { keep[next] = true; stack.push(next); }
+      });
+    }
+  };
+  walk(parentsOf); walk(childrenOf);
+  return keep;
+}
+function setDimming(keep) {
+  visNodes.update(GRAPH.nodes.map(function (n) {
+    return { id: n.id, opacity: keep === null || keep[n.id] ? 1 : 0.2 };
+  }));
+}
+network.on("selectNode", function (params) {
+  var id = params.nodes[0];
+  setDimming(related(id));
+  renderDetail(id);
+});
+network.on("deselectNode", function () { setDimming(null); });
+
+/* --------------------------- the detail ----------------------------- */
+function kvTable(rows) {
+  var table = el("table", "kv");
+  rows.forEach(function (row) {
+    var tr = el("tr");
+    tr.appendChild(el("td", "k", row[0]));
+    var v = el("td", "v");
+    if (row[1] instanceof Node) v.appendChild(row[1]); else v.textContent = row[1];
+    tr.appendChild(v);
+    table.appendChild(tr);
+  });
+  return table;
+}
+function renderValue(env, hrefs) {
+  var value = env.value, kind = env.data_type;
+  if (kind === "json") return el("pre", null, JSON.stringify(value, null, 2));
+  if (kind === "code") return el("pre", "code", value);
+  if (kind === "table" && value && value.columns) {
+    var table = el("table", "data"), head = el("tr");
+    value.columns.forEach(function (c) { head.appendChild(el("th", null, c)); });
+    table.appendChild(head);
+    (value.rows || []).forEach(function (r) {
+      var tr = el("tr");
+      r.forEach(function (cell) { tr.appendChild(el("td", null, cell)); });
+      table.appendChild(tr);
+    });
+    return table;
+  }
+  if (kind === "image") {
+    var src = hrefs[value] || value;
+    var img = el("img", "meta"); img.src = src; img.alt = value;
+    return img;
+  }
+  if (kind === "link") {
+    var href = /^https?:\/\//.test(String(value)) ? value : (hrefs[value] || null);
+    if (href) { var a = el("a", null, value); a.href = href; a.target = "_blank"; return a; }
+    return el("span", null, value);
+  }
+  return el("span", null, value);
+}
+function renderDetail(id) {
+  var d = GRAPH.details[id];
+  var panel = document.getElementById("panel");
+  panel.textContent = "";
+  if (!d) { panel.appendChild(el("div", "placeholder", "No detail recorded.")); return; }
+
+  panel.appendChild(el("h2", null, d.step_type + " · " + d.node_id));
+  panel.appendChild(el("span", "badge" + (d.healthy ? "" : " bad"), d.healthy ? "healthy" : "unhealthy"));
+
+  panel.appendChild(el("h3", null, "Structural"));
+  var parents = el("span");
+  if (d.parent_id.length === 0) parents.textContent = "— (root)";
+  d.parent_id.forEach(function (pid, i) {
+    if (i) parents.appendChild(document.createTextNode(", "));
+    var link = el("span", "parent-link", pid);
+    link.onclick = function () { network.selectNodes([pid]); setDimming(related(pid)); renderDetail(pid); };
+    parents.appendChild(link);
+  });
+  panel.appendChild(kvTable([
+    ["created", d.created_display],
+    ["generation", d.generation],
+    ["parents", parents],
+    ["duration", d.duration_s === null ? "" : d.duration_s + " s"],
+    ["size", fmtBytes(d.size_bytes)]
+  ]));
+
+  var groups = {};
+  Object.keys(d.metadata).sort().forEach(function (key) {
+    var group = d.metadata[key].group || "General";
+    (groups[group] = groups[group] || []).push(key);
+  });
+  Object.keys(groups).sort().forEach(function (group) {
+    panel.appendChild(el("h3", null, group));
+    var table = el("table", "kv");
+    groups[group].forEach(function (key) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "k", key));
+      var v = el("td", "v");
+      v.appendChild(renderValue(d.metadata[key], d.artifact_hrefs));
+      tr.appendChild(v);
+      table.appendChild(tr);
+    });
+    panel.appendChild(table);
+  });
+
+  if (d.artifacts.length) {
+    panel.appendChild(el("h3", null, "Artifacts"));
+    var list = el("ul", "arts");
+    d.artifacts.forEach(function (artifact) {
+      var li = el("li");
+      var href = d.artifact_hrefs[artifact.relpath];
+      if (href) {
+        var a = el("a", null, artifact.relpath); a.href = href; a.target = "_blank";
+        li.appendChild(a);
+      } else {
+        li.appendChild(el("span", null, artifact.relpath));
+      }
+      li.appendChild(el("span", "size", fmtBytes(artifact.size)));
+      list.appendChild(li);
+    });
+    panel.appendChild(list);
+  }
+
+  panel.appendChild(el("h3", null, "Provenance"));
+  panel.appendChild(kvTable(Object.keys(d.provenance).sort().map(function (key) {
+    return [key, d.provenance[key] === null ? "" : String(d.provenance[key])];
+  })));
+}
+
+/* ------------------------------ theme ------------------------------- */
+var themeButton = document.getElementById("theme");
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem("ancestree-theme", theme); } catch (err) { /* file:// may block storage */ }
+}
+themeButton.onclick = function () {
+  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+};
+try {
+  var saved = localStorage.getItem("ancestree-theme");
+  if (saved) applyTheme(saved);
+} catch (err) { /* ignore */ }
+</script>
+</body>
+</html>
