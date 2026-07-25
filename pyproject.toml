@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ancestree-track"
-version = "0.1.0"
+version = "0.2.0"
 description = "A Python package for tracing and managing data lineage"
 readme = "README.md"
 authors = [
@@ -33,7 +33,9 @@ dependencies = []
 dev = [
     "pytest",  # testing
     "pytest-cov",
-    "ruff",    # linting and formatting
+    "ruff==0.16.0",  # linting and formatting (pinned: its default
+                     # rule set widens between releases, which turns
+                     # a green CI red without a code change)
     "mypy",    # type checking
 ]
 
@@ -53,16 +55,21 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-"ancestree" = ["py.typed"]
+"ancestree" = ["py.typed", "assets/*"]
 "ancestree.web" = ["assets/*"]
 
 [tool.ruff]
 line-length = 88
+# The 0.1.x notebooks are an archive, kept to show what the old API looked
+# like. They are not maintained code and are not linted for style.
+extend-exclude = ["docs/examples/legacy-0.1"]
 
 [tool.ruff.lint.per-file-ignores]
 # Example/benchmark notebooks favour compact cells; allow one-liner if/for and
 # semicolons there (still linted for real issues like unused/undefined names).
-"*.ipynb" = ["E701", "E702"]
+# B023 fires on the timing closures, where the loop variable is consumed by
+# timeit before the next iteration — a false positive for that pattern.
+"*.ipynb" = ["E701", "E702", "B023"]
 
 [tool.ruff.format]
 quote-style = "double"

@@ -7,7 +7,6 @@ directory disappears on success (and survives on failure)."""
 import json
 import sqlite3
 from pathlib import Path
-from typing import Tuple
 
 import pytest
 
@@ -21,7 +20,7 @@ from ancestree.db.metadata_store import (
 from ancestree.ingest.packing import ingest_node
 from ancestree.ingest.workspace import SEED_FILENAME, NodeWorkspace
 
-Env = Tuple[ConnectionManager, MetadataStore, ChunkStore]
+Env = tuple[ConnectionManager, MetadataStore, ChunkStore]
 
 
 @pytest.fixture()
@@ -30,7 +29,7 @@ def env(tmp_path: Path) -> Env:
     return manager, MetadataStore(manager), ChunkStore(manager)
 
 
-def _record(node_id: str, parents: Tuple[str, ...] = ()) -> NodeRecord:
+def _record(node_id: str, parents: tuple[str, ...] = ()) -> NodeRecord:
     return NodeRecord(
         node_id=node_id,
         step_type="clean",
@@ -144,9 +143,7 @@ def test_ingest_metadata_only_node(env: Env, tmp_path: Path) -> None:
     assert not chunk_store.has_artifacts("n1")
 
 
-def test_failed_ingest_rolls_back_and_keeps_scratch(
-    env: Env, tmp_path: Path
-) -> None:
+def test_failed_ingest_rolls_back_and_keeps_scratch(env: Env, tmp_path: Path) -> None:
     manager, metadata_store, chunk_store = env
     metadata_store.add_node(_record("dup"))  # occupy the id
 
@@ -160,16 +157,13 @@ def test_failed_ingest_rolls_back_and_keeps_scratch(
     assert ws.path.exists()  # partial work is preserved for inspection
 
 
-def test_composed_write_is_atomic_across_stores(
-    env: Env, tmp_path: Path
-) -> None:
+def test_composed_write_is_atomic_across_stores(env: Env, tmp_path: Path) -> None:
     # The reentrant-transaction property ingest relies on, demonstrated at
     # the store level: chunks and the node row vanish together on failure.
     manager, metadata_store, chunk_store = env
-    with pytest.raises(RuntimeError, match="boom"):
-        with manager.write() as conn:
-            chunk_store.put_chunk(conn, b"y" * 50_000)
-            metadata_store.add_node(_record("doomed"))
-            raise RuntimeError("boom")
+    with pytest.raises(RuntimeError, match="boom"), manager.write() as conn:
+        chunk_store.put_chunk(conn, b"y" * 50_000)
+        metadata_store.add_node(_record("doomed"))
+        raise RuntimeError("boom")
     assert _chunk_count(manager) == 0
     assert not metadata_store.exists("doomed")

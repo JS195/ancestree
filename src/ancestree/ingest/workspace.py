@@ -19,13 +19,20 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import uuid
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple, Union
+from typing import Any
 
 #: The crash-recovery seed, written at block start. Hidden and reserved:
 #: never listed as an artifact, never writable through resolve().
 SEED_FILENAME = ".ancestree-seed.json"
+
+#: Prefix for the staging directory a node is assembled in before being
+#: renamed into place. Dot-prefixed so the orphan sweep skips it: a staging
+#: directory is by definition not yet a node.
+STAGING_PREFIX = ".staging-"
 
 
 class NodeWorkspace:
@@ -33,7 +40,7 @@ class NodeWorkspace:
 
     def __init__(
         self,
-        root: Union[str, Path],
+        root: str | Path,
         node_id: str,
         step_type: str,
         parent_ids: Sequence[str] = (),
@@ -41,9 +48,9 @@ class NodeWorkspace:
     ) -> None:
         self.root = Path(root)
         self.node_id = node_id
-        self.path = self.root / ".scratch" / node_id
-        self.path.mkdir(parents=True, exist_ok=True)
-        seed: Dict[str, Any] = {
+        scratch_root = self.root / ".scratch"
+        self.path = scratch_root / node_id
+        seed: dict[str, Any] = {
             "node_id": node_id,
             "step_type": step_type,
             "parent_ids": list(parent_ids),
@@ -51,9 +58,35 @@ class NodeWorkspace:
             "pid": os.getpid(),
             "started_utc": datetime.now(timezone.utc).isoformat(),
         }
-        (self.path / SEED_FILENAME).write_text(json.dumps(seed, indent=2))
+        seed_json = json.dumps(seed, indent=2)
 
-    def resolve(self, relative: Union[str, Path]) -> Path:
+        if self.path.exists():
+            # Adopting a scratch directory that already holds a crashed
+            # session's work (maintenance.sweep_orphan_scratch): re-seed it
+            # in place, because its files ARE the evidence.
+            (self.path / SEED_FILENAME).write_text(seed_json)
+            return
+
+        # A new node is assembled in a staging directory and renamed into
+        # place once it is seeded, so it is never observable as a
+        # directory-without-a-seed. That state is what the orphan sweep
+        # deletes as litter, and a concurrent store open used to be able to
+        # delete an in-flight node's scratch out from under it.
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        staging = scratch_root / f"{STAGING_PREFIX}{uuid.uuid4().hex}"
+        staging.mkdir()
+        (staging / SEED_FILENAME).write_text(seed_json)
+        try:
+            staging.rename(self.path)
+        except OSError:
+            # The target appeared underneath us. Whatever is there belongs
+            # to this node_id, so adopt it exactly as the branch above does
+            # rather than leave work stranded under the staging name.
+            shutil.rmtree(staging, ignore_errors=True)
+            self.path.mkdir(parents=True, exist_ok=True)
+            (self.path / SEED_FILENAME).write_text(seed_json)
+
+    def resolve(self, relative: str | Path) -> Path:
         """A ready-to-write path inside the scratch dir — the engine behind
         the node's ``/`` operator. Intermediate directories are created, so
         the returned path can be written to immediately.
@@ -76,11 +109,11 @@ class NodeWorkspace:
         target.parent.mkdir(parents=True, exist_ok=True)
         return target
 
-    def files(self) -> List[Tuple[str, Path]]:
+    def files(self) -> list[tuple[str, Path]]:
         """Every artifact file written so far, as (relpath, absolute path)
         pairs sorted by relpath. The seed file is excluded — it describes
         the node, it is not its content."""
-        found: List[Tuple[str, Path]] = []
+        found: list[tuple[str, Path]] = []
         for path in self.path.rglob("*"):
             if not path.is_file() or path.name == SEED_FILENAME:
                 continue

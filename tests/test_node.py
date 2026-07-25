@@ -4,7 +4,7 @@ against the new API."""
 
 import dataclasses
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -18,11 +18,11 @@ class DataFrame:
     type name and to_dict, so this exercises the 'table' path without a
     pandas dependency."""
 
-    def __init__(self, columns: List[str], rows: List[List[Any]]) -> None:
+    def __init__(self, columns: list[str], rows: list[list[Any]]) -> None:
         self._columns = columns
         self._rows = rows
 
-    def to_dict(self, orient: str = "split") -> Dict[str, Any]:
+    def to_dict(self, orient: str = "split") -> dict[str, Any]:
         assert orient == "split"
         return {
             "columns": self._columns,
@@ -141,7 +141,7 @@ def test_add_meta_type_inference_and_coercion(store: LineageStore) -> None:
         node.add_meta("accuracy", 0.9)  # scalar -> text, searchable
         node.add_meta("query", "SELECT 1", data_type="code")
         with pytest.warns(UserWarning, match="coerced"):
-            node.add_meta("tags", {"a", "a"})  # set -> list, with a warning
+            node.add_meta("tags", {"a"})  # set -> list, with a warning
         node.add_meta("accuracy", 0.95)  # overwrite wins
 
     meta = store.get(node).metadata  # type: ignore[union-attr]

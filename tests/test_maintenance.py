@@ -1,6 +1,7 @@
 """Phase 5: prune, compact and the orphan-scratch sweep (issue #16)."""
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -16,7 +17,9 @@ def store(tmp_path: Path) -> LineageStore:
     return LineageStore(tmp_path / "proj", dedup=False)
 
 
-def _node(store: LineageStore, step: str, parent: object = None, blob: bytes = b"x") -> Node:
+def _node(
+    store: LineageStore, step: str, parent: object = None, blob: bytes = b"x"
+) -> Node:
     with store.create_node(step_type=step, parent=parent) as handle:
         (handle / "out.bin").write_bytes(blob)
     record = store.get(handle)
@@ -96,7 +99,8 @@ def test_compact_reclaims_orphaned_chunks(store: LineageStore) -> None:
     keep = _node(store, "keep", blob=random.Random(1).randbytes(150_000))
     doomed = _node(store, "doomed", blob=random.Random(2).randbytes(150_000))
 
-    store.prune(doomed, dry_run=False)
+    # prune compacts by default; defer it so this test can exercise compact.
+    store.prune(doomed, dry_run=False, compact=False)
     before = _chunk_count(store)
     assert before > 0  # orphans linger until compact
 
@@ -165,9 +169,7 @@ def test_sweep_never_touches_live_sessions(tmp_path: Path) -> None:
     assert workspace.path.exists()
 
 
-def test_sweep_discards_litter(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_sweep_discards_litter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = tmp_path / "proj"
     (root / ".scratch" / "unseeded").mkdir(parents=True)
     (root / ".scratch" / "unseeded" / "junk.txt").write_text("x")
@@ -198,3 +200,30 @@ def test_sweep_cleans_committed_leftovers(
 
     assert len(second.find()) == 1  # no duplicate appeared
     assert not leftovers.path.exists()
+
+
+def test_sweep_reaps_dead_cache_sessions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "proj"
+    stale = root / ".cache" / "424242-deadbeef"
+    stale.mkdir(parents=True)
+    (stale / "old.bin").write_bytes(b"stale derived data")
+    (root / ".cache" / "not-a-session").mkdir()  # litter: not pid-tagged
+
+    monkeypatch.setattr("ancestree.maintenance._pid_alive", lambda pid: False)
+    store = LineageStore(root)
+    assert not stale.exists()
+    assert not (root / ".cache" / "not-a-session").exists()
+    store.close()
+
+
+def test_sweep_keeps_live_cache_sessions(tmp_path: Path) -> None:
+    root = tmp_path / "proj"
+    live = root / ".cache" / f"{os.getpid()}-abc12345"
+    live.mkdir(parents=True)
+    (live / "in-use.bin").write_bytes(b"another session is reading this")
+
+    store = LineageStore(root)  # our pid is alive: never touched
+    assert live.exists()
+    store.close()

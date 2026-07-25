@@ -26,8 +26,12 @@ from __future__ import annotations
 
 import json
 import warnings
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
+from typing import (
+    Any,
+    Callable,
+)
 
 from ..errors import IntegrityError, NodeNotFound
 from .connection import ConnectionManager
@@ -55,12 +59,44 @@ def encode_value(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
 
-def _numeric(value: Any) -> Optional[float]:
+def _numeric(value: Any) -> float | None:
     """The numeric index value for a metadata value (bool is not a
     number here, despite being an int subclass)."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
     return float(value)
+
+
+def _node_id_of(value: Any) -> str:
+    """One node id from anything node-like. Node/RecordingNode are matched by
+    duck typing so the persistence layer need not import the domain."""
+    node_id = getattr(value, "node_id", None)
+    return str(value) if node_id is None else str(node_id)
+
+
+def _parent_id_list(value: Any) -> list[str]:
+    """The ordered parent-id list a ``parent_id=`` filter compares against.
+
+    Accepts the same node-like values as every other node-taking method: a
+    single id/Node/handle is one parent, a list or tuple is an ordered join,
+    and an empty list matches roots. A bare id used to be iterated into its
+    characters here, which matched nothing and reported no error.
+    """
+    if value is None:
+        raise TypeError(
+            "parent_id=None is ambiguous: pass parent_id=[] to match root "
+            "nodes, or a node/id to match that node's children."
+        )
+    if isinstance(value, (str, bytes)) or getattr(value, "node_id", None):
+        return [_node_id_of(value)]
+    try:
+        items = list(value)
+    except TypeError:
+        raise TypeError(
+            f"parent_id must be a node, a node id, or a list of them; got "
+            f"{type(value).__name__}."
+        ) from None
+    return [_node_id_of(item) for item in items]
 
 
 @dataclass(frozen=True)
@@ -73,16 +109,16 @@ class NodeRecord:
     created_utc: str
     created_epoch: float
     healthy: bool
-    duration_s: Optional[float] = None
+    duration_s: float | None = None
     size_bytes: int = 0
-    content_hash: Optional[str] = None
-    prov_user: Optional[str] = None
-    prov_python: Optional[str] = None
-    prov_platform: Optional[str] = None
-    prov_git_commit: Optional[str] = None
-    prov_git_branch: Optional[str] = None
-    prov_git_dirty: Optional[bool] = None
-    parent_ids: Tuple[str, ...] = field(default=())
+    content_hash: str | None = None
+    prov_user: str | None = None
+    prov_python: str | None = None
+    prov_platform: str | None = None
+    prov_git_commit: str | None = None
+    prov_git_branch: str | None = None
+    prov_git_dirty: bool | None = None
+    parent_ids: tuple[str, ...] = field(default=())
 
 
 @dataclass(frozen=True)
@@ -93,9 +129,9 @@ class MetadataRow:
     key: str
     value_json: str
     data_type: str
-    group: Optional[str]
+    group: str | None
     searchable: bool
-    num_value: Optional[float]
+    num_value: float | None
 
     @property
     def value(self) -> Any:
@@ -107,7 +143,7 @@ def metadata_row(
     key: str,
     value: Any,
     data_type: str = "text",
-    group: Optional[str] = "General",
+    group: str | None = "General",
     searchable: bool = True,
 ) -> MetadataRow:
     """Builds a MetadataRow from a plain Python value: canonical JSON for
@@ -121,6 +157,41 @@ def metadata_row(
         group=group,
         searchable=searchable,
         num_value=_numeric(value),
+    )
+
+
+#: SQLite's compiled-in limit on host parameters is 999 on builds older
+#: than 3.32; batching below it keeps a large "IN (...)" safe everywhere.
+_MAX_PARAMS = 900
+
+
+def _batched(items: list[str]) -> Iterator[list[str]]:
+    """`items` in slices small enough to bind as one IN clause."""
+    for start in range(0, len(items), _MAX_PARAMS):
+        yield items[start : start + _MAX_PARAMS]
+
+
+def _record_from_row(row: Any, parents: tuple[str, ...]) -> NodeRecord:
+    """One node table row plus its ordered parent ids as a NodeRecord."""
+    return NodeRecord(
+        node_id=row["node_id"],
+        step_type=row["step_type"],
+        generation=row["generation"],
+        created_utc=row["created_utc"],
+        created_epoch=row["created_epoch"],
+        healthy=bool(row["healthy"]),
+        duration_s=row["duration_s"],
+        size_bytes=row["size_bytes"],
+        content_hash=row["content_hash"],
+        prov_user=row["prov_user"],
+        prov_python=row["prov_python"],
+        prov_platform=row["prov_platform"],
+        prov_git_commit=row["prov_git_commit"],
+        prov_git_branch=row["prov_git_branch"],
+        prov_git_dirty=None
+        if row["prov_git_dirty"] is None
+        else bool(row["prov_git_dirty"]),
+        parent_ids=parents,
     )
 
 
@@ -174,8 +245,7 @@ class MetadataStore:
                 ),
             )
             conn.executemany(
-                "INSERT INTO edge (child_id, parent_id, ordinal) "
-                "VALUES (?, ?, ?)",
+                "INSERT INTO edge (child_id, parent_id, ordinal) VALUES (?, ?, ?)",
                 [
                     (record.node_id, parent_id, ordinal)
                     for ordinal, parent_id in enumerate(record.parent_ids)
@@ -209,7 +279,7 @@ class MetadataStore:
     # Point reads
     # ------------------------------------------------------------------
 
-    def get(self, node_id: str) -> Optional[NodeRecord]:
+    def get(self, node_id: str) -> NodeRecord | None:
         """The node's record, or None if the id is unknown."""
         conn = self._manager.read()
         row = conn.execute(
@@ -220,45 +290,59 @@ class MetadataStore:
         parents = tuple(
             r["parent_id"]
             for r in conn.execute(
-                "SELECT parent_id FROM edge WHERE child_id = ? "
-                "ORDER BY ordinal",
+                "SELECT parent_id FROM edge WHERE child_id = ? ORDER BY ordinal",
                 (node_id,),
             )
         )
-        return NodeRecord(
-            node_id=row["node_id"],
-            step_type=row["step_type"],
-            generation=row["generation"],
-            created_utc=row["created_utc"],
-            created_epoch=row["created_epoch"],
-            healthy=bool(row["healthy"]),
-            duration_s=row["duration_s"],
-            size_bytes=row["size_bytes"],
-            content_hash=row["content_hash"],
-            prov_user=row["prov_user"],
-            prov_python=row["prov_python"],
-            prov_platform=row["prov_platform"],
-            prov_git_commit=row["prov_git_commit"],
-            prov_git_branch=row["prov_git_branch"],
-            prov_git_dirty=None
-            if row["prov_git_dirty"] is None
-            else bool(row["prov_git_dirty"]),
-            parent_ids=parents,
-        )
+        return _record_from_row(row, parents)
+
+    def get_many(self, node_ids: Sequence[str]) -> dict[str, NodeRecord]:
+        """``get`` for a whole list, keyed by node_id, in two queries total
+        rather than two per node.
+
+        ``find``, ``lineage`` and ``ancestors`` all resolve a list of ids
+        into records, and the per-id version made that O(n) round trips —
+        cheap each, but they dominate every list-shaped read. Unknown ids
+        are simply absent from the result, exactly as ``get`` returns None.
+        """
+        records: dict[str, NodeRecord] = {}
+        for batch in _batched(list(node_ids)):
+            placeholders = ",".join("?" for _ in batch)
+            conn = self._manager.read()
+            parents: dict[str, list[str]] = {}
+            for row in conn.execute(
+                "SELECT child_id, parent_id FROM edge "
+                f"WHERE child_id IN ({placeholders}) ORDER BY child_id, ordinal",
+                batch,
+            ):
+                parents.setdefault(row["child_id"], []).append(row["parent_id"])
+            for row in conn.execute(
+                f"SELECT * FROM node WHERE node_id IN ({placeholders})", batch
+            ):
+                records[row["node_id"]] = _record_from_row(
+                    row, tuple(parents.get(row["node_id"], ()))
+                )
+        return records
 
     def exists(self, node_id: str) -> bool:
-        row = self._manager.read().execute(
-            "SELECT 1 FROM node WHERE node_id = ? LIMIT 1", (node_id,)
-        ).fetchone()
+        row = (
+            self._manager.read()
+            .execute("SELECT 1 FROM node WHERE node_id = ? LIMIT 1", (node_id,))
+            .fetchone()
+        )
         return row is not None
 
-    def metadata_for(self, node_id: str) -> Dict[str, MetadataRow]:
+    def metadata_for(self, node_id: str) -> dict[str, MetadataRow]:
         """Every metadata entry of a node, searchable or not."""
-        rows = self._manager.read().execute(
-            "SELECT key, value, data_type, grp, searchable, num_value "
-            "FROM metadata WHERE node_id = ?",
-            (node_id,),
-        ).fetchall()
+        rows = (
+            self._manager.read()
+            .execute(
+                "SELECT key, value, data_type, grp, searchable, num_value "
+                "FROM metadata WHERE node_id = ?",
+                (node_id,),
+            )
+            .fetchall()
+        )
         return {
             row["key"]: MetadataRow(
                 key=row["key"],
@@ -271,23 +355,49 @@ class MetadataStore:
             for row in rows
         }
 
-    def all_node_ids(self) -> List[str]:
+    def metadata_for_many(
+        self, node_ids: Sequence[str]
+    ) -> dict[str, dict[str, MetadataRow]]:
+        """``metadata_for`` over a list of ids, one query per batch instead
+        of one per node. Ids with no metadata map to an empty dict."""
+        out: dict[str, dict[str, MetadataRow]] = {node_id: {} for node_id in node_ids}
+        for batch in _batched(list(node_ids)):
+            placeholders = ",".join("?" for _ in batch)
+            for row in self._manager.read().execute(
+                "SELECT node_id, key, value, data_type, grp, searchable, "
+                f"num_value FROM metadata WHERE node_id IN ({placeholders})",
+                batch,
+            ):
+                out[row["node_id"]][row["key"]] = MetadataRow(
+                    key=row["key"],
+                    value_json=row["value"],
+                    data_type=row["data_type"],
+                    group=row["grp"],
+                    searchable=bool(row["searchable"]),
+                    num_value=row["num_value"],
+                )
+        return out
+
+    def all_node_ids(self) -> list[str]:
         """Every node id, oldest first."""
-        rows = self._manager.read().execute(
-            "SELECT node_id FROM node ORDER BY created_epoch, node_id"
-        ).fetchall()
+        rows = (
+            self._manager.read()
+            .execute("SELECT node_id FROM node ORDER BY created_epoch, node_id")
+            .fetchall()
+        )
         return [row["node_id"] for row in rows]
 
     # ------------------------------------------------------------------
     # Search
     # ------------------------------------------------------------------
 
-    def find(self, **filters: Any) -> List[str]:
+    def find(self, **filters: Any) -> list[str]:
         """The ids of nodes matching every filter, oldest first.
 
         A filter key is a node column (step_type, generation, healthy,
         ...), the special key ``parent_id`` (matched against the node's
-        ordered parent-id list, exactly as 0.1.x's flat index did — an
+        ordered parent-id list — a single node/id matches nodes with
+        exactly that one parent, a list matches an ordered join, and an
         empty list matches roots), or a user-metadata key. Non-callable
         values match by equality in SQL; callable values run as Python
         predicates over the SQL-narrowed candidates, receiving the stored
@@ -296,10 +406,10 @@ class MetadataStore:
         raising predicate warns and treats that node as non-matching. No
         filters returns every node.
         """
-        column_eq: List[Tuple[str, Any]] = []
-        metadata_eq: List[Tuple[str, Any]] = []
-        predicates: List[Tuple[str, Callable[[Any], Any]]] = []
-        parent_eq: Optional[List[str]] = None
+        column_eq: list[tuple[str, Any]] = []
+        metadata_eq: list[tuple[str, Any]] = []
+        predicates: list[tuple[str, Callable[[Any], Any]]] = []
+        parent_eq: list[str] | None = None
         parent_filtering = False
         for key, value in filters.items():
             if key == "parent_id":
@@ -309,7 +419,7 @@ class MetadataStore:
                 if callable(value):
                     predicates.append((key, value))
                 else:
-                    parent_eq = [str(item) for item in value]
+                    parent_eq = _parent_id_list(value)
             elif callable(value):
                 predicates.append((key, value))
             elif key in _NODE_COLUMNS:
@@ -320,8 +430,8 @@ class MetadataStore:
         # One statement: column equality as WHERE terms, each metadata
         # filter as an intersecting per-key subquery on the indexed
         # metadata table.
-        conditions: List[str] = []
-        params: List[Any] = []
+        conditions: list[str] = []
+        params: list[Any] = []
         for column, value in column_eq:
             if value is None:
                 conditions.append(f"{column} IS NULL")
@@ -349,7 +459,7 @@ class MetadataStore:
         sql += " ORDER BY created_epoch, node_id"
         candidates = self._manager.read().execute(sql, params).fetchall()
 
-        parent_lists: Dict[str, List[str]] = (
+        parent_lists: dict[str, list[str]] = (
             self._parent_lists() if parent_filtering else {}
         )
         if parent_eq is not None:
@@ -364,20 +474,24 @@ class MetadataStore:
 
         # Predicate stage: fetch each predicate key's searchable values in
         # one query, then evaluate in Python.
-        meta_values: Dict[str, Dict[str, Any]] = {}
+        meta_values: dict[str, dict[str, Any]] = {}
         for key, _ in predicates:
             if key in _NODE_COLUMNS or key == "parent_id":
                 continue
-            rows = self._manager.read().execute(
-                "SELECT node_id, value FROM metadata "
-                "WHERE key = ? AND searchable = 1",
-                (key,),
-            ).fetchall()
+            rows = (
+                self._manager.read()
+                .execute(
+                    "SELECT node_id, value FROM metadata "
+                    "WHERE key = ? AND searchable = 1",
+                    (key,),
+                )
+                .fetchall()
+            )
             meta_values[key] = {
                 row["node_id"]: json.loads(row["value"]) for row in rows
             }
 
-        matched: List[str] = []
+        matched: list[str] = []
         for row in candidates:
             node_id = row["node_id"]
             ok = True
@@ -395,7 +509,7 @@ class MetadataStore:
                     if not predicate(stored):
                         ok = False
                         break
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001 - a user predicate may raise anything
                     warnings.warn(
                         f"Predicate for {key!r} raised "
                         f"{type(exc).__name__}: {exc}. Node treated as "
@@ -409,56 +523,70 @@ class MetadataStore:
                 matched.append(node_id)
         return matched
 
-    def _parent_lists(self) -> Dict[str, List[str]]:
+    def _parent_lists(self) -> dict[str, list[str]]:
         """Every node's ordered parent ids in one query — backs the
         ``parent_id`` filter, which cannot be a plain column because
         parents live in the edge table."""
-        rows = self._manager.read().execute(
-            "SELECT child_id, parent_id FROM edge ORDER BY child_id, ordinal"
-        ).fetchall()
-        parents: Dict[str, List[str]] = {}
+        rows = (
+            self._manager.read()
+            .execute("SELECT child_id, parent_id FROM edge ORDER BY child_id, ordinal")
+            .fetchall()
+        )
+        parents: dict[str, list[str]] = {}
         for row in rows:
             parents.setdefault(row["child_id"], []).append(row["parent_id"])
         return parents
 
-    def most_recent(self, node_ids: Sequence[str]) -> Optional[str]:
+    def most_recent(self, node_ids: Sequence[str]) -> str | None:
         """The most recently created of the given ids, or None if empty."""
         if not node_ids:
             return None
         placeholders = ",".join("?" for _ in node_ids)
-        row = self._manager.read().execute(
-            f"SELECT node_id FROM node WHERE node_id IN ({placeholders}) "
-            "ORDER BY created_epoch DESC, node_id DESC LIMIT 1",
-            list(node_ids),
-        ).fetchone()
+        row = (
+            self._manager.read()
+            .execute(
+                f"SELECT node_id FROM node WHERE node_id IN ({placeholders}) "
+                "ORDER BY created_epoch DESC, node_id DESC LIMIT 1",
+                list(node_ids),
+            )
+            .fetchone()
+        )
         return None if row is None else str(row["node_id"])
 
-    def find_by_hash(self, content_hash: str) -> Optional[str]:
+    def find_by_hash(self, content_hash: str) -> str | None:
         """A node whose content_hash matches, or None. Backs node-level
         dedup: the caller treats the result as a candidate and
         byte-verifies before reuse."""
-        row = self._manager.read().execute(
-            "SELECT node_id FROM node WHERE content_hash = ? LIMIT 1",
-            (content_hash,),
-        ).fetchone()
+        row = (
+            self._manager.read()
+            .execute(
+                "SELECT node_id FROM node WHERE content_hash = ? LIMIT 1",
+                (content_hash,),
+            )
+            .fetchone()
+        )
         return None if row is None else str(row["node_id"])
 
     # ------------------------------------------------------------------
     # Graph walks
     # ------------------------------------------------------------------
 
-    def children(self, node_id: str) -> List[str]:
+    def children(self, node_id: str) -> list[str]:
         """Direct children (nodes listing `node_id` among their parents),
         in creation order."""
-        rows = self._manager.read().execute(
-            "SELECT e.child_id FROM edge e JOIN node n ON n.node_id = "
-            "e.child_id WHERE e.parent_id = ? "
-            "ORDER BY n.created_epoch, n.node_id",
-            (node_id,),
-        ).fetchall()
+        rows = (
+            self._manager.read()
+            .execute(
+                "SELECT e.child_id FROM edge e JOIN node n ON n.node_id = "
+                "e.child_id WHERE e.parent_id = ? "
+                "ORDER BY n.created_epoch, n.node_id",
+                (node_id,),
+            )
+            .fetchall()
+        )
         return [row["child_id"] for row in rows]
 
-    def lineage(self, node_id: str) -> List[str]:
+    def lineage(self, node_id: str) -> list[str]:
         """Every ancestor of `node_id` plus itself, in topological order
         (oldest first): each node appears once, after all of its parents.
         For a linear chain this is the chain; for a DAG join it is the
@@ -469,35 +597,37 @@ class MetadataStore:
             IntegrityError: If the ancestry contains a cycle.
         """
         if not self.exists(node_id):
-            raise NodeNotFound(
-                f"Node {node_id!r} not found in this store."
-            )
+            raise NodeNotFound(f"Node {node_id!r} not found in this store.")
         # The recursive CTE gathers the ancestor closure (UNION dedups, so
         # it terminates even on a cyclic graph); the ordering walk and the
         # cycle guard run in Python over that small subgraph.
-        rows = self._manager.read().execute(
-            "WITH RECURSIVE ancestry(id) AS ("
-            "  SELECT ?"
-            "  UNION"
-            "  SELECT e.parent_id FROM edge e "
-            "  JOIN ancestry a ON e.child_id = a.id"
-            ") "
-            "SELECT child_id, parent_id FROM edge "
-            "WHERE child_id IN (SELECT id FROM ancestry) "
-            "ORDER BY child_id, ordinal",
-            (node_id,),
-        ).fetchall()
-        parents: Dict[str, List[str]] = {}
+        rows = (
+            self._manager.read()
+            .execute(
+                "WITH RECURSIVE ancestry(id) AS ("
+                "  SELECT ?"
+                "  UNION"
+                "  SELECT e.parent_id FROM edge e "
+                "  JOIN ancestry a ON e.child_id = a.id"
+                ") "
+                "SELECT child_id, parent_id FROM edge "
+                "WHERE child_id IN (SELECT id FROM ancestry) "
+                "ORDER BY child_id, ordinal",
+                (node_id,),
+            )
+            .fetchall()
+        )
+        parents: dict[str, list[str]] = {}
         for row in rows:
             parents.setdefault(row["child_id"], []).append(row["parent_id"])
 
         # Iterative post-order DFS over parents: a node is emitted only
         # after all of its parents, so the result is oldest-first. Done
         # iteratively so deep lineages cannot exhaust the recursion limit.
-        order: List[str] = []
-        done: Set[str] = set()
-        on_stack: Set[str] = set()  # ancestors currently being walked
-        stack: List[Tuple[str, bool]] = [(node_id, False)]
+        order: list[str] = []
+        done: set[str] = set()
+        on_stack: set[str] = set()  # ancestors currently being walked
+        stack: list[tuple[str, bool]] = [(node_id, False)]
         while stack:
             current, expanded = stack.pop()
             if current in done:

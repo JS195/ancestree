@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
 from ..ingest.workspace import NodeWorkspace
 from ..util import filter_relpaths
@@ -39,29 +39,29 @@ class Node:
     node_id: str
     step_type: str = field(compare=False)
     generation: int = field(compare=False)
-    parent_id: Tuple[str, ...] = field(compare=False)
+    parent_id: tuple[str, ...] = field(compare=False)
     created_utc: str = field(compare=False)
     healthy: bool = field(compare=False)
-    duration_s: Optional[float] = field(compare=False)
+    duration_s: float | None = field(compare=False)
     size_bytes: int = field(compare=False)
-    content_hash: Optional[str] = field(compare=False, repr=False)
-    _provenance: Dict[str, Any] = field(compare=False, repr=False)
-    _store: "LineageStore" = field(compare=False, repr=False)
+    content_hash: str | None = field(compare=False, repr=False)
+    _provenance: dict[str, Any] = field(compare=False, repr=False)
+    _store: LineageStore = field(compare=False, repr=False)
 
     @property
-    def metadata(self) -> Dict[str, Dict[str, Any]]:
+    def metadata(self) -> dict[str, dict[str, Any]]:
         """The node's user metadata: each key maps to its envelope
         ``{'value', 'data_type', 'group', 'searchable'}``. Structural facts
         (step_type, generation, ...) are attributes, not metadata."""
         return self._store._metadata_envelopes(self.node_id)
 
     @property
-    def provenance(self) -> Dict[str, Any]:
+    def provenance(self) -> dict[str, Any]:
         """Who/what/how produced this node: user, python_version, platform,
         git_commit, git_dirty, git_branch."""
         return dict(self._provenance)
 
-    def artifacts(self, contains: str = "*") -> List[Path]:
+    def artifacts(self, contains: str = "*") -> list[Path]:
         """The node's artifact files as readable paths, reassembled from
         the store on demand (served from the session read cache).
 
@@ -72,15 +72,13 @@ class Node:
         """
         return self._store._artifact_paths(self.node_id, contains)
 
-    def __truediv__(self, relative: Union[str, Path]) -> Path:
+    def __truediv__(self, relative: str | Path) -> Path:
         """Read-side ``/``: a readable path for one artifact.
 
         Raises:
             ArtifactNotFound: If the node has no artifact at that path.
         """
-        return self._store._artifact_path(
-            self.node_id, Path(relative).as_posix()
-        )
+        return self._store._artifact_path(self.node_id, Path(relative).as_posix())
 
     def __repr__(self) -> str:
         return (
@@ -103,7 +101,7 @@ class RecordingNode:
         node_id: str,
         step_type: str,
         generation: int,
-        parent_id: List[str],
+        parent_id: list[str],
         workspace: NodeWorkspace,
     ) -> None:
         self.node_id = node_id
@@ -111,9 +109,9 @@ class RecordingNode:
         self.generation = generation
         self.parent_id = list(parent_id)
         self._workspace = workspace
-        self._entries: Dict[str, PreparedEntry] = {}
+        self._entries: dict[str, PreparedEntry] = {}
 
-    def __truediv__(self, relative: Union[str, Path]) -> Path:
+    def __truediv__(self, relative: str | Path) -> Path:
         """Write-side ``/``: a ready-to-write path inside the node's
         scratch directory (intermediate directories are created).
 
@@ -126,7 +124,7 @@ class RecordingNode:
         self,
         key: str,
         value: Any,
-        group: Optional[str] = "General",
+        group: str | None = "General",
         data_type: str = "auto",
         searchable: bool = True,
     ) -> None:
@@ -172,7 +170,7 @@ class RecordingNode:
                 return replace(entry, value=candidate.as_posix())
         return replace(entry, value=candidate.as_posix())
 
-    def artifacts(self, contains: str = "*") -> List[Path]:
+    def artifacts(self, contains: str = "*") -> list[Path]:
         """The files written so far, as native scratch paths — matching the
         record's ``artifacts()`` semantics so code inside the block reads
         what it just wrote at native speed."""

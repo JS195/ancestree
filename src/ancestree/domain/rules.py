@@ -9,7 +9,7 @@ See REBUILD_BLUEPRINT.md section 5.3 (Phase 4, issue #15).
 
 from __future__ import annotations
 
-from typing import Mapping, Optional, Sequence
+from collections.abc import Mapping, Sequence
 
 from ..errors import InvalidTransition
 
@@ -45,15 +45,13 @@ class RuleEngine:
 
     def __init__(
         self,
-        rules: Optional[Mapping[str, Sequence[str]]],
-        gen_triggers: Optional[Sequence[str]],
+        rules: Mapping[str, Sequence[str]] | None,
+        gen_triggers: Sequence[str] | None,
     ) -> None:
         self.rules = {key: list(value) for key, value in (rules or {}).items()}
         self.gen_triggers = list(gen_triggers or [])
 
-    def validate(
-        self, step_type: str, parent_step_types: Sequence[Optional[str]]
-    ) -> None:
+    def validate(self, step_type: str, parent_step_types: Sequence[str | None]) -> None:
         """Checks that every parent is a legal predecessor of `step_type`.
 
         A step type without a rules entry accepts anything. A root node is
@@ -73,9 +71,7 @@ class RuleEngine:
                     f"Allowed parents: {allowed}."
                 )
 
-    def generation_for(
-        self, step_type: str, parent_generations: Sequence[int]
-    ) -> int:
+    def generation_for(self, step_type: str, parent_generations: Sequence[int]) -> int:
         """A node sits one generation past its deepest parent when its step
         type triggers a new generation (and it has parents at all);
         otherwise it stays at that depth. Roots are generation 0."""

@@ -5,8 +5,8 @@ test_dag.py to the SQLite persistence layer: equality and predicate
 search, DAG lineage ordering, children, most_recent and dedup lookup.
 """
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence, Tuple
 
 import pytest
 
@@ -32,7 +32,7 @@ def _record(
     node_id: str,
     step_type: str = "step",
     generation: int = 0,
-    parents: Tuple[str, ...] = (),
+    parents: tuple[str, ...] = (),
     epoch_offset: float = 0.0,
     healthy: bool = True,
 ) -> NodeRecord:
@@ -51,7 +51,7 @@ def _add(
     store: MetadataStore,
     node_id: str,
     step_type: str = "step",
-    parents: Tuple[str, ...] = (),
+    parents: tuple[str, ...] = (),
     epoch_offset: float = 0.0,
     healthy: bool = True,
     metadata: Sequence[MetadataRow] = (),
@@ -252,9 +252,7 @@ def test_lineage_unknown_node_raises(store: MetadataStore) -> None:
         store.lineage("ghost")
 
 
-def test_lineage_cycle_raises(
-    store: MetadataStore, tmp_path: Path
-) -> None:
+def test_lineage_cycle_raises(store: MetadataStore, tmp_path: Path) -> None:
     _add(store, "a")
     _add(store, "b", parents=("a",), epoch_offset=1)
     # Corrupt the graph directly: make 'a' a child of 'b' (a -> b -> a).

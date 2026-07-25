@@ -5,7 +5,8 @@ metadata DAG and deletes rows (edges, metadata and artifact recipes cascade
 via foreign keys); ``compact_chunks`` removes chunks nothing references any
 more and returns freed pages to the OS; ``sweep_orphan_scratch`` runs at
 store open and adopts a dead process's seeded scratch as an unhealthy node
-— partial work stays evidence even across a SIGKILL, which 0.1.x lost.
+— partial work stays evidence even across a SIGKILL, which 0.1.x lost —
+and reaps read-cache sessions (``<root>/.cache/``) whose owner is gone.
 
 No lock files and no grace windows: synchronous ingest commits a node's
 chunks and recipes atomically, so compact can never observe a chunk whose
@@ -21,15 +22,20 @@ import json
 import os
 import shutil
 import time
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Sequence, Set, Union
 
 from .db.chunk_store import ChunkStore
 from .db.connection import ConnectionManager
 from .db.metadata_store import MetadataStore, NodeRecord
 from .ingest.packing import ingest_node
-from .ingest.workspace import SEED_FILENAME, NodeWorkspace
+from .ingest.workspace import SEED_FILENAME, STAGING_PREFIX, NodeWorkspace
+
+#: How long an unseeded staging directory is left alone before being treated
+#: as litter. It only has to cover the microseconds between a staging
+#: directory being created and its seed being written.
+_STAGING_GRACE_SECONDS = 300
 
 
 class Pruner:
@@ -43,7 +49,7 @@ class Pruner:
         self._manager = manager
         self._metadata = metadata
 
-    def plan(self, node_id: str) -> List[str]:
+    def plan(self, node_id: str) -> list[str]:
         """The ids pruning `node_id` would delete, deepest first (children
         before parents). Empty for an unknown id; nothing is deleted."""
         if not self._metadata.exists(node_id):
@@ -51,7 +57,7 @@ class Pruner:
 
         # 1. The target and all transitive descendants — the region a
         #    deletion could touch.
-        affected: Set[str] = set()
+        affected: set[str] = set()
         stack = [node_id]
         while stack:
             current = stack.pop()
@@ -60,8 +66,8 @@ class Pruner:
             affected.add(current)
             stack.extend(self._metadata.children(current))
 
-        all_parents: Dict[str, List[str]] = {}
-        children_in_region: Dict[str, List[str]] = {nid: [] for nid in affected}
+        all_parents: dict[str, list[str]] = {}
+        children_in_region: dict[str, list[str]] = {nid: [] for nid in affected}
         for nid in affected:
             record = self._metadata.get(nid)
             parents = list(record.parent_ids) if record else []
@@ -75,11 +81,10 @@ class Pruner:
         #    descendant goes only if ALL of its parents (anywhere) are
         #    going. A surviving parent spares the child.
         indegree = {
-            nid: sum(1 for p in all_parents[nid] if p in affected)
-            for nid in affected
+            nid: sum(1 for p in all_parents[nid] if p in affected) for nid in affected
         }
         ready = [nid for nid, degree in indegree.items() if degree == 0]
-        topo: List[str] = []
+        topo: list[str] = []
         while ready:
             nid = ready.pop()
             topo.append(nid)
@@ -88,7 +93,7 @@ class Pruner:
                 if indegree[child] == 0:
                     ready.append(child)
 
-        doomed: Set[str] = set()
+        doomed: set[str] = set()
         for nid in topo:
             if nid == node_id or all(p in doomed for p in all_parents[nid]):
                 doomed.add(nid)
@@ -130,7 +135,15 @@ def compact_chunks(manager: ConnectionManager) -> int:
             ")"
         )
         removed = int(cursor.rowcount)
-    manager.read().execute("PRAGMA incremental_vacuum")
+    conn = manager.read()
+    # The WAL has to be folded in first: pages freed by the DELETE are only
+    # recorded there until a checkpoint, and incremental_vacuum can only
+    # truncate the main database file.
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchall()
+    # incremental_vacuum is a STEPPED statement — one page per step — so the
+    # cursor must be driven to exhaustion. Executing it without consuming the
+    # result frees exactly one page per call.
+    conn.execute("PRAGMA incremental_vacuum").fetchall()
     manager.checkpoint()
     return removed
 
@@ -150,13 +163,60 @@ def _pid_alive(pid: int) -> bool:
     return True
 
 
+def _reap_staging(entry: Path) -> None:
+    """Removes an abandoned staging directory.
+
+    A staging directory exists only between a node's scratch being created
+    and it being renamed into place, which happens before any user code
+    runs — so it never holds artifacts. It must still never be removed
+    while that is in progress: a live owner, or a directory too young to
+    have been seeded yet, is left alone.
+    """
+    seed_path = entry / SEED_FILENAME
+    try:
+        if seed_path.exists():
+            seed = json.loads(seed_path.read_text())
+            pid = seed.get("pid")
+            if isinstance(pid, int) and _pid_alive(pid):
+                return  # still being renamed into place
+        elif time.time() - entry.stat().st_mtime < _STAGING_GRACE_SECONDS:
+            return  # created moments ago; its seed is on its way
+    except (json.JSONDecodeError, OSError):
+        pass
+    shutil.rmtree(entry, ignore_errors=True)
+
+
+def _sweep_stale_cache(root: Path) -> None:
+    """Reaps read-cache sessions whose owning process is dead.
+
+    Cache directories are pid-tagged (``<pid>-<suffix>``) and hold pure
+    derived data — anything removed regenerates from the chunk pool on the
+    next read — so removal can never lose work. Directories that are not
+    session-shaped are litter and go too. Live sessions are never touched.
+    """
+    cache_root = root / ".cache"
+    if not cache_root.exists():
+        return
+    for entry in cache_root.iterdir():
+        if not entry.is_dir():
+            continue
+        try:
+            pid = int(entry.name.split("-", 1)[0])
+        except ValueError:
+            shutil.rmtree(entry, ignore_errors=True)
+            continue
+        if not _pid_alive(pid):
+            shutil.rmtree(entry, ignore_errors=True)
+
+
 def sweep_orphan_scratch(
-    root: Union[str, Path],
+    root: str | Path,
     manager: ConnectionManager,
     metadata: MetadataStore,
     chunks: ChunkStore,
-) -> List[str]:
-    """Adopts scratch directories orphaned by a hard-killed session.
+) -> list[str]:
+    """Adopts scratch directories orphaned by a hard-killed session, and
+    reaps dead sessions' read-cache directories.
 
     Runs at store open. For each ``.scratch/<id>/`` whose seed names a dead
     process: a directory holding artifacts and no committed row becomes an
@@ -164,12 +224,19 @@ def sweep_orphan_scratch(
     whose node already committed is just deleted; unseeded, unreadable or
     empty directories are litter and are removed. Directories owned by a
     live process are never touched. Returns the adopted node ids."""
+    _sweep_stale_cache(Path(root))
     scratch_root = Path(root) / ".scratch"
     if not scratch_root.exists():
         return []
-    adopted: List[str] = []
+    adopted: list[str] = []
     for entry in sorted(scratch_root.iterdir()):
         if not entry.is_dir():
+            continue
+        if entry.name.startswith(STAGING_PREFIX):
+            # A node being set up right now, by this or another process.
+            # Never a candidate for adoption, and only litter once its
+            # owner is gone.
+            _reap_staging(entry)
             continue
         seed_path = entry / SEED_FILENAME
         if not seed_path.exists():
@@ -218,7 +285,7 @@ def sweep_orphan_scratch(
                 parent_ids=tuple(str(p) for p in seed.get("parent_ids") or []),
             )
             ingest_node(manager, metadata, chunks, workspace, record)
-        except Exception:
+        except Exception:  # noqa: BLE001, S112 - best effort; the evidence is kept either way
             # Adoption failed (e.g. a parent was pruned since): keep the
             # directory as-is — the evidence survives for a manual look or
             # a later open.

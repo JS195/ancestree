@@ -18,8 +18,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Mapping, Tuple
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -31,18 +32,18 @@ class ContentSummary:
     """
 
     step_type: str
-    parent_ids: Tuple[str, ...]  # sorted: parent order is not content
-    metadata: Dict[str, Dict[str, Any]]
-    artifact_sha256s: Dict[str, str]
+    parent_ids: tuple[str, ...]  # sorted: parent order is not content
+    metadata: dict[str, dict[str, Any]]
+    artifact_sha256s: dict[str, str]
 
     @classmethod
     def of(
         cls,
         step_type: str,
         parent_ids: Iterable[str],
-        metadata: Mapping[str, Dict[str, Any]],
+        metadata: Mapping[str, dict[str, Any]],
         artifact_sha256s: Mapping[str, str],
-    ) -> "ContentSummary":
+    ) -> ContentSummary:
         """Builds a summary with the parents normalised to a sorted tuple,
         so `["a", "b"]` and `["b", "a"]` fingerprint identically."""
         return cls(
@@ -62,7 +63,5 @@ class ContentSummary:
             "meta": self.metadata,
             "artifacts": self.artifact_sha256s,
         }
-        blob = json.dumps(
-            payload, sort_keys=True, separators=(",", ":"), default=str
-        )
+        blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
         return hashlib.sha256(blob.encode("utf-8")).hexdigest()

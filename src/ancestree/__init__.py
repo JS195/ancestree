@@ -2,6 +2,8 @@
 
 from importlib.metadata import (
     PackageNotFoundError as _PackageNotFoundError,
+)
+from importlib.metadata import (
     version as _version,
 )
 

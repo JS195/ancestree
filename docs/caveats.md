@@ -1,80 +1,93 @@
 # Caveats & Limitations
 
-Ancestree is deliberately small: a store is just a directory of nodes, and the search index is a cache layered over them. That design buys simplicity and crash-safety, but it also has sharp edges worth knowing before you lean on it. This page collects the behaviours that surprise people.
+Ancestree is deliberately small: the whole store is one SQLite database, and every write is a transaction. That design buys simplicity and crash-safety, but it also has sharp edges worth knowing before you lean on it. This page collects the behaviours that surprise people.
 
-## Rules & configuration
+## Rules & policy are set once
 
-Rules and generation triggers are written to `.lineage_config.json` the first time a store is created, and read back on every subsequent open. **They cannot be changed afterwards.** Passing different `rules` or `gen_triggers` to an existing store is gives a warning if the rules or gen_triggers differ from the ones on disk. The values on disk then win. To change them, start a new store or edit the config file directly.
+Rules, generation triggers and the `dedup`/`chunk` policy are persisted inside the store's database the first time it is created, and read back on every subsequent open. **They cannot be changed afterwards.** Passing different values to an existing store gives a warning and the stored configuration wins. To change them, start a new store.
 
 Rules are also only as strict as you make them. A `step_type` that does not appear in `rules` has *no* transition constraint and can be created under any parent; rules only restrict the step types you actually list. A store created with no rules permits every transition.
 
 ## Nodes can vanish by design
 
-`create_node` only persists a node if you write at least one artifact or add your own metadata inside the block. An untouched node is deleted when the context manager exits, with a `UserWarning` rather than an exception.
+`create_node` only persists a node if you write at least one artifact or add your own metadata inside the block. An untouched node is discarded when the context manager exits, with a `UserWarning` rather than an exception.
 
-!!! warning
-    The structural keys the store writes for you (`node_id`, `timestamp`, provenance, and so on) do not count as "touched". Overwriting only those still leaves the node empty, so it is still discarded.
+If your code raises inside the `create_node` block, any partial work is kept and the node is flagged `healthy=False` before the exception re-raises. A node existing in the store therefore does not mean its block ran to completion — check the `healthy` flag, which is searchable via `find(healthy=False)`. If a run is killed outright (SIGKILL, power loss), whatever it managed to write is adopted as an unhealthy node the next time the store opens.
 
-If your code raises inside the `create_node` block, any partial work is kept and the node is flagged `healthy=False` before the exception re-raises. A node existing on disk therefore does not mean its block ran to completion — check the `healthy` flag, which is searchable via `find_node(healthy=False)`.
+## Don't hold artifact paths across a block boundary
+
+Inside a `create_node` block, `node / "file"` points at a transient scratch directory that is deleted once the node commits. Reads after that hand back a path in the session cache (`<root>/.cache/`), regenerated from the store on demand. Both are real, readable paths — but re-fetch them through `node / "file"` or `artifacts()` each time rather than stashing one and using it later.
+
+## `prune` is permanent, and reclaims the space
+
+`prune(node)` defaults to a **dry run** — it returns the nodes that *would* go (the node plus everything descended from it) and changes nothing. Passing `dry_run=False` deletes them for real, then compacts the store: unreferenced chunks are dropped and the database file is shrunk in place. There is no undo, and after compaction the bytes are genuinely gone rather than merely unreferenced.
+
+Compaction scans the whole chunk pool, so pruning many nodes in a loop repeats that work. Pass `compact=False` to skip it and call `store.compact()` once at the end — the end result is identical.
 
 ## The web graph
 
-`generate_web_graph()` scans the node directories directly rather than the index, reads each `meta.json`, and writes a single self-contained `interactive_pipeline.html` at the store root, **overwriting any existing one**. Nodes whose `meta.json` cannot be read are skipped but print a warning. Because everything is inlined into one file, very large stores produce very large HTML.
+`generate_web_graph()` writes a single self-contained `interactive_pipeline.html` at the store root, **overwriting any existing one**. It is a **view-only snapshot** — the searchable explorer with node diffs and the runs table is the live server (`store.host_live_graph()` or `python -m ancestree serve`). Because everything is inlined into one file (small images as data URIs; larger artifacts copied beside it), very large stores produce very large HTML.
+
+## Write and read costs
+
+Your code writes files at native speed inside the block; the price is paid at block exit, where the artifact is chunked, hashed, compressed and committed. The chunking loop is pure Python (~27 MB/s), so the cost scales with megabytes — files of 64 MiB and above switch to fixed boundaries at C speed. The first read of an artifact in a session reassembles it from chunks; every read after that is a plain file read from the cache. `benchmarks/RESULTS.md` measures all of this.
 
 ## Concurrency
 
-A single `LineageStore` instance is **not thread-safe**. The in-memory index is a plain dict mutated without locks, so sharing one instance across threads will corrupt it. Give each thread its own instance pointed at the same root instead.
+SQLite allows many readers but one writer at a time. Concurrent processes can share a store — a writer simply waits its turn (up to the busy timeout) — but heavy parallel writing is not what this is for. A single `LineageStore` instance serialises its own writes internally.
 
-Sequential multi-session use is safe. You can open a store, do some work, let the process exit, and reopen it later in a fresh process — the configuration and index persist, and the index is reconciled against the directories on load.
+Opening a store runs a sweep for scratch directories orphaned by a crashed session. That sweep never touches a node another process is still writing: a node is assembled in a staging directory and renamed into place only once it carries its crash-recovery seed, so an in-flight node is never mistaken for litter.
 
-Parallel multiprocessing writes are safe *except during compaction*. Each process appends to the journal independently, but when one process folds the journal into the snapshot while another is mid-write, the concurrent writer's just-appended entry can be dropped from the snapshot.
+## A store is tied to the version that wrote it
 
-!!! warning
-    No node is ever lost this way — it is recovered from its `meta.json` on the next load — but the index can under-report until that reconciliation happens. If you fan writes out across processes, do it against the directories (which are the source of truth) and treat the index as eventually consistent.
+Every store records its format version. Ancestree **checks that version and refuses anything it did not write — it never converts a store**. Migration is deliberately not a goal of this project.
+
+So a store written by an older (or newer) ancestree will not open, and you get an explanatory error rather than a silent misread. If you need an old store, keep the version that wrote it installed; both remain available on PyPI. Nothing is modified on a failed open — the refused database is left exactly as it was found.
+
+Plan for this the way you would for any on-disk format: a store is data you can keep, but not something to carry across upgrades.
 
 ## NFS
 
-Ancestree is safe on **NFSv4** for normal use: it relies on atomic rename and append semantics, which NFSv4 honours, and the directories remain the source of truth regardless.
+**Keep stores on local disk.** SQLite file locking over NFS is unreliable, and the 0.1.x file-based NFS guarantee did not survive the move to a database backend.
 
-!!! warning
-    Avoid triggering compaction from multiple processes simultaneously on NFS. NFS close-to-open consistency widens the compaction race described above, making a stale index more likely. Let one process own compaction, or compact only when no other process is writing.
+## One file is the whole store — but a *live* store is three
 
-## Index behaviour
+`ancestree.db` is the single source of truth — there is no side index to rebuild and no directory tree to fall back on. That cuts both ways: a corrupt database is real data loss. WAL journalling protects against crashes mid-write, `PRAGMA integrity_check` (reachable via `store.sql`) verifies the file, and `store.export()` writes grep-able per-node `meta.json` sidecars whenever you want plain files on record.
 
-The index lives in two files at the store root: `.index.json` (a compacted snapshot) and `.index.log` (an append-only journal of changes since the last snapshot). **Together** they are the index. `.index.json` on its own is not complete until compaction fires, so a new store, or one with only a handful of nodes, keeps its recent nodes only in the journal. Don't read `.index.json` directly and assume it is the full picture — the library always reads both and replays one over the other.
+**Backing up needs one moment's care.** While a store is open, WAL journalling keeps recent commits in `ancestree.db-wal`, not in `ancestree.db`. Copying `ancestree.db` alone out from under an open store therefore gives you a perfectly valid, perfectly **empty** store — silently, with no error. Any one of these is correct:
 
-Because the directories are authoritative, a damaged or stale index is always recoverable. `store.rebuild_db_from_disk()` rescans every `meta.json` and rebuilds the index from scratch.
+- `store.backup(dest)` — a consistent single-file copy via SQLite's online backup API, safe to take at any time, including while another thread is writing. `dest` ending in `.db` writes that file; anything else is treated as a store root you can open directly.
+- copy `ancestree.db`, `ancestree.db-wal` and `ancestree.db-shm` together;
+- `store.close()` first (which checkpoints), then copy the single file.
 
-!!! warning
-    A corrupt `.index.json` raises a `RuntimeError` on load with a message directing you to `store.rebuild_db_from_disk()` — corruption is loud rather than hidden. A single corrupt `meta.json` on an already-indexed node degrades gracefully instead: searches still answer from the index, but `get_node()` returns `None` for that node.
+`store.stats()["database_bytes"]` counts the database and its WAL together, so it reflects what the store actually occupies rather than what has been checkpointed so far.
 
 ## Scale
 
-Ancestree is built for **hundreds to low thousands of nodes**, not as a replacement for a proper database. Every search is a linear scan of the in-memory index, opening a store loads and reconciles the whole index, and `generate_web_graph()` reads every node's `meta.json` and inlines everything into one self-contained HTML file. None of this is a problem at the intended scale; all of it degrades linearly beyond it.
-
-Compaction only fires once the journal has grown to roughly the snapshot's size, with a floor of 128 entries. A workflow that writes a single node per session will never reach that threshold, so the journal grows unbounded across sessions and store-open time creeps up as the whole journal is replayed each time.
-
-!!! note
-    If you write very few nodes per session over many sessions, call `store.rebuild_db_from_disk()` periodically. It rewrites a clean snapshot from the directories and clears the journal.
+Searches are answered by indexed SQL rather than linear scans, and opening a store no longer replays an index — cold opens are effectively instant. The practical limits are the write path (chunking cost scales with artifact megabytes) and the snapshot (one HTML file inlining everything). A few thousand nodes is comfortable territory: `find()` over 3000 nodes runs in ~26 ms, and a selective metadata lookup in ~0.04 ms.
 
 ## Metadata coercion and overwrites
 
-A handful of keys are reserved by the store — `parent_id`, `step_type`, `generation`, `timestamp`, `healthy`, `duration_s`, and `size_mb`. `add_meta` raises `ValueError` if you try to set one, so you cannot accidentally overwrite the structural metadata the store depends on for lineage, recency, and health.
+The structural keys the store owns — `node_id`, `parent_id`, `step_type`, `generation`, `healthy`, `created_utc`, `created_epoch`, `duration_s`, `size_bytes`, `content_hash` — are reserved. `add_meta` raises `ValueError` if you try to set one, so you cannot accidentally shadow the facts the store depends on for lineage, recency and health. They are attributes on the returned records, not metadata entries.
 
-`table` and `json` entries are always stored non-searchable, and `image`/`link` entries that point at files (rather than URLs) are rewritten relative to the store root and also forced non-searchable. They render in the web graph but cannot be matched by `find_node`.
+`table` and `json` entries are always stored non-searchable, and `image`/`link` entries that point at files (rather than URLs) are rewritten relative to the node and also forced non-searchable. They render in the explorers but cannot be matched by `find`.
 
-The default `auto` data type infers the rendering from the value's *type*, not by sniffing string contents: a `Path` becomes an image (by file suffix) or a file link, a `dict`/`list` becomes JSON, a DataFrame becomes a table, and an `http(s)://` string becomes a link. Any other string stays plain `text` — a string that merely looks like a file path or filename is not treated as one. Pass `data_type` explicitly to override.
+The default `auto` data type infers the rendering from the value's *type*, not by sniffing string contents: a `Path` becomes an image (by file suffix) or a file link, a `dict`/`list` becomes JSON, a DataFrame becomes a table, and an `http(s)://` string becomes a link. Any other string stays plain `text`. numpy/pandas scalars, arrays, sets and datetimes are coerced to native Python with a warning; anything still unserialisable is rejected at the `add_meta` call.
+
+## Deduplication surprises
+
+With `dedup` on (the default), re-running a step whose content — step type, parents, user metadata and artifact bytes — is identical gives you the *same node back*: the `with` block's variable is rebound onto the existing node and nothing new is stored. Change any of those and you get a distinct node. Failed (unhealthy) runs never merge. If you want every run recorded regardless, create the store with `dedup=False`.
 
 ## Paths and artifacts
 
-`artifacts(contains=...)` matches both as a glob and as a case-insensitive substring anywhere in the filename, and always excludes `meta.json`.
+`artifacts(contains=...)` matches both as a glob and as a case-insensitive substring anywhere in the filename.
 
 ## Automatic provenance
 
-Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to `git`, which means a few subprocesses per node, and means your identity and repository state are recorded by default. Provenance entries are display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply `None`.
+Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to `git` — two subprocesses per node, run concurrently — which means your identity and repository state are recorded by default. Provenance is display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply `None`.
 
 ## Search semantics
 
-A predicate passed to `find_node` receives `None` for any key the node lacks, so a blanket-true predicate such as `lambda v: True` matches *every* node, including ones missing that key. A predicate that raises is treated as "no match" but provides a warning to the user that an error was raised.
+A predicate passed to `find` receives `None` for any key the node lacks, so a blanket-true predicate such as `lambda v: True` matches *every* node, including ones missing that key. A predicate that raises is treated as "no match" but provides a warning to the user that an error was raised.
 
-`get_most_recent_node` ranks by the stored ISO timestamp. Nodes created in the same instant tie, and which one is returned is arbitrary. ISO timestamps give microsecond precision, so this is highly unlikely but worth noting as an extremely rare edge case.
+`latest` ranks by the stored creation time. Nodes created in the same instant tie, and which one is returned is arbitrary — highly unlikely, but worth noting as an extremely rare edge case.

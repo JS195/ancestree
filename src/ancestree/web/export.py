@@ -21,7 +21,7 @@ import base64
 import json
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from .graph import build_graph, node_detail
 
@@ -63,8 +63,8 @@ def _substitute(template: str, marker: str, value: str) -> str:
 
 
 def export_static(
-    store: "LineageStore",
-    dest: Optional[Union[Path, str]] = None,
+    store: LineageStore,
+    dest: Path | str | None = None,
     include_artifacts: bool = True,
 ) -> Path:
     """Writes the view-only snapshot and returns its path.
@@ -77,17 +77,19 @@ def export_static(
             the rest copied under ``<name>_files/``. Pass False for a
             metadata-only snapshot of a store with huge artifacts.
     """
-    dest_path = Path(dest) if dest is not None else store.root / "interactive_pipeline.html"
+    dest_path = (
+        Path(dest) if dest is not None else store.root / "interactive_pipeline.html"
+    )
     files_dir = dest_path.with_name(dest_path.stem + "_files")
     if include_artifacts and files_dir.exists():
         shutil.rmtree(files_dir)  # derived output from a previous export
 
     payload = build_graph(store)
-    details: Dict[str, Any] = {}
+    details: dict[str, Any] = {}
     for node in payload["nodes"]:
         node_id = node["id"]
         detail = node_detail(store, node_id)
-        hrefs: Dict[str, str] = {}
+        hrefs: dict[str, str] = {}
         if include_artifacts:
             for artifact in detail["artifacts"]:
                 relpath = artifact["relpath"]
@@ -116,7 +118,7 @@ def export_static(
 
 
 def _artifact_href(
-    store: "LineageStore",
+    store: LineageStore,
     files_dir: Path,
     node_id: str,
     relpath: str,

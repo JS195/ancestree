@@ -10,12 +10,13 @@ See REBUILD_BLUEPRINT.md section 5.3 (Phase 2, issue #13).
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date, datetime, time
 from pathlib import PurePosixPath
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any
 
 
-def to_jsonable(value: Any) -> Tuple[Any, bool]:
+def to_jsonable(value: Any) -> tuple[Any, bool]:
     """Best-effort coercion of a value into JSON-serialisable Python types.
 
     Data workflows routinely hand the store numpy/pandas values —
@@ -85,7 +86,7 @@ def parse_iso_utc(s: str) -> datetime:
     return datetime.fromisoformat(s)
 
 
-def format_timestamp(iso_str: Optional[str]) -> str:
+def format_timestamp(iso_str: str | None) -> str:
     """Renders an ISO timestamp for display (``02 Jan 2026, 03:04:05``).
 
     Returns ``"N/A"`` for a missing value and the raw string for one that
@@ -105,13 +106,13 @@ def is_pandas(obj: Any) -> bool:
     return type(obj).__name__ == "DataFrame" and hasattr(obj, "to_dict")
 
 
-def filter_relpaths(relpaths: Iterable[str], contains: str = "*") -> List[str]:
+def filter_relpaths(relpaths: Iterable[str], contains: str = "*") -> list[str]:
     """The artifact-name matcher shared by every artifacts() surface: a
     pattern with wildcards is a glob; anything else also matches as a
     case-insensitive substring of the filename (0.1.x semantics)."""
     pattern = contains if ("*" in contains or "?" in contains) else f"*{contains}*"
     lowered = contains.lower()
-    matched: List[str] = []
+    matched: list[str] = []
     for relpath in relpaths:
         name = relpath.rsplit("/", 1)[-1]
         if PurePosixPath(relpath).match(pattern) or lowered in name.lower():

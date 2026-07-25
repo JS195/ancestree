@@ -3,36 +3,36 @@
 ``build_graph`` returns the lightweight skeleton (ids, labels, step types,
 levels, edges) that lays the graph out; ``node_detail`` returns one node's
 full record (structural facts, provenance, metadata envelopes, artifact
-list). The static export inlines every detail once; the live server (Phase
-8) serves them on demand — keeping its payload small (AD11).
+list). ``explorer_graph`` combines them into the payload the classic
+explorer template embeds as ``window.PIPELINE_DATA``: the skeleton plus,
+per node, the complete ``entries`` envelope dict its client-side search,
+details pane and runs table read.
 
 See REBUILD_BLUEPRINT.md section 5.3 (Phase 7, issue #18).
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any
 
 from ..errors import NodeNotFound
-from ..util import format_timestamp
+from ..util import format_timestamp, parse_iso_utc
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from ..store import LineageStore
 
 
-def assign_levels(
-    node_ids: List[str], edges: List[Tuple[str, str]]
-) -> Dict[str, int]:
+def assign_levels(node_ids: list[str], edges: list[tuple[str, str]]) -> dict[str, int]:
     """Longest-path-from-a-root depth for every node (Kahn's algorithm):
     the hierarchical layout column each node renders in."""
-    children: Dict[str, List[str]] = {node_id: [] for node_id in node_ids}
-    indegree: Dict[str, int] = {node_id: 0 for node_id in node_ids}
+    children: dict[str, list[str]] = {node_id: [] for node_id in node_ids}
+    indegree: dict[str, int] = {node_id: 0 for node_id in node_ids}
     for parent, child in edges:
         children.setdefault(parent, []).append(child)
         indegree[child] = indegree.get(child, 0) + 1
         indegree.setdefault(parent, 0)
 
-    level: Dict[str, int] = {node_id: 0 for node_id in indegree}
+    level: dict[str, int] = {node_id: 0 for node_id in indegree}
     ready = [node_id for node_id, degree in indegree.items() if degree == 0]
     while ready:
         current = ready.pop()
@@ -44,7 +44,7 @@ def assign_levels(
     return level
 
 
-def build_graph(store: "LineageStore") -> Dict[str, Any]:
+def build_graph(store: LineageStore) -> dict[str, Any]:
     """The layout skeleton: one entry per node (id, label, group, level,
     healthy) plus the parent→child edges, oldest node first."""
     records = store.find()
@@ -70,7 +70,115 @@ def build_graph(store: "LineageStore") -> Dict[str, Any]:
     }
 
 
-def node_detail(store: "LineageStore", node_id: str) -> Dict[str, Any]:
+def explorer_graph(store: LineageStore) -> dict[str, Any]:
+    """``build_graph``'s skeleton with each node carrying its full
+    ``entries`` dict — the classic explorer's ``window.PIPELINE_DATA``
+    payload, matching the 0.1.x envelope shape key for key.
+
+    The live server rebuilds this on every page load, so the per-node
+    lookups are batched: three queries for the whole store rather than four
+    per node.
+    """
+    payload = build_graph(store)
+    node_ids = [node["id"] for node in payload["nodes"]]
+    records = store._metadata.get_many(node_ids)
+    metadata = store._metadata.metadata_for_many(node_ids)
+    artifacts = store._chunks.artifact_sizes_many(node_ids)
+    for node in payload["nodes"]:
+        node_id = node["id"]
+        node["entries"] = _node_entries(
+            _detail(
+                store._to_node(records[node_id]),
+                envelopes(metadata[node_id]),
+                artifacts[node_id],
+            )
+        )
+    return payload
+
+
+def envelopes(rows: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """MetadataRow objects as the public envelope dicts."""
+    return {
+        key: {
+            "value": row.value,
+            "data_type": row.data_type,
+            "group": row.group,
+            "searchable": row.searchable,
+        }
+        for key, row in rows.items()
+    }
+
+
+def _node_entries(detail: dict[str, Any]) -> dict[str, Any]:
+    """One node's ``entries`` envelopes, in the shape the template's JS
+    reads: structural facts and provenance rebuilt as envelopes (the
+    0.1.x store wrote them that way; the database keeps them as columns),
+    user metadata as stored, and each artifact as a root-relative link
+    the server resolves by database key."""
+
+    def structural(value: Any) -> dict[str, Any]:
+        return {
+            "value": value,
+            "data_type": "text",
+            "group": "Structural Properties",
+            "searchable": True,
+        }
+
+    # The JS reads timestamps numerically (timeline, day filter) through
+    # the attached epoch and shows the display string as the value.
+    timestamp = structural(detail["created_display"])
+    try:
+        timestamp["epoch"] = parse_iso_utc(detail["created_utc"]).timestamp()
+    except (TypeError, ValueError):
+        pass
+
+    entries = {
+        "node_id": structural(detail["node_id"]),
+        "parent_id": structural(detail["parent_id"]),
+        "generation": structural(detail["generation"]),
+        "step_type": structural(detail["step_type"]),
+        "timestamp": timestamp,
+        "healthy": structural(detail["healthy"]),
+        "duration_s": structural(detail["duration_s"]),
+        "size_bytes": structural(detail["size_bytes"]),
+    }
+    for key, value in detail["provenance"].items():
+        entries[key] = {
+            "value": value,
+            "data_type": "text",
+            "group": "Provenance",
+            "searchable": False,
+        }
+    node_id = detail["node_id"]
+    relpaths = {artifact["relpath"] for artifact in detail["artifacts"]}
+
+    # An image/link entry created as `add_meta("cm", node / "cm.png")` holds
+    # the *node-relative* artifact path ("cm.png", "figs/loss.png"). The
+    # browser resolves that against "/", which is not a route — the server
+    # serves artifacts under "/<node_id>/<relpath>". Without this rewrite
+    # every inline figure 404s, and a nested path mis-routes as though its
+    # first segment were a node id. Same mapping the static exporter does
+    # through artifact_hrefs.
+    for key, envelope in detail["metadata"].items():
+        value = envelope.get("value")
+        if (
+            envelope.get("data_type") in ("image", "link")
+            and isinstance(value, str)
+            and value in relpaths
+        ):
+            envelope = dict(envelope, value=f"{node_id}/{value}")
+        entries[key] = envelope
+
+    for relpath in sorted(relpaths):
+        entries[relpath] = {
+            "value": f"{node_id}/{relpath}",
+            "data_type": "link",
+            "group": "Artifacts",
+        }
+    return entries
+
+
+def node_detail(store: LineageStore, node_id: str) -> dict[str, Any]:
     """Everything the UI shows when a node is opened: structural facts,
     provenance, the metadata envelopes, and the artifact list (relpath +
     size; the exporter or live server decides how each becomes a link).
@@ -82,6 +190,19 @@ def node_detail(store: "LineageStore", node_id: str) -> Dict[str, Any]:
     if node is None:
         raise NodeNotFound(f"Node {node_id!r} not found in this store.")
     manifest = store._chunks.artifact_manifest(node.node_id)
+    return _detail(
+        node,
+        node.metadata,
+        [(relpath, record.size) for relpath, record in sorted(manifest.items())],
+    )
+
+
+def _detail(
+    node: Any, metadata: dict[str, Any], artifacts: list[Any]
+) -> dict[str, Any]:
+    """One node's detail dict from pieces already fetched — the single
+    shape both the per-node path and the batched whole-store render
+    produce, so the two can never drift apart."""
     return {
         "node_id": node.node_id,
         "step_type": node.step_type,
@@ -93,9 +214,8 @@ def node_detail(store: "LineageStore", node_id: str) -> Dict[str, Any]:
         "duration_s": node.duration_s,
         "size_bytes": node.size_bytes,
         "provenance": node.provenance,
-        "metadata": node.metadata,
+        "metadata": metadata,
         "artifacts": [
-            {"relpath": relpath, "size": record.size}
-            for relpath, record in sorted(manifest.items())
+            {"relpath": relpath, "size": size} for relpath, size in artifacts
         ],
     }

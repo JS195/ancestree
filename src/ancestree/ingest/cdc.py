@@ -11,8 +11,9 @@ issue #17).
 from __future__ import annotations
 
 import random
+import sys
 import zlib
-from typing import Iterator, List
+from collections.abc import Iterator
 
 # ---------------------------------------------------------------------------
 # Section 1 — FastCDC chunker (Layer 1)
@@ -35,10 +36,17 @@ from typing import Iterator, List
 _rng = random.Random(0xA5A5_5A5A_C3C3_3C3C)
 _GEAR = [_rng.getrandbits(64) for _ in range(256)]
 
+# AVG_SIZE is deliberately under _ZDICT_MAX (32,256 bytes): zlib's dictionary
+# window is 32 KiB, so a chunk larger than that cannot see the whole of its
+# delta base and the tail degrades to literals. Sitting at 32 KiB — as v1 did
+# — put every average-sized chunk right on that cliff. Halving it is the
+# single largest storage win available, and it costs nothing: the per-byte
+# Gear loop skips MIN_SIZE bytes per chunk, so smaller chunks mean *more*
+# bytes skipped and a faster ingest.
 MIN_SIZE = 8 * 1024
-AVG_SIZE = 32 * 1024
+AVG_SIZE = 16 * 1024
 MAX_SIZE = 256 * 1024
-_BITS = (AVG_SIZE).bit_length() - 1  # log2(avg) == 15
+_BITS = (AVG_SIZE).bit_length() - 1  # log2(avg) == 14
 # Normalised chunking: a denser mask before the average size makes an early
 # cut unlikely; a sparser one after it makes a late cut likely. Chunk sizes
 # cluster around the average, away from the min/max extremes.
@@ -54,24 +62,44 @@ _INT64 = (1 << 64) - 1
 LARGE_FILE_THRESHOLD = 64 * 1024 * 1024
 
 
+#: The Gear table reduced to the only bits the boundary tests ever look at.
+#: _MASK_S is the wider of the two masks, and carries in `(fp << 1) + gear`
+#: propagate upwards only — so the low _MASK_S bits of the fingerprint evolve
+#: independently of everything above them. Discarding those high bits leaves
+#: every boundary bit for bit identical while keeping the arithmetic on
+#: single-digit CPython ints instead of 64-bit ones.
+_GEAR_NARROW = [value & _MASK_S for value in _GEAR]
+
+
 def _next_cut(data: bytes, start: int, n: int) -> int:
-    """Returns the index one past the end of the chunk beginning at `start`."""
+    """Returns the index one past the end of the chunk beginning at `start`.
+
+    This is the hot loop of the whole ingest path — one iteration per byte
+    of every artifact — so it is written for CPython rather than for looks:
+    the tables and masks are bound to locals, and the bytes are walked by
+    iterating a slice (a C-speed memcpy, then C-speed iteration) instead of
+    indexing, which costs a bounds check and an index increment per byte.
+    """
     if n - start <= MIN_SIZE:
         return n
     normal = min(start + AVG_SIZE, n)
     hard = min(start + MAX_SIZE, n)
+    gear = _GEAR_NARROW
+    mask_s = _MASK_S
+    mask_l = _MASK_L
     fingerprint = 0
-    i = start + MIN_SIZE  # the first MIN_SIZE bytes can never end a chunk
-    while i < normal:
-        fingerprint = ((fingerprint << 1) + _GEAR[data[i]]) & _INT64
-        if (fingerprint & _MASK_S) == 0:
-            return i + 1
-        i += 1
-    while i < hard:
-        fingerprint = ((fingerprint << 1) + _GEAR[data[i]]) & _INT64
-        if (fingerprint & _MASK_L) == 0:
-            return i + 1
-        i += 1
+    # The first MIN_SIZE bytes can never end a chunk.
+    base = start + MIN_SIZE
+    # Narrowed to mask_s, the "fingerprint & _MASK_S == 0" test is just
+    # "fingerprint is zero".
+    for offset, byte in enumerate(data[base:normal]):
+        fingerprint = ((fingerprint << 1) + gear[byte]) & mask_s
+        if not fingerprint:
+            return base + offset + 1
+    for offset, byte in enumerate(data[normal:hard]):
+        fingerprint = ((fingerprint << 1) + gear[byte]) & mask_s
+        if not fingerprint & mask_l:
+            return normal + offset + 1
     return hard
 
 
@@ -135,21 +163,38 @@ _FEATURE_MULTIPLIERS = (
     0xD6E8FEB86659FD93,
 )
 _SIGNED_63 = (1 << 63) - 1  # features stay positive in SQLite's INTEGER
+_LITTLE_ENDIAN = sys.byteorder == "little"
 
 
-def super_features(data: bytes, count: int = FEATURE_COUNT) -> List[int]:
+def super_features(data: bytes, count: int = FEATURE_COUNT) -> list[int]:
     """The chunk's similarity features (deterministic; empty for tiny
     chunks). Stored in the chunk_feature table for raw chunks so later
     similar chunks can find them as delta bases."""
     if len(data) < _SAMPLE_WIDTH:
         return []
-    samples = [
+    samples = _samples(data)
+    return [
+        min([(sample * multiplier) & _INT64 for sample in samples]) & _SIGNED_63
+        for multiplier in _FEATURE_MULTIPLIERS[:count]
+    ]
+
+
+def _samples(data: bytes) -> list[int]:
+    """The strided 8-byte samples, little-endian, as integers.
+
+    On a little-endian machine the whole extraction is one zero-copy
+    ``memoryview`` cast plus a strided ``tolist()`` — both C-speed — instead
+    of a Python loop of slices and ``int.from_bytes``. The explicit loop
+    stays as the big-endian fallback: features are persisted, so they must
+    come out identical on every platform, not merely on this one.
+    """
+    if _LITTLE_ENDIAN:
+        whole_words = memoryview(data)[: (len(data) // _SAMPLE_WIDTH) * _SAMPLE_WIDTH]
+        words = whole_words.cast("Q")
+        return words[:: _SAMPLE_STRIDE // _SAMPLE_WIDTH].tolist()
+    return [
         int.from_bytes(data[i : i + _SAMPLE_WIDTH], "little")
         for i in range(0, len(data) - _SAMPLE_WIDTH + 1, _SAMPLE_STRIDE)
-    ]
-    return [
-        min((sample * multiplier) & _INT64 for sample in samples) & _SIGNED_63
-        for multiplier in _FEATURE_MULTIPLIERS[:count]
     ]
 
 

@@ -4,7 +4,6 @@
 import os
 import threading
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -20,7 +19,7 @@ def test_same_thread_reuses_one_connection(tmp_path: Path) -> None:
 def test_each_thread_gets_its_own_connection(tmp_path: Path) -> None:
     mgr = ConnectionManager(tmp_path / "s.db")
     main_conn = mgr.read()
-    seen: List[object] = []
+    seen: list[object] = []
     thread = threading.Thread(target=lambda: seen.append(mgr.read()))
     thread.start()
     thread.join()
@@ -33,12 +32,10 @@ def test_write_commits_and_is_visible_to_other_threads(tmp_path: Path) -> None:
     with mgr.write() as conn:
         conn.execute("INSERT INTO config VALUES ('k', 'v')")
 
-    seen: List[object] = []
+    seen: list[object] = []
 
     def reader() -> None:
-        row = mgr.read().execute(
-            "SELECT value FROM config WHERE key = 'k'"
-        ).fetchone()
+        row = mgr.read().execute("SELECT value FROM config WHERE key = 'k'").fetchone()
         seen.append(row["value"] if row is not None else None)
 
     thread = threading.Thread(target=reader)
@@ -50,10 +47,9 @@ def test_write_commits_and_is_visible_to_other_threads(tmp_path: Path) -> None:
 
 def test_write_rolls_back_on_exception(tmp_path: Path) -> None:
     mgr = ConnectionManager(tmp_path / "s.db")
-    with pytest.raises(RuntimeError, match="boom"):
-        with mgr.write() as conn:
-            conn.execute("INSERT INTO config VALUES ('k', 'v')")
-            raise RuntimeError("boom")
+    with pytest.raises(RuntimeError, match="boom"), mgr.write() as conn:
+        conn.execute("INSERT INTO config VALUES ('k', 'v')")
+        raise RuntimeError("boom")
     count = mgr.read().execute("SELECT count(*) AS n FROM config").fetchone()
     assert count["n"] == 0
     mgr.close()
@@ -106,9 +102,7 @@ def test_readers_are_not_blocked_by_an_open_write(tmp_path: Path) -> None:
     try:
         # Under WAL a reader on another connection is neither blocked nor
         # shown the uncommitted write — it reads the last committed snapshot.
-        row = mgr.read().execute(
-            "SELECT value FROM config WHERE key = 'k'"
-        ).fetchone()
+        row = mgr.read().execute("SELECT value FROM config WHERE key = 'k'").fetchone()
         assert row["value"] == "before"
     finally:
         release.wait(timeout=10)
@@ -154,12 +148,11 @@ def test_write_is_reentrant_and_atomic(tmp_path: Path) -> None:
     assert count["n"] == 2
 
     # A failure anywhere poisons the WHOLE composed transaction.
-    with pytest.raises(RuntimeError, match="boom"):
-        with mgr.write() as outer:
-            outer.execute("INSERT INTO config VALUES ('doomed', '1')")
-            with mgr.write() as inner:
-                inner.execute("INSERT INTO config VALUES ('doomed2', '1')")
-                raise RuntimeError("boom")
+    with pytest.raises(RuntimeError, match="boom"), mgr.write() as outer:
+        outer.execute("INSERT INTO config VALUES ('doomed', '1')")
+        with mgr.write() as inner:
+            inner.execute("INSERT INTO config VALUES ('doomed2', '1')")
+            raise RuntimeError("boom")
     count = mgr.read().execute("SELECT count(*) AS n FROM config").fetchone()
     assert count["n"] == 2
     mgr.close()
@@ -193,8 +186,10 @@ def test_forked_child_gets_a_fresh_connection(tmp_path: Path) -> None:
     _, exit_status = os.waitpid(pid, 0)
     assert os.WIFEXITED(exit_status) and os.WEXITSTATUS(exit_status) == 0
     # The parent's connection still works and sees the child's commit.
-    row = mgr.read().execute(
-        "SELECT value FROM config WHERE key = 'from-child'"
-    ).fetchone()
+    row = (
+        mgr.read()
+        .execute("SELECT value FROM config WHERE key = 'from-child'")
+        .fetchone()
+    )
     assert row is not None and row["value"] == "yes"
     mgr.close()

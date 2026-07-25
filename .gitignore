@@ -121,3 +121,8 @@ docs/assets/demo/**
 
 .ipynb_checkpoints/
 .DS_Store
+
+# Legacy 0.1.x notebooks are kept on record
+!docs/examples/legacy-0.1/
+!docs/examples/legacy-0.1/**
+battle_tests/

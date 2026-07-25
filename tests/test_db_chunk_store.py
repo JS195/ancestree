@@ -1,10 +1,8 @@
 """Phase 3: the SQLite chunk pool — exact dedup, artifact recipes,
 verified reassembly and the system-temp read cache (issue #14)."""
 
-import tempfile
 import zlib
 from pathlib import Path
-from typing import Tuple
 
 import pytest
 
@@ -14,7 +12,7 @@ from ancestree.db.metadata_store import MetadataStore, NodeRecord
 from ancestree.errors import ArtifactNotFound, CorruptChunkError, IntegrityError
 from ancestree.ingest.cdc import chunk_bytes
 
-Env = Tuple[ConnectionManager, MetadataStore, ChunkStore]
+Env = tuple[ConnectionManager, MetadataStore, ChunkStore]
 
 
 @pytest.fixture()
@@ -42,10 +40,8 @@ def _random_bytes(n: int) -> bytes:
     return random.Random(7).randbytes(n)
 
 
-def _store_file(
-    env: Env, node_id: str, relpath: str, data: bytes
-) -> None:
-    manager, metadata_store, chunk_store = env
+def _store_file(env: Env, node_id: str, relpath: str, data: bytes) -> None:
+    manager, _metadata_store, chunk_store = env
     import hashlib
 
     with manager.write() as conn:
@@ -96,7 +92,7 @@ def test_corrupt_chunk_is_detected(env: Env) -> None:
 
 
 def test_artifact_recipe_roundtrips(env: Env) -> None:
-    manager, metadata_store, chunk_store = env
+    _manager, metadata_store, chunk_store = env
     _add_node(metadata_store, "n1")
     data = _random_bytes(600_000)  # several chunks
     _store_file(env, "n1", "results/out.bin", data)
@@ -132,9 +128,7 @@ def test_identical_files_share_chunks_across_nodes(env: Env) -> None:
     assert chunk_store.artifact_bytes("n2", "b.bin") == data
 
 
-def test_reassemble_lands_in_system_temp_cache(
-    env: Env, tmp_path: Path
-) -> None:
+def test_reassemble_lands_in_the_store_cache(env: Env, tmp_path: Path) -> None:
     _, metadata_store, chunk_store = env
     _add_node(metadata_store, "n1")
     data = _random_bytes(100_000)
@@ -142,14 +136,18 @@ def test_reassemble_lands_in_system_temp_cache(
 
     path = chunk_store.reassemble("n1", "out.bin")
     assert path.read_bytes() == data
-    # The cache lives in the system temp dir, never under the store root.
-    assert str(path).startswith(tempfile.gettempdir())
-    assert not str(path).startswith(str(tmp_path))
+    # The cache lives inside the store, in a pid-tagged session directory,
+    # so returned paths read like they belong to the store.
+    assert path.is_relative_to(tmp_path / ".cache")
+    session = path.relative_to(tmp_path / ".cache").parts[0]
+    assert session.split("-", 1)[0].isdigit()  # the pid the sweep checks
     # A second read reuses the same session copy.
     assert chunk_store.reassemble("n1", "out.bin") == path
 
     chunk_store.clear_cache()
     assert not path.exists()
+    # The last session out also removes the shared .cache parent.
+    assert not (tmp_path / ".cache").exists()
 
 
 def test_missing_artifact_raises(env: Env) -> None:
@@ -164,8 +162,6 @@ def test_tampered_artifact_digest_is_detected(env: Env) -> None:
     _add_node(metadata_store, "n1")
     _store_file(env, "n1", "out.bin", _random_bytes(50_000))
     with manager.write() as conn:
-        conn.execute(
-            "UPDATE artifact SET sha256 = ? WHERE node_id = 'n1'", ("0" * 64,)
-        )
+        conn.execute("UPDATE artifact SET sha256 = ? WHERE node_id = 'n1'", ("0" * 64,))
     with pytest.raises(CorruptChunkError):
         chunk_store.artifact_bytes("n1", "out.bin")

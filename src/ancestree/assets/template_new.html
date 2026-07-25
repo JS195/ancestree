@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+    <title>Interactive Pipeline Explorer</title>
+
+    <script type="text/javascript" src="../../web_app/vis-network.min.js"></script>
+    <link rel="stylesheet" href ="../../web_app/styles.css">
+
+</head>
+<body>
+
+<header class="app-header">
+    <div class="header-left">
+        <h1>Pipeline <span>Explorer</span></h1>
+        <div class="main-title">Interactive Pipeline Explorer</div>
+    </div>
+
+    <div class="header-center">
+        <div class="search-wrapper">
+            <input type="text" id="search-input" placeholder="Search nodes — e.g. pca, method=pca, CH_score>1000" autocomplete="off" spellcheck="false">
+            <span id="search-count"></span>
+            <button id="search-clear" title="Clear search">&times;</button>
+        </div>
+    </div>
+
+    <div class ="header-right">
+        <div id="status-pills" class="status-pills"></div>
+        <button id="view-toggle" class="control-button" onclick="toggleTableView()">Table</button>
+        <button class="theme-toggle control-button" onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+</header>
+
+<main id="app-container">
+    <div id="mynetwork"></div>
+    <div id="table-view"></div>
+    <div id="legend"></div>
+    <div id="timeline"></div>
+    <div id="resizer"></div>
+    <aside id="details-pane">
+        <div class="pane-content">
+            <div id="node-content">
+                <div class="empty-state">
+                    <p>Select a node to view details. Cmd click a second node to compare.</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</main>
+
+<script type="text/javascript">
+    window.PIPELINE_DATA = {
+        nodes: {{PYTHON_NODES}},
+        edges: {{PYTHON_EDGES}}
+    };
+</script>
+
+<script src="../../web_app/actions.js"></script>
+
+</body>
+</html>
