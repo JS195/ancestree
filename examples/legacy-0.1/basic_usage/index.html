@@ -12,7 +12,7 @@
         <meta name="author" content="Joshua Smith">
       
       
-        <link rel="canonical" href="https://js195.github.io/ancestree/examples/stress_2_iterative_deep_chain/">
+        <link rel="canonical" href="https://js195.github.io/ancestree/examples/legacy-0.1/basic_usage/">
       
       
       
@@ -20,19 +20,19 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Stress test 2 — iterative / streaming pipeline (deep chains) - Ancestree Documentation</title>
+        <title>Getting started with - Ancestree Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,11 +51,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -63,17 +63,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Stress test 2 — iterative / streaming pipeline (deep chains) - Ancestree Documentation" />
+<meta property="og:title" content="Getting started with - Ancestree Documentation" />
 <meta property="og:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/stress_2_iterative_deep_chain.png" />
+<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/legacy-0.1/basic_usage.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://js195.github.io/ancestree/examples/stress_2_iterative_deep_chain/" />
+<meta property="og:url" content="https://js195.github.io/ancestree/examples/legacy-0.1/basic_usage/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="Stress test 2 — iterative / streaming pipeline (deep chains) - Ancestree Documentation" />
+<meta property="twitter:title" content="Getting started with - Ancestree Documentation" />
 <meta property="twitter:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/stress_2_iterative_deep_chain.png" />
+<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/legacy-0.1/basic_usage.png" />
 </head>
   
   
@@ -93,7 +93,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#stress-test-2-iterative-streaming-pipeline-deep-chains" class="md-skip">
+        <a href="#getting-started-with" class="md-skip">
           Skip to content
         </a>
       
@@ -109,7 +109,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Ancestree Documentation" class="md-header__button md-logo" aria-label="Ancestree Documentation" data-md-component="logo">
+    <a href="../../.." title="Ancestree Documentation" class="md-header__button md-logo" aria-label="Ancestree Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -129,7 +129,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Stress test 2 — iterative / streaming pipeline (deep chains)
+              Getting started with
             
           </span>
         </div>
@@ -252,7 +252,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Ancestree Documentation" class="md-nav__button md-logo" aria-label="Ancestree Documentation" data-md-component="logo">
+    <a href="../../.." title="Ancestree Documentation" class="md-nav__button md-logo" aria-label="Ancestree Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -282,7 +282,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -358,7 +358,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         
   
   
@@ -386,7 +386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../basic_usage/" class="md-nav__link">
+      <a href="../../basic_usage/" class="md-nav__link">
         
   
   
@@ -414,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ML_pipeline/" class="md-nav__link">
+      <a href="../../ml_pipeline/" class="md-nav__link">
         
   
   
@@ -422,62 +422,6 @@
     
   
     Tracking an ML experiment with
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../dedupe/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Deduplicating identical nodes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../timing_benchmark/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    10k Node Timing Test
   
 
     
@@ -505,7 +449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../demo/" class="md-nav__link">
+      <a href="../../../demo/" class="md-nav__link">
         
   
   
@@ -532,7 +476,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/" class="md-nav__link">
+      <a href="../../../reference/" class="md-nav__link">
         
   
   
@@ -559,7 +503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../caveats/" class="md-nav__link">
+      <a href="../../../caveats/" class="md-nav__link">
         
   
   
@@ -606,10 +550,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#finding-2-node-creation-is-dominated-by-git-provenance-16-msnode" class="md-nav__link">
+  <a href="#1-imports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ⚠️ Finding #2 — node creation is dominated by git provenance (~16 ms/node)
+        1. Imports
       
     </span>
   </a>
@@ -617,10 +561,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#finding-3-fixed-on-chains-deeper-than-1000" class="md-nav__link">
+  <a href="#2-define-a-ruleset" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ✅ Finding #3 (FIXED) — on chains deeper than ~1000
+        2. Define a ruleset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-create-the-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Create the store
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-write-a-node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Write a node
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-look-the-node-back-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Look the node back up
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-visualise-the-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Visualise the store
       
     </span>
   </a>
@@ -1368,18 +1356,34 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7fb27b941602401d91542211134fc71a">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="stress-test-2-iterative-streaming-pipeline-deep-chains">Stress test 2 — iterative / streaming pipeline (deep chains)<a class="anchor-link" href="#stress-test-2-iterative-streaming-pipeline-deep-chains">¶</a></h1><p>Incremental workflows (streaming batches, RL checkpoints, online learning) produce long linear lineages. This stresses node-creation throughput and the recursive <code>prune</code>.</p>
+<h1 id="getting-started-with-ancestree">Getting started with <code>ancestree</code><a class="anchor-link" href="#getting-started-with-ancestree">¶</a></h1><p><code>ancestree</code> records the <em>lineage</em> of the artifacts a pipeline produces: every step is
+saved as a <strong>node</strong> that knows which node it came from, what files it wrote and what
+metadata describes it.</p>
+<p>This notebook covers the essentials — defining a ruleset, creating a store, writing
+a node, looking it back up and rendering the result — using nothing more than a
+single synthetic array.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=acae54e37e7d407bbb7b55eff062a284">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="1-imports">1. Imports<a class="anchor-link" href="#1-imports">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1397,78 +1401,38 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ancestree</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineageStore</span>
-
-<span class="n">SCRATCH</span> <span class="o">=</span> <span class="s2">"_stress"</span>  <span class="c1"># all stores written here; safe to delete</span>
-<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">SCRATCH</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">SCRATCH</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">store</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">LineageStore</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">SCRATCH</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">node_dirs</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">d</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">)]</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"ancestree"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ancestree</span><span class="p">,</span> <span class="s2">"__version__"</span><span class="p">,</span> <span class="s2">"?"</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import shutil
-import os
-import time
-import ancestree
-from ancestree import LineageStore
+<div class="clipboard-copy-txt" id="cell-1">import numpy as np
+import pandas as pd
 
-SCRATCH = "_stress"  # all stores written here; safe to delete
-shutil.rmtree(SCRATCH, ignore_errors=True)
-os.makedirs(SCRATCH, exist_ok=True)
-
-
-def store(name, **kw):
-    return LineageStore(f"{SCRATCH}/{name}", **kw)
-
-
-def node_dirs(s):
-    return [d for d in os.listdir(s.root) if not d.startswith(".")]
-
-
-print("ancestree", getattr(ancestree, "__version__", "?"))</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>ancestree 0.1.0
-</pre>
+import ancestree</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9a63283cbaf04dbcab1f6479b197f3a8">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="finding-2-node-creation-is-dominated-by-git-provenance-16-msnode">⚠️ Finding #2 — node creation is dominated by git provenance (~16 ms/node)<a class="anchor-link" href="#finding-2-node-creation-is-dominated-by-git-provenance-16-msnode">¶</a></h2><p>Every <code>create_node</code> shells out to <code>git</code> three times to record provenance. On bulk pipelines this dominates — 40× the cost of the actual store work.</p>
+<h2 id="2-define-a-ruleset">2. Define a ruleset<a class="anchor-link" href="#2-define-a-ruleset">¶</a></h2><p>The ruleset describes how a pipeline is allowed to progress. Each key is a step type and
+its value lists the step types it may follow, where <code>[None]</code> marks a valid starting point.
+Separately, <code>trigger</code> names the step(s) that begin a new <em>generation</em> — a fresh run
+of the pipeline.</p>
+<p>You only need to declare this once: it is written to <code>.lineage_config.json</code> inside the
+store and read back automatically whenever the store is reopened by name.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8dd0d8092fe74a7c96281538738b07e2">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1486,66 +1450,33 @@ print("ancestree", getattr(ancestree, "__version__", "?"))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"stream"</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">prev</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"batch"</span><span class="p">)</span> <span class="k">as</span> <span class="n">n0</span><span class="p">:</span>
-    <span class="n">n0</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"batch"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">prev</span> <span class="o">=</span> <span class="n">n0</span><span class="o">.</span><span class="n">node_id</span>
-<span class="n">B</span> <span class="o">=</span> <span class="mi">300</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"batch"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">prev</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
-        <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"state.bin"</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">2000</span><span class="p">))</span>
-        <span class="n">n</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"batch"</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-    <span class="n">prev</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">node_id</span>
-<span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">B</span><span class="si">}</span><span class="s2"> sequential nodes in </span><span class="si">{</span><span class="n">dt</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s  -&gt;  </span><span class="si">{</span><span class="n">dt</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms/node"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="s2">"For a 100k-step pipeline that is ~"</span><span class="p">,</span>
-    <span class="nb">round</span><span class="p">(</span><span class="n">dt</span> <span class="o">/</span> <span class="n">B</span> <span class="o">*</span> <span class="mi">100_000</span> <span class="o">/</span> <span class="mi">60</span><span class="p">),</span>
-    <span class="s2">"minutes just in creation."</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">RULES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"import data"</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span>  <span class="c1"># a pipeline starts by importing data</span>
+<span class="p">}</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">s = store("stream", chunk=True)
-prev = None
-t = time.time()
-with s.create_node(step_type="batch") as n0:
-    n0.add_meta("batch", 0)
-prev = n0.node_id
-B = 300
-for i in range(1, B):
-    with s.create_node(step_type="batch", parent=prev) as n:
-        (n / "state.bin").write_bytes(os.urandom(2000))
-        n.add_meta("batch", i)
-    prev = n.node_id
-dt = time.time() - t
-print(f"{B} sequential nodes in {dt:.1f}s  -&gt;  {dt / B * 1000:.1f} ms/node")
-print(
-    "For a 100k-step pipeline that is ~",
-    round(dt / B * 100_000 / 60),
-    "minutes just in creation.",
-)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>300 sequential nodes in 6.1s  -&gt;  20.3 ms/node
-For a 100k-step pipeline that is ~ 34 minutes just in creation.
-</pre>
+<div class="clipboard-copy-txt" id="cell-2">RULES = {
+    "import data": [None],  # a pipeline starts by importing data
+}</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=72eea5119410473aa328ad9291626812">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="3-create-the-store">3. Create the store<a class="anchor-link" href="#3-create-the-store">¶</a></h2><p>The store lives in a folder of its own. Its name can be a <code>str</code> or a <code>Path</code>. Passing the
+<code>rules</code> and <code>gen_triggers</code> here writes the configuration to disk; from then on
+<code>ancestree.LineageStore("basic_usage")</code> is enough to reopen it.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1563,44 +1494,30 @@ For a 100k-step pipeline that is ~ 34 minutes just in creation.
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># get_lineage is iterative — fine even on deep chains</span>
-<span class="n">lin</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get_lineage</span><span class="p">(</span><span class="n">prev</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"lineage depth:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lin</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="s2">"basic_usage"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3"># get_lineage is iterative — fine even on deep chains
-lin = s.get_lineage(prev)
-print("lineage depth:", len(lin))</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>lineage depth: 300
-</pre>
+<div class="clipboard-copy-txt" id="cell-3">store = ancestree.LineageStore("basic_usage", rules=RULES)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8edb47106e1a46a883d545849b8ab81b">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="finding-3-fixed-prune-on-chains-deeper-than-1000">✅ Finding #3 (FIXED) — <code>prune</code> on chains deeper than ~1000<a class="anchor-link" href="#finding-3-fixed-prune-on-chains-deeper-than-1000">¶</a></h2><p><code>prune</code> used to recurse one frame per descendant and raise <code>RecursionError</code> past the interpreter limit (default 1000) — for both the real delete <em>and</em> the dry-run preview. It now walks the subtree <strong>iteratively</strong>, so arbitrarily deep lineages prune and preview cleanly (deepest-first, target last).</p>
+<h2 id="4-write-a-node">4. Write a node<a class="anchor-link" href="#4-write-a-node">¶</a></h2><p><code>store.create_node(...)</code> opens a node as a context manager. Inside the block, writing
+files uses familiar syntax — the store handles pathing via <code>node / "filename"</code> —
+and <code>node.add_meta(...)</code> attaches searchable, displayable metadata. Here a pandas DataFrame
+is stored as metadata (it renders as a table in the web graph) alongside a saved array.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=10185d26023b46108eb7d9f57d49d2b3">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1618,47 +1535,112 @@ print("lineage depth:", len(lin))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Build a chain well past the recursion limit</span>
-<span class="n">deep</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"deep"</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">deep</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"root"</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
-    <span class="n">r</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"k"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">prev</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">node_id</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1100</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">deep</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"s"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">prev</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
-        <span class="n">n</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"i"</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-    <span class="n">prev</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">node_id</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"import data"</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
+    <span class="c1"># Save a file</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">node</span> <span class="o">/</span> <span class="s2">"samples.npy"</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 
-<span class="n">preview</span> <span class="o">=</span> <span class="n">deep</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># no RecursionError now</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dry-run preview of a </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">preview</span><span class="p">)</span><span class="si">}</span><span class="s2">-deep chain: ok"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="s2">"deepest-first:"</span><span class="p">,</span>
-    <span class="n">preview</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">prev</span><span class="p">,</span>
-    <span class="s2">"| target last:"</span><span class="p">,</span>
-    <span class="n">preview</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">r</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">deleted</span> <span class="o">=</span> <span class="n">deep</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pruned </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">deleted</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes; remaining: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">node_dirs</span><span class="p">(</span><span class="n">deep</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># Add some metadata</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"something"</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"key"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">"other"</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]}))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4"># Build a chain well past the recursion limit
-deep = store("deep", chunk=False)
-with deep.create_node(step_type="root") as r:
-    r.add_meta("k", 0)
-prev = r.node_id
-for i in range(1100):
-    with deep.create_node(step_type="s", parent=prev) as n:
-        n.add_meta("i", i)
-    prev = n.node_id
+<div class="clipboard-copy-txt" id="cell-4">with store.create_node(step_type="import data") as node:
+    # Save a file
+    X = np.random.randint(0, 100, (5, 5))
+    np.save(node / "samples.npy", X)
 
-preview = deep.prune(r.node_id, dry_run=True)  # no RecursionError now
-print(f"dry-run preview of a {len(preview)}-deep chain: ok")
-print(
-    "deepest-first:",
-    preview[0].node_id == prev,
-    "| target last:",
-    preview[-1].node_id == r.node_id,
-)
-deleted = deep.prune(r.node_id, dry_run=False)
-print(f"pruned {len(deleted)} nodes; remaining: {len(node_dirs(deep))}")</div>
+    # Add some metadata
+    node.add_meta("something", pd.DataFrame({"key": [1, 2, 3], "other": [4, 5, 6]}))</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="5-look-the-node-back-up">5. Look the node back up<a class="anchor-link" href="#5-look-the-node-back-up">¶</a></h2><p><code>get_most_recent_node()</code> returns the last node written to the store.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">get_most_recent_node</span><span class="p">()</span>
+<span class="n">n</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-5">n = store.get_most_recent_node()
+n</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
+<pre>Node = b4143d71, path = b4143d71, generation = 0</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="6-visualise-the-store">6. Visualise the store<a class="anchor-link" href="#6-visualise-the-store">¶</a></h2><p><code>generate_web_graph()</code> writes a self-contained, interactive HTML page showing every node,
+its lineage and its metadata.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-6">store.generate_web_graph()</div>
 </div>
 </div>
 </div>
@@ -1670,10 +1652,14 @@ print(f"pruned {len(deleted)} nodes; remaining: {len(node_dirs(deep))}")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>dry-run preview of a 1101-deep chain: ok
-deepest-first: True | target last: True
-pruned 1101 nodes; remaining: 0
+<pre>Graph generated at basic_usage/interactive_pipeline.html
 </pre>
+</div>
+</div>
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
+<pre>PosixPath('basic_usage/interactive_pipeline.html')</pre>
 </div>
 </div>
 </div>
@@ -1707,7 +1693,7 @@ pruned 1101 nodes; remaining: 0
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 25, 2026 21:31:34 UTC">June 25, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 14, 2026 12:15:23 UTC">June 14, 2026</span>
   </span>
 
     
@@ -1792,10 +1778,10 @@ pruned 1101 nodes; remaining: 0
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "navigation.expand", "navigation.instant", "navigation.instant.progress", "navigation.top", "navigation.tracking", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["content.code.copy", "content.code.annotate", "navigation.expand", "navigation.instant", "navigation.instant.progress", "navigation.top", "navigation.tracking", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

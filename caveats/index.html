@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -416,7 +416,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ML_pipeline/" class="md-nav__link">
+      <a href="../examples/ml_pipeline/" class="md-nav__link">
         
   
   
@@ -424,62 +424,6 @@
     
   
     Tracking an ML experiment with
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/dedupe/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Deduplicating identical nodes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/timing_benchmark/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    10k Node Timing Test
   
 
     
@@ -621,10 +565,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#rules-configuration" class="md-nav__link">
+  <a href="#rules-policy-are-set-once" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rules &amp; configuration
+        Rules &amp; policy are set once
       
     </span>
   </a>
@@ -643,10 +587,43 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#dont-hold-artifact-paths-across-a-block-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Don't hold artifact paths across a block boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prune-is-permanent-and-reclaims-the-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        prune is permanent, and reclaims the space
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-web-graph" class="md-nav__link">
     <span class="md-ellipsis">
       
         The web graph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#write-and-read-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write and read costs
       
     </span>
   </a>
@@ -665,6 +642,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#a-store-is-tied-to-the-version-that-wrote-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A store is tied to the version that wrote it
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#nfs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -676,10 +664,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index-behaviour" class="md-nav__link">
+  <a href="#one-file-is-the-whole-store-but-a-live-store-is-three" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index behaviour
+        One file is the whole store — but a live store is three
       
     </span>
   </a>
@@ -702,6 +690,17 @@
     <span class="md-ellipsis">
       
         Metadata coercion and overwrites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deduplication-surprises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deduplication surprises
       
     </span>
   </a>
@@ -776,10 +775,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#rules-configuration" class="md-nav__link">
+  <a href="#rules-policy-are-set-once" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rules &amp; configuration
+        Rules &amp; policy are set once
       
     </span>
   </a>
@@ -798,10 +797,43 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#dont-hold-artifact-paths-across-a-block-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Don't hold artifact paths across a block boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prune-is-permanent-and-reclaims-the-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        prune is permanent, and reclaims the space
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-web-graph" class="md-nav__link">
     <span class="md-ellipsis">
       
         The web graph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#write-and-read-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write and read costs
       
     </span>
   </a>
@@ -820,6 +852,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#a-store-is-tied-to-the-version-that-wrote-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A store is tied to the version that wrote it
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#nfs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -831,10 +874,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index-behaviour" class="md-nav__link">
+  <a href="#one-file-is-the-whole-store-but-a-live-store-is-three" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index behaviour
+        One file is the whole store — but a live store is three
       
     </span>
   </a>
@@ -857,6 +900,17 @@
     <span class="md-ellipsis">
       
         Metadata coercion and overwrites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deduplication-surprises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deduplication surprises
       
     </span>
   </a>
@@ -917,58 +971,55 @@
 
 
 <h1 id="caveats-limitations">Caveats &amp; Limitations</h1>
-<p>Ancestree is deliberately small: a store is just a directory of nodes, and the search index is a cache layered over them. That design buys simplicity and crash-safety, but it also has sharp edges worth knowing before you lean on it. This page collects the behaviours that surprise people.</p>
-<h2 id="rules-configuration">Rules &amp; configuration</h2>
-<p>Rules and generation triggers are written to <code>.lineage_config.json</code> the first time a store is created, and read back on every subsequent open. <strong>They cannot be changed afterwards.</strong> Passing different <code>rules</code> or <code>gen_triggers</code> to an existing store is gives a warning if the rules or gen_triggers differ from the ones on disk. The values on disk then win. To change them, start a new store or edit the config file directly.</p>
+<p>Ancestree is deliberately small: the whole store is one SQLite database, and every write is a transaction. That design buys simplicity and crash-safety, but it also has sharp edges worth knowing before you lean on it. This page collects the behaviours that surprise people.</p>
+<h2 id="rules-policy-are-set-once">Rules &amp; policy are set once</h2>
+<p>Rules, generation triggers and the <code>dedup</code>/<code>chunk</code> policy are persisted inside the store's database the first time it is created, and read back on every subsequent open. <strong>They cannot be changed afterwards.</strong> Passing different values to an existing store gives a warning and the stored configuration wins. To change them, start a new store.</p>
 <p>Rules are also only as strict as you make them. A <code>step_type</code> that does not appear in <code>rules</code> has <em>no</em> transition constraint and can be created under any parent; rules only restrict the step types you actually list. A store created with no rules permits every transition.</p>
 <h2 id="nodes-can-vanish-by-design">Nodes can vanish by design</h2>
-<p><code>create_node</code> only persists a node if you write at least one artifact or add your own metadata inside the block. An untouched node is deleted when the context manager exits, with a <code>UserWarning</code> rather than an exception.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The structural keys the store writes for you (<code>node_id</code>, <code>timestamp</code>, provenance, and so on) do not count as "touched". Overwriting only those still leaves the node empty, so it is still discarded.</p>
-</div>
-<p>If your code raises inside the <code>create_node</code> block, any partial work is kept and the node is flagged <code>healthy=False</code> before the exception re-raises. A node existing on disk therefore does not mean its block ran to completion — check the <code>healthy</code> flag, which is searchable via <code>find_node(healthy=False)</code>.</p>
+<p><code>create_node</code> only persists a node if you write at least one artifact or add your own metadata inside the block. An untouched node is discarded when the context manager exits, with a <code>UserWarning</code> rather than an exception.</p>
+<p>If your code raises inside the <code>create_node</code> block, any partial work is kept and the node is flagged <code>healthy=False</code> before the exception re-raises. A node existing in the store therefore does not mean its block ran to completion — check the <code>healthy</code> flag, which is searchable via <code>find(healthy=False)</code>. If a run is killed outright (SIGKILL, power loss), whatever it managed to write is adopted as an unhealthy node the next time the store opens.</p>
+<h2 id="dont-hold-artifact-paths-across-a-block-boundary">Don't hold artifact paths across a block boundary</h2>
+<p>Inside a <code>create_node</code> block, <code>node / "file"</code> points at a transient scratch directory that is deleted once the node commits. Reads after that hand back a path in the session cache (<code>&lt;root&gt;/.cache/</code>), regenerated from the store on demand. Both are real, readable paths — but re-fetch them through <code>node / "file"</code> or <code>artifacts()</code> each time rather than stashing one and using it later.</p>
+<h2 id="prune-is-permanent-and-reclaims-the-space"><code>prune</code> is permanent, and reclaims the space</h2>
+<p><code>prune(node)</code> defaults to a <strong>dry run</strong> — it returns the nodes that <em>would</em> go (the node plus everything descended from it) and changes nothing. Passing <code>dry_run=False</code> deletes them for real, then compacts the store: unreferenced chunks are dropped and the database file is shrunk in place. There is no undo, and after compaction the bytes are genuinely gone rather than merely unreferenced.</p>
+<p>Compaction scans the whole chunk pool, so pruning many nodes in a loop repeats that work. Pass <code>compact=False</code> to skip it and call <code>store.compact()</code> once at the end — the end result is identical.</p>
 <h2 id="the-web-graph">The web graph</h2>
-<p><code>generate_web_graph()</code> scans the node directories directly rather than the index, reads each <code>meta.json</code>, and writes a single self-contained <code>interactive_pipeline.html</code> at the store root, <strong>overwriting any existing one</strong>. Nodes whose <code>meta.json</code> cannot be read are skipped but print a warning. Because everything is inlined into one file, very large stores produce very large HTML.</p>
+<p><code>generate_web_graph()</code> writes a single self-contained <code>interactive_pipeline.html</code> at the store root, <strong>overwriting any existing one</strong>. It is a <strong>view-only snapshot</strong> — the searchable explorer with node diffs and the runs table is the live server (<code>store.host_live_graph()</code> or <code>python -m ancestree serve</code>). Because everything is inlined into one file (small images as data URIs; larger artifacts copied beside it), very large stores produce very large HTML.</p>
+<h2 id="write-and-read-costs">Write and read costs</h2>
+<p>Your code writes files at native speed inside the block; the price is paid at block exit, where the artifact is chunked, hashed, compressed and committed. The chunking loop is pure Python (~27 MB/s), so the cost scales with megabytes — files of 64 MiB and above switch to fixed boundaries at C speed. The first read of an artifact in a session reassembles it from chunks; every read after that is a plain file read from the cache. <code>benchmarks/RESULTS.md</code> measures all of this.</p>
 <h2 id="concurrency">Concurrency</h2>
-<p>A single <code>LineageStore</code> instance is <strong>not thread-safe</strong>. The in-memory index is a plain dict mutated without locks, so sharing one instance across threads will corrupt it. Give each thread its own instance pointed at the same root instead.</p>
-<p>Sequential multi-session use is safe. You can open a store, do some work, let the process exit, and reopen it later in a fresh process — the configuration and index persist, and the index is reconciled against the directories on load.</p>
-<p>Parallel multiprocessing writes are safe <em>except during compaction</em>. Each process appends to the journal independently, but when one process folds the journal into the snapshot while another is mid-write, the concurrent writer's just-appended entry can be dropped from the snapshot.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>No node is ever lost this way — it is recovered from its <code>meta.json</code> on the next load — but the index can under-report until that reconciliation happens. If you fan writes out across processes, do it against the directories (which are the source of truth) and treat the index as eventually consistent.</p>
-</div>
+<p>SQLite allows many readers but one writer at a time. Concurrent processes can share a store — a writer simply waits its turn (up to the busy timeout) — but heavy parallel writing is not what this is for. A single <code>LineageStore</code> instance serialises its own writes internally.</p>
+<p>Opening a store runs a sweep for scratch directories orphaned by a crashed session. That sweep never touches a node another process is still writing: a node is assembled in a staging directory and renamed into place only once it carries its crash-recovery seed, so an in-flight node is never mistaken for litter.</p>
+<h2 id="a-store-is-tied-to-the-version-that-wrote-it">A store is tied to the version that wrote it</h2>
+<p>Every store records its format version. Ancestree <strong>checks that version and refuses anything it did not write — it never converts a store</strong>. Migration is deliberately not a goal of this project.</p>
+<p>So a store written by an older (or newer) ancestree will not open, and you get an explanatory error rather than a silent misread. If you need an old store, keep the version that wrote it installed; both remain available on PyPI. Nothing is modified on a failed open — the refused database is left exactly as it was found.</p>
+<p>Plan for this the way you would for any on-disk format: a store is data you can keep, but not something to carry across upgrades.</p>
 <h2 id="nfs">NFS</h2>
-<p>Ancestree is safe on <strong>NFSv4</strong> for normal use: it relies on atomic rename and append semantics, which NFSv4 honours, and the directories remain the source of truth regardless.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Avoid triggering compaction from multiple processes simultaneously on NFS. NFS close-to-open consistency widens the compaction race described above, making a stale index more likely. Let one process own compaction, or compact only when no other process is writing.</p>
-</div>
-<h2 id="index-behaviour">Index behaviour</h2>
-<p>The index lives in two files at the store root: <code>.index.json</code> (a compacted snapshot) and <code>.index.log</code> (an append-only journal of changes since the last snapshot). <strong>Together</strong> they are the index. <code>.index.json</code> on its own is not complete until compaction fires, so a new store, or one with only a handful of nodes, keeps its recent nodes only in the journal. Don't read <code>.index.json</code> directly and assume it is the full picture — the library always reads both and replays one over the other.</p>
-<p>Because the directories are authoritative, a damaged or stale index is always recoverable. <code>store.rebuild_db_from_disk()</code> rescans every <code>meta.json</code> and rebuilds the index from scratch.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>A corrupt <code>.index.json</code> raises a <code>RuntimeError</code> on load with a message directing you to <code>store.rebuild_db_from_disk()</code> — corruption is loud rather than hidden. A single corrupt <code>meta.json</code> on an already-indexed node degrades gracefully instead: searches still answer from the index, but <code>get_node()</code> returns <code>None</code> for that node.</p>
-</div>
+<p><strong>Keep stores on local disk.</strong> SQLite file locking over NFS is unreliable, and the 0.1.x file-based NFS guarantee did not survive the move to a database backend.</p>
+<h2 id="one-file-is-the-whole-store-but-a-live-store-is-three">One file is the whole store — but a <em>live</em> store is three</h2>
+<p><code>ancestree.db</code> is the single source of truth — there is no side index to rebuild and no directory tree to fall back on. That cuts both ways: a corrupt database is real data loss. WAL journalling protects against crashes mid-write, <code>PRAGMA integrity_check</code> (reachable via <code>store.sql</code>) verifies the file, and <code>store.export()</code> writes grep-able per-node <code>meta.json</code> sidecars whenever you want plain files on record.</p>
+<p><strong>Backing up needs one moment's care.</strong> While a store is open, WAL journalling keeps recent commits in <code>ancestree.db-wal</code>, not in <code>ancestree.db</code>. Copying <code>ancestree.db</code> alone out from under an open store therefore gives you a perfectly valid, perfectly <strong>empty</strong> store — silently, with no error. Any one of these is correct:</p>
+<ul>
+<li><code>store.backup(dest)</code> — a consistent single-file copy via SQLite's online backup API, safe to take at any time, including while another thread is writing. <code>dest</code> ending in <code>.db</code> writes that file; anything else is treated as a store root you can open directly.</li>
+<li>copy <code>ancestree.db</code>, <code>ancestree.db-wal</code> and <code>ancestree.db-shm</code> together;</li>
+<li><code>store.close()</code> first (which checkpoints), then copy the single file.</li>
+</ul>
+<p><code>store.stats()["database_bytes"]</code> counts the database and its WAL together, so it reflects what the store actually occupies rather than what has been checkpointed so far.</p>
 <h2 id="scale">Scale</h2>
-<p>Ancestree is built for <strong>hundreds to low thousands of nodes</strong>, not as a replacement for a proper database. Every search is a linear scan of the in-memory index, opening a store loads and reconciles the whole index, and <code>generate_web_graph()</code> reads every node's <code>meta.json</code> and inlines everything into one self-contained HTML file. None of this is a problem at the intended scale; all of it degrades linearly beyond it.</p>
-<p>Compaction only fires once the journal has grown to roughly the snapshot's size, with a floor of 128 entries. A workflow that writes a single node per session will never reach that threshold, so the journal grows unbounded across sessions and store-open time creeps up as the whole journal is replayed each time.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If you write very few nodes per session over many sessions, call <code>store.rebuild_db_from_disk()</code> periodically. It rewrites a clean snapshot from the directories and clears the journal.</p>
-</div>
+<p>Searches are answered by indexed SQL rather than linear scans, and opening a store no longer replays an index — cold opens are effectively instant. The practical limits are the write path (chunking cost scales with artifact megabytes) and the snapshot (one HTML file inlining everything). A few thousand nodes is comfortable territory: <code>find()</code> over 3000 nodes runs in ~26 ms, and a selective metadata lookup in ~0.04 ms.</p>
 <h2 id="metadata-coercion-and-overwrites">Metadata coercion and overwrites</h2>
-<p>A handful of keys are reserved by the store — <code>parent_id</code>, <code>step_type</code>, <code>generation</code>, <code>timestamp</code>, <code>healthy</code>, <code>duration_s</code>, and <code>size_mb</code>. <code>add_meta</code> raises <code>ValueError</code> if you try to set one, so you cannot accidentally overwrite the structural metadata the store depends on for lineage, recency, and health.</p>
-<p><code>table</code> and <code>json</code> entries are always stored non-searchable, and <code>image</code>/<code>link</code> entries that point at files (rather than URLs) are rewritten relative to the store root and also forced non-searchable. They render in the web graph but cannot be matched by <code>find_node</code>.</p>
-<p>The default <code>auto</code> data type infers the rendering from the value's <em>type</em>, not by sniffing string contents: a <code>Path</code> becomes an image (by file suffix) or a file link, a <code>dict</code>/<code>list</code> becomes JSON, a DataFrame becomes a table, and an <code>http(s)://</code> string becomes a link. Any other string stays plain <code>text</code> — a string that merely looks like a file path or filename is not treated as one. Pass <code>data_type</code> explicitly to override.</p>
+<p>The structural keys the store owns — <code>node_id</code>, <code>parent_id</code>, <code>step_type</code>, <code>generation</code>, <code>healthy</code>, <code>created_utc</code>, <code>created_epoch</code>, <code>duration_s</code>, <code>size_bytes</code>, <code>content_hash</code> — are reserved. <code>add_meta</code> raises <code>ValueError</code> if you try to set one, so you cannot accidentally shadow the facts the store depends on for lineage, recency and health. They are attributes on the returned records, not metadata entries.</p>
+<p><code>table</code> and <code>json</code> entries are always stored non-searchable, and <code>image</code>/<code>link</code> entries that point at files (rather than URLs) are rewritten relative to the node and also forced non-searchable. They render in the explorers but cannot be matched by <code>find</code>.</p>
+<p>The default <code>auto</code> data type infers the rendering from the value's <em>type</em>, not by sniffing string contents: a <code>Path</code> becomes an image (by file suffix) or a file link, a <code>dict</code>/<code>list</code> becomes JSON, a DataFrame becomes a table, and an <code>http(s)://</code> string becomes a link. Any other string stays plain <code>text</code>. numpy/pandas scalars, arrays, sets and datetimes are coerced to native Python with a warning; anything still unserialisable is rejected at the <code>add_meta</code> call.</p>
+<h2 id="deduplication-surprises">Deduplication surprises</h2>
+<p>With <code>dedup</code> on (the default), re-running a step whose content — step type, parents, user metadata and artifact bytes — is identical gives you the <em>same node back</em>: the <code>with</code> block's variable is rebound onto the existing node and nothing new is stored. Change any of those and you get a distinct node. Failed (unhealthy) runs never merge. If you want every run recorded regardless, create the store with <code>dedup=False</code>.</p>
 <h2 id="paths-and-artifacts">Paths and artifacts</h2>
-<p><code>artifacts(contains=...)</code> matches both as a glob and as a case-insensitive substring anywhere in the filename, and always excludes <code>meta.json</code>.</p>
+<p><code>artifacts(contains=...)</code> matches both as a glob and as a case-insensitive substring anywhere in the filename.</p>
 <h2 id="automatic-provenance">Automatic provenance</h2>
-<p>Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to <code>git</code>, which means a few subprocesses per node, and means your identity and repository state are recorded by default. Provenance entries are display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply <code>None</code>.</p>
+<p>Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to <code>git</code> — two subprocesses per node, run concurrently — which means your identity and repository state are recorded by default. Provenance is display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply <code>None</code>.</p>
 <h2 id="search-semantics">Search semantics</h2>
-<p>A predicate passed to <code>find_node</code> receives <code>None</code> for any key the node lacks, so a blanket-true predicate such as <code>lambda v: True</code> matches <em>every</em> node, including ones missing that key. A predicate that raises is treated as "no match" but provides a warning to the user that an error was raised.</p>
-<p><code>get_most_recent_node</code> ranks by the stored ISO timestamp. Nodes created in the same instant tie, and which one is returned is arbitrary. ISO timestamps give microsecond precision, so this is highly unlikely but worth noting as an extremely rare edge case.</p>
+<p>A predicate passed to <code>find</code> receives <code>None</code> for any key the node lacks, so a blanket-true predicate such as <code>lambda v: True</code> matches <em>every</em> node, including ones missing that key. A predicate that raises is treated as "no match" but provides a warning to the user that an error was raised.</p>
+<p><code>latest</code> ranks by the stored creation time. Nodes created in the same instant tie, and which one is returned is arbitrary — highly unlikely, but worth noting as an extremely rare edge case.</p>
 
 
 
@@ -989,7 +1040,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 13, 2026 20:24:32 UTC">June 13, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 13:39:34 UTC">July 25, 2026</span>
   </span>
 
     
@@ -1077,7 +1128,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "content.code.annotate", "navigation.expand", "navigation.instant", "navigation.instant.progress", "navigation.top", "navigation.tracking", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

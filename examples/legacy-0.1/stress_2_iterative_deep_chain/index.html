@@ -12,7 +12,7 @@
         <meta name="author" content="Joshua Smith">
       
       
-        <link rel="canonical" href="https://js195.github.io/ancestree/examples/stress_4_chunking_and_cache/">
+        <link rel="canonical" href="https://js195.github.io/ancestree/examples/legacy-0.1/stress_2_iterative_deep_chain/">
       
       
       
@@ -20,19 +20,19 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Stress test 4 — chunking & the session read cache - Ancestree Documentation</title>
+        <title>Stress test 2 — iterative / streaming pipeline (deep chains) - Ancestree Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,11 +51,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -63,17 +63,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Stress test 4 — chunking &amp; the session read cache - Ancestree Documentation" />
+<meta property="og:title" content="Stress test 2 — iterative / streaming pipeline (deep chains) - Ancestree Documentation" />
 <meta property="og:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/stress_4_chunking_and_cache.png" />
+<meta property="og:image" content="https://js195.github.io/ancestree/assets/images/social/examples/legacy-0.1/stress_2_iterative_deep_chain.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://js195.github.io/ancestree/examples/stress_4_chunking_and_cache/" />
+<meta property="og:url" content="https://js195.github.io/ancestree/examples/legacy-0.1/stress_2_iterative_deep_chain/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="Stress test 4 — chunking &amp; the session read cache - Ancestree Documentation" />
+<meta property="twitter:title" content="Stress test 2 — iterative / streaming pipeline (deep chains) - Ancestree Documentation" />
 <meta property="twitter:description" content="Lightweight, zero-dependency data lineage for Python." />
-<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/stress_4_chunking_and_cache.png" />
+<meta property="twitter:image" content="https://js195.github.io/ancestree/assets/images/social/examples/legacy-0.1/stress_2_iterative_deep_chain.png" />
 </head>
   
   
@@ -93,7 +93,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#stress-test-4-chunking-the-session-read-cache" class="md-skip">
+        <a href="#stress-test-2-iterative-streaming-pipeline-deep-chains" class="md-skip">
           Skip to content
         </a>
       
@@ -109,7 +109,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Ancestree Documentation" class="md-header__button md-logo" aria-label="Ancestree Documentation" data-md-component="logo">
+    <a href="../../.." title="Ancestree Documentation" class="md-header__button md-logo" aria-label="Ancestree Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -129,7 +129,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Stress test 4 — chunking &amp; the session read cache
+              Stress test 2 — iterative / streaming pipeline (deep chains)
             
           </span>
         </div>
@@ -252,7 +252,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Ancestree Documentation" class="md-nav__button md-logo" aria-label="Ancestree Documentation" data-md-component="logo">
+    <a href="../../.." title="Ancestree Documentation" class="md-nav__button md-logo" aria-label="Ancestree Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -282,7 +282,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -358,7 +358,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         
   
   
@@ -386,7 +386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../basic_usage/" class="md-nav__link">
+      <a href="../../basic_usage/" class="md-nav__link">
         
   
   
@@ -414,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ML_pipeline/" class="md-nav__link">
+      <a href="../../ml_pipeline/" class="md-nav__link">
         
   
   
@@ -422,62 +422,6 @@
     
   
     Tracking an ML experiment with
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../dedupe/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Deduplicating identical nodes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../timing_benchmark/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    10k Node Timing Test
   
 
     
@@ -505,7 +449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../demo/" class="md-nav__link">
+      <a href="../../../demo/" class="md-nav__link">
         
   
   
@@ -532,7 +476,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/" class="md-nav__link">
+      <a href="../../../reference/" class="md-nav__link">
         
   
   
@@ -559,7 +503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../caveats/" class="md-nav__link">
+      <a href="../../../caveats/" class="md-nav__link">
         
   
   
@@ -606,10 +550,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sub-file-sharing-many-near-identical-large-csvs" class="md-nav__link">
+  <a href="#finding-2-node-creation-is-dominated-by-git-provenance-16-msnode" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Sub-file sharing: many near-identical large CSVs
+        ⚠️ Finding #2 — node creation is dominated by git provenance (~16 ms/node)
       
     </span>
   </a>
@@ -617,32 +561,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#incompressible-data-chunking-cant-help-expected" class="md-nav__link">
+  <a href="#finding-3-fixed-on-chains-deeper-than-1000" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Incompressible data — chunking can't help (expected)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-read-cache-node-dirs-stay-packed-the-path-is-node-scoped" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The read cache — node dirs stay packed; the path is node-scoped
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#edge-cases-that-work-correctly" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Edge cases that work correctly
+        ✅ Finding #3 (FIXED) — on chains deeper than ~1000
       
     </span>
   </a>
@@ -1396,7 +1318,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="stress-test-4-chunking-the-session-read-cache">Stress test 4 — chunking &amp; the session read cache<a class="anchor-link" href="#stress-test-4-chunking-the-session-read-cache">¶</a></h1><p>Sub-file dedup efficiency, incompressible data, and the read-cache lifecycle (node dirs stay packed; reads route through <code>.cache</code>).</p>
+<h1 id="stress-test-2-iterative-streaming-pipeline-deep-chains">Stress test 2 — iterative / streaming pipeline (deep chains)<a class="anchor-link" href="#stress-test-2-iterative-streaming-pipeline-deep-chains">¶</a></h1><p>Incremental workflows (streaming batches, RL checkpoints, online learning) produce long linear lineages. This stresses node-creation throughput and the recursive <code>prune</code>.</p>
 </div>
 </div>
 </div>
@@ -1419,13 +1341,12 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">ancestree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ancestree</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineageStore</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ancestree.chunkstore</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkStore</span>
 
 <span class="n">SCRATCH</span> <span class="o">=</span> <span class="s2">"_stress"</span>  <span class="c1"># all stores written here; safe to delete</span>
 <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">SCRATCH</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1442,13 +1363,12 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"ancestree"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ancestree</span><span class="p">,</span> <span class="s2">"__version__"</span><span class="p">,</span> <span class="s2">"?"</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import shutil
-import os
-import numpy as np
-import pandas as pd
+<div class="clipboard-copy-txt" id="cell-1">import os
+import shutil
+import time
+
 import ancestree
 from ancestree import LineageStore
-from ancestree.chunkstore import ChunkStore
 
 SCRATCH = "_stress"  # all stores written here; safe to delete
 shutil.rmtree(SCRATCH, ignore_errors=True)
@@ -1489,7 +1409,7 @@ print("ancestree", getattr(ancestree, "__version__", "?"))</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="sub-file-sharing-many-near-identical-large-csvs">Sub-file sharing: many near-identical large CSVs<a class="anchor-link" href="#sub-file-sharing-many-near-identical-large-csvs">¶</a></h2>
+<h2 id="finding-2-node-creation-is-dominated-by-git-provenance-16-msnode">⚠️ Finding #2 — node creation is dominated by git provenance (~16 ms/node)<a class="anchor-link" href="#finding-2-node-creation-is-dominated-by-git-provenance-16-msnode">¶</a></h2><p>Every <code>create_node</code> shells out to <code>git</code> three times to record provenance. On bulk pipelines this dominates — 40× the cost of the actual store work.</p>
 </div>
 </div>
 </div>
@@ -1512,40 +1432,44 @@ print("ancestree", getattr(ancestree, "__version__", "?"))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"near"</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">base</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"x"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">80_000</span><span class="p">),</span> <span class="s2">"y"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">80_000</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)})</span>
-<span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"ingest"</span><span class="p">)</span> <span class="k">as</span> <span class="n">ing</span><span class="p">:</span>
-    <span class="n">base</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">ing</span> <span class="o">/</span> <span class="s2">"data.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>  <span class="c1"># 8 versions, each a tiny edit</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">v</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">]</span> <span class="o">=</span> <span class="mf">999.0</span>
-    <span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"clean"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">ing</span><span class="p">)</span> <span class="k">as</span> <span class="n">c</span><span class="p">:</span>
-        <span class="n">v</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="s2">"data.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="n">cs</span> <span class="o">=</span> <span class="n">ChunkStore</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
-<span class="n">pool</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">cs</span><span class="o">.</span><span class="n">_path</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cs</span><span class="o">.</span><span class="n">all_digests</span><span class="p">())</span>
-<span class="n">one_csv</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"stream"</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">prev</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"batch"</span><span class="p">)</span> <span class="k">as</span> <span class="n">n0</span><span class="p">:</span>
+    <span class="n">n0</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"batch"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">prev</span> <span class="o">=</span> <span class="n">n0</span><span class="o">.</span><span class="n">node_id</span>
+<span class="n">B</span> <span class="o">=</span> <span class="mi">300</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"batch"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">prev</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"state.bin"</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">2000</span><span class="p">))</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"batch"</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">prev</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">node_id</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">B</span><span class="si">}</span><span class="s2"> sequential nodes in </span><span class="si">{</span><span class="n">dt</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s  -&gt;  </span><span class="si">{</span><span class="n">dt</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms/node"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">"9 ~identical CSVs | storing whole: </span><span class="si">{</span><span class="mi">9</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">one_csv</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB | pool: </span><span class="si">{</span><span class="n">pool</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB"</span>
+    <span class="s2">"For a 100k-step pipeline that is ~"</span><span class="p">,</span>
+    <span class="nb">round</span><span class="p">(</span><span class="n">dt</span> <span class="o">/</span> <span class="n">B</span> <span class="o">*</span> <span class="mi">100_000</span> <span class="o">/</span> <span class="mi">60</span><span class="p">),</span>
+    <span class="s2">"minutes just in creation."</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">s = store("near", chunk=True)
-rng = np.random.default_rng(0)
-base = pd.DataFrame({"x": np.arange(80_000), "y": rng.normal(size=80_000).round(4)})
-with s.create_node(step_type="ingest") as ing:
-    base.to_csv(ing / "data.csv", index=False)
-for i in range(8):  # 8 versions, each a tiny edit
-    v = base.copy()
-    v.loc[i * 1000, "y"] = 999.0
-    with s.create_node(step_type="clean", parent=ing) as c:
-        v.to_csv(c / "data.csv", index=False)
-
-cs = ChunkStore(s.root)
-pool = sum(cs._path(d).stat().st_size for d in cs.all_digests())
-one_csv = len(base.to_csv(index=False).encode())
+<div class="clipboard-copy-txt" id="cell-2">s = store("stream", chunk=True)
+prev = None
+t = time.time()
+with s.create_node(step_type="batch") as n0:
+    n0.add_meta("batch", 0)
+prev = n0.node_id
+B = 300
+for i in range(1, B):
+    with s.create_node(step_type="batch", parent=prev) as n:
+        (n / "state.bin").write_bytes(os.urandom(2000))
+        n.add_meta("batch", i)
+    prev = n.node_id
+dt = time.time() - t
+print(f"{B} sequential nodes in {dt:.1f}s  -&gt;  {dt / B * 1000:.1f} ms/node")
 print(
-    f"9 ~identical CSVs | storing whole: {9 * one_csv / 1e6:.1f} MB | pool: {pool / 1e6:.2f} MB"
+    "For a 100k-step pipeline that is ~",
+    round(dt / B * 100_000 / 60),
+    "minutes just in creation.",
 )</div>
 </div>
 </div>
@@ -1558,26 +1482,16 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>9 ~identical CSVs | storing whole: 9.5 MB | pool: 0.55 MB
+<pre>300 sequential nodes in 6.1s  -&gt;  20.3 ms/node
+For a 100k-step pipeline that is ~ 34 minutes just in creation.
 </pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=72eea5119410473aa328ad9291626812">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="incompressible-data-chunking-cant-help-expected">Incompressible data — chunking can't help (expected)<a class="anchor-link" href="#incompressible-data-chunking-cant-help-expected">¶</a></h2>
-</div>
-</div>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8edb47106e1a46a883d545849b8ab81b">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=72eea5119410473aa328ad9291626812">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1595,21 +1509,13 @@ print(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s2</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"random"</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">s2</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"blob"</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
-        <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"r.bin"</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">500_000</span><span class="p">))</span>
-<span class="n">cs2</span> <span class="o">=</span> <span class="n">ChunkStore</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
-<span class="n">pool2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">cs2</span><span class="o">.</span><span class="n">_path</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cs2</span><span class="o">.</span><span class="n">all_digests</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"3 x 500KB random: pool </span><span class="si">{</span><span class="n">pool2</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB (~1.5 MB expected, no sharing)"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># get_lineage is iterative — fine even on deep chains</span>
+<span class="n">lin</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get_lineage</span><span class="p">(</span><span class="n">prev</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"lineage depth:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lin</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">s2 = store("random", chunk=True)
-for i in range(3):
-    with s2.create_node(step_type="blob") as n:
-        (n / "r.bin").write_bytes(os.urandom(500_000))
-cs2 = ChunkStore(s2.root)
-pool2 = sum(cs2._path(d).stat().st_size for d in cs2.all_digests())
-print(f"3 x 500KB random: pool {pool2 / 1e6:.2f} MB (~1.5 MB expected, no sharing)")</div>
+<div class="clipboard-copy-txt" id="cell-3"># get_lineage is iterative — fine even on deep chains
+lin = s.get_lineage(prev)
+print("lineage depth:", len(lin))</div>
 </div>
 </div>
 </div>
@@ -1621,7 +1527,7 @@ print(f"3 x 500KB random: pool {pool2 / 1e6:.2f} MB (~1.5 MB expected, no sharin
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>3 x 500KB random: pool 1.50 MB (~1.5 MB expected, no sharing)
+<pre>lineage depth: 300
 </pre>
 </div>
 </div>
@@ -1629,18 +1535,18 @@ print(f"3 x 500KB random: pool {pool2 / 1e6:.2f} MB (~1.5 MB expected, no sharin
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=10185d26023b46108eb7d9f57d49d2b3">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8edb47106e1a46a883d545849b8ab81b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="the-read-cache-node-dirs-stay-packed-the-path-is-node-scoped">The read cache — node dirs stay packed; the path is node-scoped<a class="anchor-link" href="#the-read-cache-node-dirs-stay-packed-the-path-is-node-scoped">¶</a></h2>
+<h2 id="finding-3-fixed-prune-on-chains-deeper-than-1000">✅ Finding #3 (FIXED) — <code>prune</code> on chains deeper than ~1000<a class="anchor-link" href="#finding-3-fixed-prune-on-chains-deeper-than-1000">¶</a></h2><p><code>prune</code> used to recurse one frame per descendant and raise <code>RecursionError</code> past the interpreter limit (default 1000) — for both the real delete <em>and</em> the dry-run preview. It now walks the subtree <strong>iteratively</strong>, so arbitrarily deep lineages prune and preview cleanly (deepest-first, target last).</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8763a12b2bbd4a93a75aff182afb95dc">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=10185d26023b46108eb7d9f57d49d2b3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1658,31 +1564,47 @@ print(f"3 x 500KB random: pool {pool2 / 1e6:.2f} MB (~1.5 MB expected, no sharin
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s3</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"cache"</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">s3</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
-    <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"results/clean.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"a,b</span><span class="se">\n</span><span class="s2">1,2</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"node dir after write:"</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s3</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Build a chain well past the recursion limit</span>
+<span class="n">deep</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"deep"</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">deep</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"root"</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"k"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">prev</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">node_id</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1100</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">deep</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"s"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">prev</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">"i"</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">prev</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">node_id</span>
 
-<span class="n">p</span> <span class="o">=</span> <span class="n">s3</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"results/clean.csv"</span>  <span class="c1"># transparent read</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"returned path:"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_stress/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"read back:"</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">read_text</span><span class="p">()))</span>
+<span class="n">preview</span> <span class="o">=</span> <span class="n">deep</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># no RecursionError now</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dry-run preview of a </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">preview</span><span class="p">)</span><span class="si">}</span><span class="s2">-deep chain: ok"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="s2">"artifact still NOT loose in node dir:"</span><span class="p">,</span>
-    <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s3</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="si">}</span><span class="s2">/results/clean.csv"</span><span class="p">),</span>
+    <span class="s2">"deepest-first:"</span><span class="p">,</span>
+    <span class="n">preview</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">prev</span><span class="p">,</span>
+    <span class="s2">"| target last:"</span><span class="p">,</span>
+    <span class="n">preview</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">r</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="n">deleted</span> <span class="o">=</span> <span class="n">deep</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pruned </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">deleted</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes; remaining: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">node_dirs</span><span class="p">(</span><span class="n">deep</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">s3 = store("cache", chunk=True)
-with s3.create_node(step_type="x") as n:
-    (n / "results/clean.csv").write_text("a,b\n1,2\n")
-print("node dir after write:", sorted(os.listdir(f"{s3.root}/{n.node_id}")))
+<div class="clipboard-copy-txt" id="cell-4"># Build a chain well past the recursion limit
+deep = store("deep", chunk=False)
+with deep.create_node(step_type="root") as r:
+    r.add_meta("k", 0)
+prev = r.node_id
+for i in range(1100):
+    with deep.create_node(step_type="s", parent=prev) as n:
+        n.add_meta("i", i)
+    prev = n.node_id
 
-p = s3.get_node(n.node_id) / "results/clean.csv"  # transparent read
-print("returned path:", str(p).split("_stress/")[-1])
-print("read back:", repr(p.read_text()))
+preview = deep.prune(r.node_id, dry_run=True)  # no RecursionError now
+print(f"dry-run preview of a {len(preview)}-deep chain: ok")
 print(
-    "artifact still NOT loose in node dir:",
-    not os.path.exists(f"{s3.root}/{n.node_id}/results/clean.csv"),
-)</div>
+    "deepest-first:",
+    preview[0].node_id == prev,
+    "| target last:",
+    preview[-1].node_id == r.node_id,
+)
+deleted = deep.prune(r.node_id, dry_run=False)
+print(f"pruned {len(deleted)} nodes; remaining: {len(node_dirs(deep))}")</div>
 </div>
 </div>
 </div>
@@ -1694,147 +1616,9 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>node dir after write: ['.artifacts.json', 'meta.json', 'results']
-returned path: cache/.cache/10988-4337783e/de23768d/results/clean.csv
-read back: 'a,b\n1,2\n'
-artifact still NOT loose in node dir: True
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7623eae2785240b9bd12b16a66d81610">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Cache hit within a session, then clear -&gt; regenerates from the pool</span>
-<span class="n">p2</span> <span class="o">=</span> <span class="n">s3</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"results/clean.csv"</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"same cached path reused:"</span><span class="p">,</span> <span class="n">p</span> <span class="o">==</span> <span class="n">p2</span><span class="p">)</span>
-<span class="n">s3</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="s2">"after clear_cache, still readable:"</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">s3</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"results/clean.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"a,b</span><span class="se">\n</span><span class="s2">1,2</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-5"># Cache hit within a session, then clear -&gt; regenerates from the pool
-p2 = s3.get_node(n.node_id) / "results/clean.csv"
-print("same cached path reused:", p == p2)
-s3.clear_cache()
-print(
-    "after clear_cache, still readable:",
-    (s3.get_node(n.node_id) / "results/clean.csv").read_text() == "a,b\n1,2\n",
-)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>same cached path reused: True
-after clear_cache, still readable: True
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7cdc8c89c7104fffa095e18ddfef8986">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p><strong>Cross-session note:</strong> the cache is wiped when the kernel exits, so the <em>first</em> read in a new session re-decompresses from the pool (the node dir is never re-populated). Re-reads within a session are free.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b118ea5561624da68c537baed56e602f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="edge-cases-that-work-correctly">Edge cases that work correctly<a class="anchor-link" href="#edge-cases-that-work-correctly">¶</a></h2>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=938c804e27f84196a10c8828c723f798">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">s4</span> <span class="o">=</span> <span class="n">store</span><span class="p">(</span><span class="s2">"edges"</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">s4</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span> <span class="k">as</span> <span class="n">n</span><span class="p">:</span>
-    <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"empty.bin"</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="sa">b</span><span class="s2">""</span><span class="p">)</span>  <span class="c1"># 0-byte file</span>
-    <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"deep/a/b/ünïcödé_🔥.txt"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"ok"</span><span class="p">)</span>  <span class="c1"># nested + unicode</span>
-    <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"dup.txt"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"v1"</span><span class="p">)</span>
-    <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="s2">"dup.txt"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"v2"</span><span class="p">)</span>  <span class="c1"># overwrite</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">s4</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"empty:"</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="s2">"empty.bin"</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">""</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"nested+unicode:"</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="s2">"deep/a/b/ünïcödé_🔥.txt"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"ok"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"overwrite kept last:"</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="s2">"dup.txt"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"v2"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-6">s4 = store("edges", chunk=True)
-with s4.create_node(step_type="x") as n:
-    (n / "empty.bin").write_bytes(b"")  # 0-byte file
-    (n / "deep/a/b/ünïcödé_🔥.txt").write_text("ok")  # nested + unicode
-    (n / "dup.txt").write_text("v1")
-    (n / "dup.txt").write_text("v2")  # overwrite
-r = s4.get_node(n.node_id)
-print("empty:", (r / "empty.bin").read_bytes() == b"")
-print("nested+unicode:", (r / "deep/a/b/ünïcödé_🔥.txt").read_text() == "ok")
-print("overwrite kept last:", (r / "dup.txt").read_text() == "v2")</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>empty: True
-nested+unicode: True
-overwrite kept last: True
+<pre>dry-run preview of a 1101-deep chain: ok
+deepest-first: True | target last: True
+pruned 1101 nodes; remaining: 0
 </pre>
 </div>
 </div>
@@ -1869,7 +1653,7 @@ overwrite kept last: True
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 25, 2026 21:31:34 UTC">June 25, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 13:17:12 UTC">July 25, 2026</span>
   </span>
 
     
@@ -1954,10 +1738,10 @@ overwrite kept last: True
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "navigation.expand", "navigation.instant", "navigation.instant.progress", "navigation.top", "navigation.tracking", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["content.code.copy", "content.code.annotate", "navigation.expand", "navigation.instant", "navigation.instant.progress", "navigation.top", "navigation.tracking", "toc.follow", "search.suggest", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
