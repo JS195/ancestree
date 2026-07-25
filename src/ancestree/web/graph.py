@@ -75,11 +75,40 @@ def build_graph(store: "LineageStore") -> Dict[str, Any]:
 def explorer_graph(store: "LineageStore") -> Dict[str, Any]:
     """``build_graph``'s skeleton with each node carrying its full
     ``entries`` dict — the classic explorer's ``window.PIPELINE_DATA``
-    payload, matching the 0.1.x envelope shape key for key."""
+    payload, matching the 0.1.x envelope shape key for key.
+
+    The live server rebuilds this on every page load, so the per-node
+    lookups are batched: three queries for the whole store rather than four
+    per node.
+    """
     payload = build_graph(store)
+    node_ids = [node["id"] for node in payload["nodes"]]
+    records = store._metadata.get_many(node_ids)
+    metadata = store._metadata.metadata_for_many(node_ids)
+    artifacts = store._chunks.artifact_sizes_many(node_ids)
     for node in payload["nodes"]:
-        node["entries"] = _node_entries(node_detail(store, node["id"]))
+        node_id = node["id"]
+        node["entries"] = _node_entries(
+            _detail(
+                store._to_node(records[node_id]),
+                envelopes(metadata[node_id]),
+                artifacts[node_id],
+            )
+        )
     return payload
+
+
+def envelopes(rows: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    """MetadataRow objects as the public envelope dicts."""
+    return {
+        key: {
+            "value": row.value,
+            "data_type": row.data_type,
+            "group": row.group,
+            "searchable": row.searchable,
+        }
+        for key, row in rows.items()
+    }
 
 
 def _node_entries(detail: Dict[str, Any]) -> Dict[str, Any]:
@@ -163,6 +192,19 @@ def node_detail(store: "LineageStore", node_id: str) -> Dict[str, Any]:
     if node is None:
         raise NodeNotFound(f"Node {node_id!r} not found in this store.")
     manifest = store._chunks.artifact_manifest(node.node_id)
+    return _detail(
+        node,
+        node.metadata,
+        [(relpath, record.size) for relpath, record in sorted(manifest.items())],
+    )
+
+
+def _detail(
+    node: Any, metadata: Dict[str, Any], artifacts: List[Any]
+) -> Dict[str, Any]:
+    """One node's detail dict from pieces already fetched — the single
+    shape both the per-node path and the batched whole-store render
+    produce, so the two can never drift apart."""
     return {
         "node_id": node.node_id,
         "step_type": node.step_type,
@@ -174,9 +216,8 @@ def node_detail(store: "LineageStore", node_id: str) -> Dict[str, Any]:
         "duration_s": node.duration_s,
         "size_bytes": node.size_bytes,
         "provenance": node.provenance,
-        "metadata": node.metadata,
+        "metadata": metadata,
         "artifacts": [
-            {"relpath": relpath, "size": record.size}
-            for relpath, record in sorted(manifest.items())
+            {"relpath": relpath, "size": size} for relpath, size in artifacts
         ],
     }
