@@ -1,12 +1,17 @@
-"""The canonical DDL, schema versioning and migrations.
+"""The canonical DDL and schema versioning.
 
 ``SCHEMA_SQL`` is the one authoritative statement of the store's shape —
 REBUILD_BLUEPRINT.md section 6 mirrors it. ``ensure_schema`` creates a fresh
 database atomically (stamping ``PRAGMA user_version``) or verifies an
-existing one; ``migrate`` steps an older store forward one version at a
-time. Database-level settings that must be chosen at creation time
+existing one. Database-level settings that must be chosen at creation time
 (``auto_vacuum``, ``journal_mode``) are set here, once; per-connection
 pragmas live in connection.py.
+
+**There is no migration.** A store's format version is checked, never
+converted: a database written by any other schema version is refused with
+an explanatory error. Migration is deliberately not a goal — keeping the
+ancestree that wrote a store installed is the supported path, exactly as
+it is for 0.1.x stores.
 
 See REBUILD_BLUEPRINT.md sections 5.3 and 6 (Phase 1, issue #12).
 """
@@ -17,8 +22,10 @@ import sqlite3
 
 from ..errors import SchemaError
 
-#: Stamped into ``PRAGMA user_version``. Bump alongside a _MIGRATIONS entry.
-SCHEMA_VERSION = 2
+#: Stamped into ``PRAGMA user_version`` at creation and verified on every
+#: open. Bump on any change to the DDL or the chunk encoding; stores at any
+#: other version are refused rather than converted.
+SCHEMA_VERSION = 1
 
 #: Every table the schema defines; an opened store is verified against this.
 TABLES: frozenset[str] = frozenset(
@@ -133,26 +140,6 @@ CREATE TABLE artifact_chunk (
 CREATE INDEX idx_ac_digest ON artifact_chunk(digest);
 """
 
-#: from_version -> SQL script upgrading the store to from_version + 1.
-_MIGRATIONS: dict[int, str] = {
-    # v1 -> v2. Two changes, one of which is pure DDL:
-    #
-    # 1. The metadata equality index gains its value column (rebuilt here).
-    # 2. The chunk *encoding* changed: a smaller average chunk size, and
-    #    kind 2 (stored verbatim) for payloads zlib cannot shrink. Every v1
-    #    chunk still decodes unchanged, so an existing store opens and reads
-    #    normally; only newly written artifacts use the new boundaries, and
-    #    they will not deduplicate against v1-era chunks of the same
-    #    content. The stamp exists so a v1 ancestree refuses a v2 store up
-    #    front instead of failing on an unknown chunk kind.
-    1: (
-        "DROP INDEX IF EXISTS idx_meta_key;\n"
-        "CREATE INDEX idx_meta_key ON metadata(key, value) "
-        "WHERE searchable = 1;"
-    ),
-}
-
-
 def _tables(conn: sqlite3.Connection) -> set[str]:
     """The user tables present in the database (SQLite internals excluded)."""
     rows = conn.execute(
@@ -173,16 +160,17 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
     A fresh (table-less) database gets the creation-time settings, the full
     DDL and the version stamp in one atomic script — either the whole schema
-    lands or none of it. An existing store is version-checked, migrated
-    forward if older, and verified to hold every expected table.
+    lands or none of it. An existing store must already be at
+    ``SCHEMA_VERSION``: there is no migration, so any other version is
+    refused rather than converted.
 
     Args:
         conn: An open connection to the store's database file.
 
     Raises:
         SchemaError: If the file holds tables but no ancestree version stamp
-            (not an ancestree store), was created by a newer ancestree, has
-            no migration path, or is missing expected tables.
+            (not an ancestree store), was written by a different schema
+            version, or is missing expected tables.
     """
     existing = _tables(conn)
     if not existing:
@@ -208,8 +196,12 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             f"ancestree (v{SCHEMA_VERSION}). Upgrade the package to open it."
         )
     if version < SCHEMA_VERSION:
-        migrate(conn, version)
-        existing = _tables(conn)
+        raise SchemaError(
+            f"This store uses schema v{version}; this ancestree writes "
+            f"v{SCHEMA_VERSION} and does not migrate stores between "
+            "versions. Keep the ancestree version that wrote it installed "
+            "to read it, or start a new store with this one."
+        )
 
     missing = TABLES - existing
     if missing:
@@ -218,26 +210,3 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             "database may be corrupt."
         )
 
-
-def migrate(conn: sqlite3.Connection, from_version: int) -> None:
-    """Steps an older store forward to SCHEMA_VERSION, one migration at a
-    time, stamping ``user_version`` after each so an interrupted upgrade
-    resumes where it stopped.
-
-    A stub today: v1 is the first SQLite format, so no migrations exist yet.
-    A future format change adds an entry to ``_MIGRATIONS`` and bumps
-    ``SCHEMA_VERSION``.
-
-    Raises:
-        SchemaError: If a required migration step is not defined.
-    """
-    for version in range(from_version, SCHEMA_VERSION):
-        script = _MIGRATIONS.get(version)
-        if script is None:
-            raise SchemaError(
-                f"No migration path from schema v{version}; this store "
-                "cannot be opened by this version of ancestree."
-            )
-        conn.executescript(
-            f"BEGIN;\n{script}\nPRAGMA user_version = {version + 1};\nCOMMIT;"
-        )

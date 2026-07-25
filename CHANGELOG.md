@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] — 2026-07-08
+## [0.2.0]
 
 The SQLite rebuild. A clean break from 0.1.x — every decision is recorded in `REBUILD_BLUEPRINT.md`.
 
@@ -14,18 +14,25 @@ The SQLite rebuild. A clean break from 0.1.x — every decision is recorded in `
 
 ### Added
 - `store.host_live_graph()` / `python -m ancestree serve` — a live explorer on localhost. Search (`field=value`, `accuracy>0.9`, free text), node diffs and the sortable runs table are all answered by SQL on the server.
-- **Layer-2 deduplication**: near-identical artifacts are stored as chunk deltas against similar chunks already in the pool (zlib dictionary compression). 2.3× less storage on the near-duplicate benchmark for a 7% ingest cost — numbers in `benchmarks/RESULTS.md`.
+- **Layer-2 deduplication**: near-identical artifacts are stored as chunk deltas against similar chunks already in the pool (zlib dictionary compression). On a mixed 69 MB corpus of six file types across six revisions the store is **2.63× smaller**; on the synthetic near-duplicate benchmark, 2.23× — numbers in `benchmarks/RESULTS.md`. Payloads zlib cannot shrink (PNG, parquet, zip) are stored verbatim rather than pointlessly re-compressed.
 - `store.sql(query)` — read-only SQL over a documented, versioned schema. The escape hatch for questions the API doesn't ask.
-- `store.stats()` — node/chunk counts, logical vs stored bytes, and the dedup ratio.
+- `store.stats()` — node/chunk counts, logical vs stored bytes, and the dedup ratio. `database_bytes` counts the WAL alongside the database, so it reflects what the store actually occupies.
 - `store.export()` — grep-able per-node `meta.json` sidecars, whenever you want files you can read without ancestree.
-- `store.compact()` — the one space-reclamation verb (drops unreferenced chunks, shrinks the database file). Replaces `gc()`/`flush()`/`clear_cache()`.
+- `store.compact()` — the one space-reclamation verb (drops unreferenced chunks, shrinks the database file). Replaces `gc()`/`flush()`/`clear_cache()`. You rarely need it: `prune(node, dry_run=False)` compacts for you, and `compact=False` defers it when pruning in a loop.
+- `store.backup(dest)` — a consistent copy via SQLite's online backup API, safe to take while the store is open and being written. Copying `ancestree.db` alone out from under a live store silently yields an empty store; this does not.
 - Hard-kill recovery: a run killed mid-block leaves a seeded scratch directory, and the next store open adopts it as an unhealthy node. 0.1.x lost that work entirely.
 - CLI: `python -m ancestree serve|export|compact <root>`.
-- Four executed example notebooks: basic usage, a branching ML pipeline, a DAG stress test, and a CDC deep dive measuring save/load timings and storage savings per file type. The 0.1.x notebooks are kept under `docs/examples/legacy-0.1/`.
-- Reads reassemble on demand: packed artifacts rebuild from the chunk pool into a session cache in the system temp dir, so the store root at rest is just the database.
+- Two executed example notebooks: basic usage and a branching ML pipeline. The 0.1.x notebooks are kept under `docs/examples/legacy-0.1/`; the chunking and timing measurements live in `benchmarks/RESULTS.md`.
+- Reads reassemble on demand: packed artifacts rebuild from the chunk pool into a per-session cache at `<root>/.cache/`, cleared when the session ends. The live explorer serves artifacts straight from the chunk pool and never touches that cache.
+
+### Performance
+- The average chunk size is 16 KiB, not 32 KiB. At 32 KiB a delta base sat exactly on zlib's 32,256-byte dictionary window, so it could not be seen in full and the tail of every delta degenerated to literals. Halving it stores **14% less and ingests 22% faster** — and it is free, because the chunker skips `MIN_SIZE` bytes per chunk, so smaller chunks mean more bytes skipped.
+- Node creation is **~2.2× faster** for metadata-only nodes. Provenance capture was 60% of it: three `git` subprocesses per node became two, run concurrently.
+- The chunker's hot loop runs at **26.8 MB/s, up from 16.6** — narrowed to the bits the boundary test actually reads, leaving boundaries bit-for-bit identical.
+- `find`, `lineage` and `ancestors` batch their id lookups instead of issuing two queries per node, and `idx_meta_key` covers `(key, value)` — a selective `find()` over 3000 nodes went from 0.40 ms to 0.04 ms. The live explorer's page render no longer costs four queries per node.
 
 ### Removed
-- **No migration from 0.1.x.** Old file-based stores stay on 0.1.x (it remains on PyPI).
+- **No migration, from 0.1.x or between any two versions.** A store records its format version; ancestree checks it on open and refuses anything it did not write, leaving the file untouched. Converting stores is deliberately not a goal — keep the version that wrote a store installed to read it. 0.1.x remains on PyPI.
 - `Node.path` (nodes are not directories any more), `rebuild_db_from_disk()` (there is no separate index), `gc()`, `flush()`, `clear_cache()`.
 - The NFS-safety claim. SQLite file locking over NFS is unreliable; keep stores on local disk.
 

@@ -33,7 +33,9 @@ dependencies = []
 dev = [
     "pytest",  # testing
     "pytest-cov",
-    "ruff",    # linting and formatting
+    "ruff==0.16.0",  # linting and formatting (pinned: its default
+                     # rule set widens between releases, which turns
+                     # a green CI red without a code change)
     "mypy",    # type checking
 ]
 

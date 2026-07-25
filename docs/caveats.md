@@ -18,6 +18,12 @@ If your code raises inside the `create_node` block, any partial work is kept and
 
 Inside a `create_node` block, `node / "file"` points at a transient scratch directory that is deleted once the node commits. Reads after that hand back a path in the session cache (`<root>/.cache/`), regenerated from the store on demand. Both are real, readable paths — but re-fetch them through `node / "file"` or `artifacts()` each time rather than stashing one and using it later.
 
+## `prune` is permanent, and reclaims the space
+
+`prune(node)` defaults to a **dry run** — it returns the nodes that *would* go (the node plus everything descended from it) and changes nothing. Passing `dry_run=False` deletes them for real, then compacts the store: unreferenced chunks are dropped and the database file is shrunk in place. There is no undo, and after compaction the bytes are genuinely gone rather than merely unreferenced.
+
+Compaction scans the whole chunk pool, so pruning many nodes in a loop repeats that work. Pass `compact=False` to skip it and call `store.compact()` once at the end — the end result is identical.
+
 ## The web graph
 
 `generate_web_graph()` writes a single self-contained `interactive_pipeline.html` at the store root, **overwriting any existing one**. It is a **view-only snapshot** — the searchable explorer with node diffs and the runs table is the live server (`store.host_live_graph()` or `python -m ancestree serve`). Because everything is inlined into one file (small images as data URIs; larger artifacts copied beside it), very large stores produce very large HTML.
@@ -31,6 +37,14 @@ Your code writes files at native speed inside the block; the price is paid at bl
 SQLite allows many readers but one writer at a time. Concurrent processes can share a store — a writer simply waits its turn (up to the busy timeout) — but heavy parallel writing is not what this is for. A single `LineageStore` instance serialises its own writes internally.
 
 Opening a store runs a sweep for scratch directories orphaned by a crashed session. That sweep never touches a node another process is still writing: a node is assembled in a staging directory and renamed into place only once it carries its crash-recovery seed, so an in-flight node is never mistaken for litter.
+
+## A store is tied to the version that wrote it
+
+Every store records its format version. Ancestree **checks that version and refuses anything it did not write — it never converts a store**. Migration is deliberately not a goal of this project.
+
+So a store written by an older (or newer) ancestree will not open, and you get an explanatory error rather than a silent misread. If you need an old store, keep the version that wrote it installed; both remain available on PyPI. Nothing is modified on a failed open — the refused database is left exactly as it was found.
+
+Plan for this the way you would for any on-disk format: a store is data you can keep, but not something to carry across upgrades.
 
 ## NFS
 
@@ -70,7 +84,7 @@ With `dedup` on (the default), re-running a step whose content — step type, pa
 
 ## Automatic provenance
 
-Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to `git`, which means a few subprocesses per node, and means your identity and repository state are recorded by default. Provenance is display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply `None`.
+Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to `git` — two subprocesses per node, run concurrently — which means your identity and repository state are recorded by default. Provenance is display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply `None`.
 
 ## Search semantics
 

@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 
+from ancestree.db import schema
 from ancestree.db.connection import ConnectionManager
 from ancestree.db.schema import SCHEMA_VERSION, TABLES
 from ancestree.errors import SchemaError
@@ -80,6 +81,36 @@ def test_newer_store_is_refused(tmp_path: Path) -> None:
     raw.close()
     with pytest.raises(SchemaError):
         ConnectionManager(db)
+
+
+def test_older_store_is_refused_not_migrated(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """There is no migration path, by design. A store from an older format
+    must be refused with an explanation, never silently converted.
+
+    v1 is the first format, so "older" is reached by advancing what this
+    ancestree writes — which is exactly the situation a future bump creates.
+    """
+    db = tmp_path / "store.db"
+    ConnectionManager(db).close()
+    monkeypatch.setattr(schema, "SCHEMA_VERSION", SCHEMA_VERSION + 1)
+
+    with pytest.raises(SchemaError, match="does not migrate"):
+        ConnectionManager(db)
+
+    # Refused, and left exactly as it was found.
+    raw = sqlite3.connect(db)
+    assert raw.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
+    raw.close()
+
+
+def test_no_migration_machinery_is_exposed() -> None:
+    """Migration is not a goal; the module must not carry the hooks for it."""
+    from ancestree.db import schema
+
+    assert not hasattr(schema, "migrate")
+    assert not hasattr(schema, "_MIGRATIONS")
 
 
 def test_foreign_keys_are_enforced(tmp_path: Path) -> None:

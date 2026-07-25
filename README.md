@@ -24,7 +24,7 @@ No server required, no database to run, no dependencies. `pip install` + a local
 - [What's recorded automatically](#whats-recorded-automatically)
 - [Searching and Querying](#searching-and-querying)
 - [The Explorers](#the-explorers)
-- [Coming from 0.1.x](#coming-from-01x)
+- [Store compatibility](#store-compatibility)
 - [Development](#development)
 - [License](#license)
 
@@ -150,9 +150,11 @@ There's also a small CLI: `python -m ancestree serve|export|compact <root>`.
 
 ---
 
-## Coming from 0.1.x
+## Store compatibility
 
-0.2.0 is a rebuild on SQLite and a clean break: 0.1.x file-based stores are not readable by it and there is no migration tool — if you have an old store, keep 0.1.x installed for it. The API was redesigned at the same time (`find_node`→`find`, `get_lineage`→`lineage`, `get_most_recent_node`→`latest`, and so on — the renames are mechanical). The full reasoning, every decision and the old→new table live in [REBUILD_BLUEPRINT.md](https://github.com/JS195/ancestree/blob/main/REBUILD_BLUEPRINT.md).
+**A store belongs to the version that wrote it.** Every store records its format version; ancestree checks it on open and refuses anything it did not write, with an explanatory error and without touching the file. There is no migration, by design — converting stores is not a goal of this project. If you need an old store, keep the version that wrote it installed. Every version stays on PyPI.
+
+Coming from **0.1.x** specifically: 0.2.0 is a rebuild on SQLite, so file-based 0.1.x stores are not readable at all. The API was redesigned at the same time (`find_node`→`find`, `get_lineage`→`lineage`, `get_most_recent_node`→`latest`, and so on — the renames are mechanical). The full reasoning, every decision and the old→new table live in [REBUILD_BLUEPRINT.md](https://github.com/JS195/ancestree/blob/main/REBUILD_BLUEPRINT.md).
 
 ---
 
