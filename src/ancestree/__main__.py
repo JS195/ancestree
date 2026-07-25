@@ -9,11 +9,11 @@ See REBUILD_BLUEPRINT.md section 5.3.
 from __future__ import annotations
 
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="ancestree",
         description="Exploratory pipeline tracking on a single SQLite store.",

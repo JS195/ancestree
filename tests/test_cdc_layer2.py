@@ -2,10 +2,11 @@
 zlib-zdict delta codec, depth-1 enforcement, compact's live-base closure,
 and end-to-end round-trips through a delta-enabled store."""
 
+from __future__ import annotations
+
 import random
 import zlib
 from pathlib import Path
-from typing import Dict, Optional, Tuple
 
 import pytest
 
@@ -68,7 +69,7 @@ def test_delta_codec_roundtrips_and_wins_on_near_duplicates() -> None:
 # ChunkStore Layer-2 behaviour
 # ---------------------------------------------------------------------------
 
-Env = Tuple[ConnectionManager, ChunkStore]
+Env = tuple[ConnectionManager, ChunkStore]
 
 
 @pytest.fixture()
@@ -77,10 +78,10 @@ def env(tmp_path: Path) -> Env:
     return manager, ChunkStore(manager, delta=True)
 
 
-def _kinds(manager: ConnectionManager) -> Dict[str, Tuple[int, Optional[str]]]:
-    rows = manager.read().execute(
-        "SELECT digest, kind, base_digest FROM chunk"
-    ).fetchall()
+def _kinds(manager: ConnectionManager) -> dict[str, tuple[int, str | None]]:
+    rows = (
+        manager.read().execute("SELECT digest, kind, base_digest FROM chunk").fetchall()
+    )
     return {row["digest"]: (row["kind"], row["base_digest"]) for row in rows}
 
 
@@ -136,9 +137,7 @@ def test_delta_policy_off_stores_everything_raw(tmp_path: Path) -> None:
         chunk_store.put_chunk(conn, base_data)
         chunk_store.put_chunk(conn, _mutate(base_data, 40, seed=15))
     assert all(kind != 1 for kind, _ in _kinds(manager).values())
-    count = manager.read().execute(
-        "SELECT count(*) AS n FROM chunk_feature"
-    ).fetchone()
+    count = manager.read().execute("SELECT count(*) AS n FROM chunk_feature").fetchone()
     assert count["n"] == 0  # no resemblance index without the policy
 
 

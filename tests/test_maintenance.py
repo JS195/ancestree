@@ -17,7 +17,9 @@ def store(tmp_path: Path) -> LineageStore:
     return LineageStore(tmp_path / "proj", dedup=False)
 
 
-def _node(store: LineageStore, step: str, parent: object = None, blob: bytes = b"x") -> Node:
+def _node(
+    store: LineageStore, step: str, parent: object = None, blob: bytes = b"x"
+) -> Node:
     with store.create_node(step_type=step, parent=parent) as handle:
         (handle / "out.bin").write_bytes(blob)
     record = store.get(handle)
@@ -167,9 +169,7 @@ def test_sweep_never_touches_live_sessions(tmp_path: Path) -> None:
     assert workspace.path.exists()
 
 
-def test_sweep_discards_litter(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_sweep_discards_litter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = tmp_path / "proj"
     (root / ".scratch" / "unseeded").mkdir(parents=True)
     (root / ".scratch" / "unseeded" / "junk.txt").write_text("x")

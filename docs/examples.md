@@ -12,12 +12,4 @@ Explore how to use **Ancestree** for different scenarios. Each example is a runn
 
     Track a realistic multi-step ML workflow: the iris dataset fanned out across scalers, embeddings and clusterers, then queried after the fact.
 
-- :material-file-tree: **[Branching Stress Test](examples/stress_branching.ipynb)**
-
-    A branching pipeline with a hyperparameter sweep — dedup on re-runs, chunk sharing across near-identical branches, and the metadata coercion edge cases.
-
-- :material-timer-outline: **[CDC Deep Dive](examples/cdc_deep_dive.ipynb)**
-
-    What the chunked store costs and saves: save/load timings against a native-filesystem baseline, per file type and size, plus the read-cache lifecycle.
-
 </div>

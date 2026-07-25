@@ -22,9 +22,9 @@ import json
 import os
 import shutil
 import time
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Sequence, Set, Union
 
 from .db.chunk_store import ChunkStore
 from .db.connection import ConnectionManager
@@ -49,7 +49,7 @@ class Pruner:
         self._manager = manager
         self._metadata = metadata
 
-    def plan(self, node_id: str) -> List[str]:
+    def plan(self, node_id: str) -> list[str]:
         """The ids pruning `node_id` would delete, deepest first (children
         before parents). Empty for an unknown id; nothing is deleted."""
         if not self._metadata.exists(node_id):
@@ -57,7 +57,7 @@ class Pruner:
 
         # 1. The target and all transitive descendants — the region a
         #    deletion could touch.
-        affected: Set[str] = set()
+        affected: set[str] = set()
         stack = [node_id]
         while stack:
             current = stack.pop()
@@ -66,8 +66,8 @@ class Pruner:
             affected.add(current)
             stack.extend(self._metadata.children(current))
 
-        all_parents: Dict[str, List[str]] = {}
-        children_in_region: Dict[str, List[str]] = {nid: [] for nid in affected}
+        all_parents: dict[str, list[str]] = {}
+        children_in_region: dict[str, list[str]] = {nid: [] for nid in affected}
         for nid in affected:
             record = self._metadata.get(nid)
             parents = list(record.parent_ids) if record else []
@@ -81,11 +81,10 @@ class Pruner:
         #    descendant goes only if ALL of its parents (anywhere) are
         #    going. A surviving parent spares the child.
         indegree = {
-            nid: sum(1 for p in all_parents[nid] if p in affected)
-            for nid in affected
+            nid: sum(1 for p in all_parents[nid] if p in affected) for nid in affected
         }
         ready = [nid for nid, degree in indegree.items() if degree == 0]
-        topo: List[str] = []
+        topo: list[str] = []
         while ready:
             nid = ready.pop()
             topo.append(nid)
@@ -94,7 +93,7 @@ class Pruner:
                 if indegree[child] == 0:
                     ready.append(child)
 
-        doomed: Set[str] = set()
+        doomed: set[str] = set()
         for nid in topo:
             if nid == node_id or all(p in doomed for p in all_parents[nid]):
                 doomed.add(nid)
@@ -211,11 +210,11 @@ def _sweep_stale_cache(root: Path) -> None:
 
 
 def sweep_orphan_scratch(
-    root: Union[str, Path],
+    root: str | Path,
     manager: ConnectionManager,
     metadata: MetadataStore,
     chunks: ChunkStore,
-) -> List[str]:
+) -> list[str]:
     """Adopts scratch directories orphaned by a hard-killed session, and
     reaps dead sessions' read-cache directories.
 
@@ -229,7 +228,7 @@ def sweep_orphan_scratch(
     scratch_root = Path(root) / ".scratch"
     if not scratch_root.exists():
         return []
-    adopted: List[str] = []
+    adopted: list[str] = []
     for entry in sorted(scratch_root.iterdir()):
         if not entry.is_dir():
             continue
@@ -286,7 +285,7 @@ def sweep_orphan_scratch(
                 parent_ids=tuple(str(p) for p in seed.get("parent_ids") or []),
             )
             ingest_node(manager, metadata, chunks, workspace, record)
-        except Exception:
+        except Exception:  # noqa: BLE001, S112 - best effort; the evidence is kept either way
             # Adoption failed (e.g. a parent was pruned since): keep the
             # directory as-is — the evidence survives for a manual look or
             # a later open.

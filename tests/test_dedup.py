@@ -37,7 +37,14 @@ def _run(
 
 
 def test_fingerprint_is_stable_and_order_independent() -> None:
-    meta = {"accuracy": {"value": 0.9, "data_type": "text", "group": "General", "searchable": True}}
+    meta = {
+        "accuracy": {
+            "value": 0.9,
+            "data_type": "text",
+            "group": "General",
+            "searchable": True,
+        }
+    }
     arts = {"out.bin": "a" * 64}
     one = ContentSummary.of("ingest", ["p1", "p2"], meta, arts)
     two = ContentSummary.of("ingest", ["p2", "p1"], meta, arts)
@@ -45,12 +52,8 @@ def test_fingerprint_is_stable_and_order_independent() -> None:
 
     assert ContentSummary.of("clean", ["p1", "p2"], meta, arts) != one
     assert ContentSummary.of("ingest", ["p1"], meta, arts).digest != one.digest
-    assert (
-        ContentSummary.of("ingest", ["p1", "p2"], {}, arts).digest != one.digest
-    )
-    assert (
-        ContentSummary.of("ingest", ["p1", "p2"], meta, {}).digest != one.digest
-    )
+    assert ContentSummary.of("ingest", ["p1", "p2"], {}, arts).digest != one.digest
+    assert ContentSummary.of("ingest", ["p1", "p2"], meta, {}).digest != one.digest
 
 
 # ---------------------------------------------------------------------------
@@ -95,10 +98,9 @@ def test_parents_are_part_of_identity(store: LineageStore) -> None:
 
 def test_failed_runs_never_merge(store: LineageStore) -> None:
     for _ in range(2):
-        with pytest.raises(RuntimeError):
-            with store.create_node(step_type="ingest") as node:
-                (node / "partial.bin").write_bytes(b"same partial bytes")
-                raise RuntimeError("boom")
+        with pytest.raises(RuntimeError), store.create_node(step_type="ingest") as node:
+            (node / "partial.bin").write_bytes(b"same partial bytes")
+            raise RuntimeError("boom")
     unhealthy = store.find(healthy=False)
     assert len(unhealthy) == 2  # partial work is evidence, never merged
     assert all(record.content_hash is None for record in unhealthy)

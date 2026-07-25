@@ -13,7 +13,7 @@ from __future__ import annotations
 import random
 import sys
 import zlib
-from typing import Iterator, List
+from collections.abc import Iterator
 
 # ---------------------------------------------------------------------------
 # Section 1 — FastCDC chunker (Layer 1)
@@ -166,7 +166,7 @@ _SIGNED_63 = (1 << 63) - 1  # features stay positive in SQLite's INTEGER
 _LITTLE_ENDIAN = sys.byteorder == "little"
 
 
-def super_features(data: bytes, count: int = FEATURE_COUNT) -> List[int]:
+def super_features(data: bytes, count: int = FEATURE_COUNT) -> list[int]:
     """The chunk's similarity features (deterministic; empty for tiny
     chunks). Stored in the chunk_feature table for raw chunks so later
     similar chunks can find them as delta bases."""
@@ -179,7 +179,7 @@ def super_features(data: bytes, count: int = FEATURE_COUNT) -> List[int]:
     ]
 
 
-def _samples(data: bytes) -> List[int]:
+def _samples(data: bytes) -> list[int]:
     """The strided 8-byte samples, little-endian, as integers.
 
     On a little-endian machine the whole extraction is one zero-copy

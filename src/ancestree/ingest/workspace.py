@@ -20,9 +20,10 @@ import json
 import os
 import shutil
 import uuid
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple, Union
+from typing import Any
 
 #: The crash-recovery seed, written at block start. Hidden and reserved:
 #: never listed as an artifact, never writable through resolve().
@@ -39,7 +40,7 @@ class NodeWorkspace:
 
     def __init__(
         self,
-        root: Union[str, Path],
+        root: str | Path,
         node_id: str,
         step_type: str,
         parent_ids: Sequence[str] = (),
@@ -49,7 +50,7 @@ class NodeWorkspace:
         self.node_id = node_id
         scratch_root = self.root / ".scratch"
         self.path = scratch_root / node_id
-        seed: Dict[str, Any] = {
+        seed: dict[str, Any] = {
             "node_id": node_id,
             "step_type": step_type,
             "parent_ids": list(parent_ids),
@@ -85,7 +86,7 @@ class NodeWorkspace:
             self.path.mkdir(parents=True, exist_ok=True)
             (self.path / SEED_FILENAME).write_text(seed_json)
 
-    def resolve(self, relative: Union[str, Path]) -> Path:
+    def resolve(self, relative: str | Path) -> Path:
         """A ready-to-write path inside the scratch dir — the engine behind
         the node's ``/`` operator. Intermediate directories are created, so
         the returned path can be written to immediately.
@@ -108,11 +109,11 @@ class NodeWorkspace:
         target.parent.mkdir(parents=True, exist_ok=True)
         return target
 
-    def files(self) -> List[Tuple[str, Path]]:
+    def files(self) -> list[tuple[str, Path]]:
         """Every artifact file written so far, as (relpath, absolute path)
         pairs sorted by relpath. The seed file is excluded — it describes
         the node, it is not its content."""
-        found: List[Tuple[str, Path]] = []
+        found: list[tuple[str, Path]] = []
         for path in self.path.rglob("*"):
             if not path.is_file() or path.name == SEED_FILENAME:
                 continue

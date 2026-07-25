@@ -54,9 +54,9 @@ def test_reopening_an_existing_store_is_idempotent(tmp_path: Path) -> None:
     first.close()
 
     second = ConnectionManager(db)
-    row = second.read().execute(
-        "SELECT value FROM config WHERE key = 'rules'"
-    ).fetchone()
+    row = (
+        second.read().execute("SELECT value FROM config WHERE key = 'rules'").fetchone()
+    )
     assert row is not None and row["value"] == "{}"
     assert _pragma(second.read(), "user_version") == SCHEMA_VERSION
     second.close()
@@ -84,9 +84,8 @@ def test_newer_store_is_refused(tmp_path: Path) -> None:
 
 def test_foreign_keys_are_enforced(tmp_path: Path) -> None:
     mgr = ConnectionManager(tmp_path / "store.db")
-    with pytest.raises(sqlite3.IntegrityError):
-        with mgr.write() as conn:
-            conn.execute("INSERT INTO edge VALUES ('nope', 'also-nope', 0)")
+    with pytest.raises(sqlite3.IntegrityError), mgr.write() as conn:
+        conn.execute("INSERT INTO edge VALUES ('nope', 'also-nope', 0)")
     # The failed transaction rolled back cleanly.
     count = mgr.read().execute("SELECT count(*) AS n FROM edge").fetchone()
     assert count["n"] == 0

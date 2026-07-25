@@ -3,7 +3,6 @@ verified reassembly and the system-temp read cache (issue #14)."""
 
 import zlib
 from pathlib import Path
-from typing import Tuple
 
 import pytest
 
@@ -13,7 +12,7 @@ from ancestree.db.metadata_store import MetadataStore, NodeRecord
 from ancestree.errors import ArtifactNotFound, CorruptChunkError, IntegrityError
 from ancestree.ingest.cdc import chunk_bytes
 
-Env = Tuple[ConnectionManager, MetadataStore, ChunkStore]
+Env = tuple[ConnectionManager, MetadataStore, ChunkStore]
 
 
 @pytest.fixture()
@@ -41,10 +40,8 @@ def _random_bytes(n: int) -> bytes:
     return random.Random(7).randbytes(n)
 
 
-def _store_file(
-    env: Env, node_id: str, relpath: str, data: bytes
-) -> None:
-    manager, metadata_store, chunk_store = env
+def _store_file(env: Env, node_id: str, relpath: str, data: bytes) -> None:
+    manager, _metadata_store, chunk_store = env
     import hashlib
 
     with manager.write() as conn:
@@ -95,7 +92,7 @@ def test_corrupt_chunk_is_detected(env: Env) -> None:
 
 
 def test_artifact_recipe_roundtrips(env: Env) -> None:
-    manager, metadata_store, chunk_store = env
+    _manager, metadata_store, chunk_store = env
     _add_node(metadata_store, "n1")
     data = _random_bytes(600_000)  # several chunks
     _store_file(env, "n1", "results/out.bin", data)
@@ -165,8 +162,6 @@ def test_tampered_artifact_digest_is_detected(env: Env) -> None:
     _add_node(metadata_store, "n1")
     _store_file(env, "n1", "out.bin", _random_bytes(50_000))
     with manager.write() as conn:
-        conn.execute(
-            "UPDATE artifact SET sha256 = ? WHERE node_id = 'n1'", ("0" * 64,)
-        )
+        conn.execute("UPDATE artifact SET sha256 = ? WHERE node_id = 'n1'", ("0" * 64,))
     with pytest.raises(CorruptChunkError):
         chunk_store.artifact_bytes("n1", "out.bin")

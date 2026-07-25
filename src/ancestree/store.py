@@ -21,11 +21,12 @@ import sqlite3
 import time
 import uuid
 import warnings
+import weakref
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
-import weakref
+from typing import Any, TypeVar, Union
 
 from .db.chunk_store import ChunkStore
 from .db.connection import ConnectionManager
@@ -42,10 +43,13 @@ from .web.export import export_static
 
 DB_FILENAME = "ancestree.db"
 
+#: Self-type for __enter__; typing.Self needs 3.11 and there are no deps.
+_StoreT = TypeVar("_StoreT", bound="LineageStore")
+
 #: Anything the public API accepts where a node is expected.
 NodeLike = Union[str, Node, RecordingNode, None]
 #: A create_node parent: one node-like, or a list/tuple of them (a join).
-ParentArg = Union[NodeLike, List[NodeLike], Tuple[NodeLike, ...]]
+ParentArg = Union[NodeLike, list[NodeLike], tuple[NodeLike, ...]]
 
 
 class LineageStore:
@@ -59,11 +63,11 @@ class LineageStore:
 
     def __init__(
         self,
-        root: Union[Path, str],
-        rules: Optional[Dict[str, List[str]]] = None,
-        gen_triggers: Optional[List[str]] = None,
-        dedup: Optional[bool] = None,
-        chunk: Optional[bool] = None,
+        root: Path | str,
+        rules: dict[str, list[str]] | None = None,
+        gen_triggers: list[str] | None = None,
+        dedup: bool | None = None,
+        chunk: bool | None = None,
     ) -> None:
         """Opens (creating if needed) the store at `root`.
 
@@ -83,8 +87,8 @@ class LineageStore:
         self._manager = ConnectionManager(self.root / DB_FILENAME)
         self._metadata = MetadataStore(self._manager)
         config = self._load_or_create_config(rules, gen_triggers, dedup, chunk)
-        self.rules: Dict[str, List[str]] = config["rules"]
-        self.gen_triggers: List[str] = config["gen_triggers"]
+        self.rules: dict[str, list[str]] = config["rules"]
+        self.gen_triggers: list[str] = config["gen_triggers"]
         self.dedup: bool = config["dedup"]
         self.chunk: bool = config["chunk"]
         # The chunk policy is Layer-2 (resemblance/delta) storage (AD5).
@@ -95,14 +99,12 @@ class LineageStore:
         # garbage collected, or at interpreter exit — whichever comes first.
         # The finalizer callback must not reference `self` (that would keep
         # the store alive forever), so the resources travel in this dict.
-        self._resources: Dict[str, Any] = {
+        self._resources: dict[str, Any] = {
             "manager": self._manager,
             "chunks": self._chunks,
             "live_server": None,
         }
-        self._finalizer = weakref.finalize(
-            self, LineageStore._release, self._resources
-        )
+        self._finalizer = weakref.finalize(self, LineageStore._release, self._resources)
         adopted = sweep_orphan_scratch(
             self.root, self._manager, self._metadata, self._chunks
         )
@@ -119,10 +121,10 @@ class LineageStore:
     # Lifecycle
     # ------------------------------------------------------------------
 
-    def __enter__(self) -> "LineageStore":
+    def __enter__(self: _StoreT) -> _StoreT:  # noqa: PYI019 - typing.Self needs 3.11
         return self
 
-    def __exit__(self, *exc: Any) -> None:
+    def __exit__(self, *exc: object) -> None:
         self.close()
 
     def close(self) -> None:
@@ -133,7 +135,7 @@ class LineageStore:
         self._finalizer()
 
     @staticmethod
-    def _release(resources: Dict[str, Any]) -> None:
+    def _release(resources: dict[str, Any]) -> None:
         server = resources.pop("live_server", None)
         if server is not None:
             server.close()
@@ -142,16 +144,18 @@ class LineageStore:
 
     def _load_or_create_config(
         self,
-        rules: Optional[Dict[str, List[str]]],
-        gen_triggers: Optional[List[str]],
-        dedup: Optional[bool],
-        chunk: Optional[bool],
-    ) -> Dict[str, Any]:
-        row = self._manager.read().execute(
-            "SELECT value FROM config WHERE key = 'policy'"
-        ).fetchone()
+        rules: dict[str, list[str]] | None,
+        gen_triggers: list[str] | None,
+        dedup: bool | None,
+        chunk: bool | None,
+    ) -> dict[str, Any]:
+        row = (
+            self._manager.read()
+            .execute("SELECT value FROM config WHERE key = 'policy'")
+            .fetchone()
+        )
         if row is None:
-            stored: Dict[str, Any] = {
+            stored: dict[str, Any] = {
                 "rules": rules or {},
                 "gen_triggers": gen_triggers or [],
                 "dedup": True if dedup is None else bool(dedup),
@@ -226,9 +230,10 @@ class LineageStore:
         )
 
         node_id = uuid.uuid4().hex[:8]
-        while self._metadata.exists(node_id) or (
-            self.root / ".scratch" / node_id
-        ).exists():
+        while (
+            self._metadata.exists(node_id)
+            or (self.root / ".scratch" / node_id).exists()
+        ):
             node_id = uuid.uuid4().hex[:8]
 
         parent_ids = [p.node_id for p in parents]
@@ -261,28 +266,24 @@ class LineageStore:
                 stacklevel=3,
             )
 
-    def _resolve_parents(self, parent: ParentArg) -> List[NodeRecord]:
+    def _resolve_parents(self, parent: ParentArg) -> list[NodeRecord]:
         """Resolves a create_node parent argument — None, one node-like, or
         a list (a join) — to records from THIS store, de-duplicated and
         order-preserving. Raises ValueError for a parent the store cannot
         resolve, so a child can never hang off a phantom."""
         if parent is None:
             return []
-        items: List[NodeLike]
+        items: list[NodeLike]
         if isinstance(parent, (list, tuple)):
             items = list(parent)
         else:
             items = [parent]
-        records: List[NodeRecord] = []
+        records: list[NodeRecord] = []
         seen = set()
         for item in items:
             if item is None:
                 continue
-            pid = (
-                item.node_id
-                if isinstance(item, (Node, RecordingNode))
-                else str(item)
-            )
+            pid = item.node_id if isinstance(item, (Node, RecordingNode)) else str(item)
             if pid in seen:
                 continue
             record = self._metadata.get(pid)
@@ -317,7 +318,7 @@ class LineageStore:
             workspace.discard()
             return False
 
-        content_hash: Optional[str] = None
+        content_hash: str | None = None
         if healthy:
             envelopes = {
                 entry.key: {
@@ -415,7 +416,7 @@ class LineageStore:
     # Queries
     # ------------------------------------------------------------------
 
-    def _node_id_of(self, node: NodeLike) -> Optional[str]:
+    def _node_id_of(self, node: NodeLike) -> str | None:
         if node is None:
             return None
         if isinstance(node, (Node, RecordingNode)):
@@ -445,7 +446,7 @@ class LineageStore:
             _store=self,
         )
 
-    def _nodes_for_ids(self, node_ids: Sequence[str]) -> List[Node]:
+    def _nodes_for_ids(self, node_ids: Sequence[str]) -> list[Node]:
         """Resolves ids to Nodes, preserving the caller's order. Batched:
         every list-shaped read (find, lineage, ancestors) lands here, and
         one query per id made these O(n) round trips."""
@@ -456,7 +457,7 @@ class LineageStore:
             if node_id in records
         ]
 
-    def get(self, node: NodeLike) -> Optional[Node]:
+    def get(self, node: NodeLike) -> Node | None:
         """Resolves a node_id (or an existing Node/handle) into a Node
         record. Returns None for None, "none", or an unknown id."""
         if isinstance(node, Node):
@@ -467,7 +468,7 @@ class LineageStore:
         record = self._metadata.get(node_id)
         return None if record is None else self._to_node(record)
 
-    def find(self, **filters: Any) -> List[Node]:
+    def find(self, **filters: Any) -> list[Node]:
         """Nodes matching every filter, oldest first. Filters match
         structural attributes (step_type, generation, healthy, ...) and
         searchable metadata by equality; pass a callable for a predicate
@@ -479,12 +480,12 @@ class LineageStore:
         """
         return self._nodes_for_ids(self._metadata.find(**filters))
 
-    def latest(self, **filters: Any) -> Optional[Node]:
+    def latest(self, **filters: Any) -> Node | None:
         """The most recently created node matching the filters, or None."""
         node_id = self._metadata.most_recent(self._metadata.find(**filters))
         return None if node_id is None else self.get(node_id)
 
-    def lineage(self, node: NodeLike) -> List[Node]:
+    def lineage(self, node: NodeLike) -> list[Node]:
         """The node's full ancestry plus itself, oldest first; every node
         appears once, after all of its parents.
 
@@ -496,14 +497,14 @@ class LineageStore:
             return []
         return self._nodes_for_ids(self._metadata.lineage(node_id))
 
-    def children(self, node: NodeLike) -> List[Node]:
+    def children(self, node: NodeLike) -> list[Node]:
         """The direct children of the node (empty for unknown ids)."""
         node_id = self._node_id_of(node)
         if node_id is None or not self._metadata.exists(node_id):
             return []
         return self._nodes_for_ids(self._metadata.children(node_id))
 
-    def ancestors(self, node: NodeLike, **filters: Any) -> List[Node]:
+    def ancestors(self, node: NodeLike, **filters: Any) -> list[Node]:
         """``find`` restricted to the node's lineage: ancestors (plus the
         node itself) matching every filter, in lineage order."""
         node_id = self._node_id_of(node)
@@ -514,7 +515,7 @@ class LineageStore:
             [nid for nid in self._metadata.lineage(node_id) if nid in matches]
         )
 
-    def from_parent(self, node: NodeLike, filename: str) -> List[Path]:
+    def from_parent(self, node: NodeLike, filename: str) -> list[Path]:
         """Shortcut for the previous step's outputs: matching artifact
         paths from the node's parent(s), in parent order. Empty when the
         node or its parents cannot be resolved."""
@@ -529,7 +530,7 @@ class LineageStore:
             if record is None:
                 return []
             parent_ids = record.parent_ids
-        paths: List[Path] = []
+        paths: list[Path] = []
         for parent_id in parent_ids:
             if self._metadata.exists(parent_id):
                 paths.extend(self._artifact_paths(parent_id, filename))
@@ -541,7 +542,7 @@ class LineageStore:
 
     def prune(
         self, node: NodeLike, dry_run: bool = True, compact: bool = True
-    ) -> List[Node]:
+    ) -> list[Node]:
         """Deletes a node and the descendants it solely supports, and
         reclaims the space they occupied.
 
@@ -590,7 +591,7 @@ class LineageStore:
         """
         return compact_chunks(self._manager)
 
-    def export(self, dest: Optional[Union[Path, str]] = None) -> Path:
+    def export(self, dest: Path | str | None = None) -> Path:
         """Writes grep-able JSON sidecars: one ``meta.json`` per node under
         ``<dest>/<node_id>/`` (default ``<root>/export``), holding the
         node's structural facts, provenance, metadata envelopes and
@@ -630,7 +631,7 @@ class LineageStore:
             out.write_text(json.dumps(document, indent=2))
         return dest_dir
 
-    def backup(self, dest: Union[Path, str]) -> Path:
+    def backup(self, dest: Path | str) -> Path:
         """Writes a consistent, self-contained copy of the whole store —
         safe to take while the store is open and being written to.
 
@@ -675,7 +676,7 @@ class LineageStore:
 
     def generate_web_graph(
         self,
-        dest: Optional[Union[Path, str]] = None,
+        dest: Path | str | None = None,
         include_artifacts: bool = True,
     ) -> Path:
         """Renders the store into one shareable HTML file — a **view-only
@@ -690,9 +691,11 @@ class LineageStore:
         """
         return export_static(self, dest=dest, include_artifacts=include_artifacts)
 
-    def host_live_graph(self, port: int = 0, block: bool = False, open_browser: bool = True) -> str:
+    def host_live_graph(
+        self, port: int = 0, block: bool = False, open_browser: bool = True
+    ) -> str:
         """Serves the searchable explorer on ``127.0.0.1`` and returns its URL.
-        
+
         By default, this method runs non-blocking (``block=False``) and automatically
         opens the live application graph in your default web browser (``open_browser=True``).
         Calling it again replaces the running background server — re-running a
@@ -707,6 +710,7 @@ class LineageStore:
             str: The local URL running the application server.
         """
         import webbrowser
+
         from .web.server import start_server
 
         # Re-running the call (a notebook cell) replaces the previous
@@ -718,18 +722,22 @@ class LineageStore:
 
         handle = start_server(self, port=port)
         url = handle.url
-        print(f"Ancestree explorer running at: {url}  (Store close will terminate background thread)")
-        
+        print(
+            f"Ancestree explorer running at: {url}  (Store close will terminate background thread)"
+        )
+
         # Automatically launch browser window/tab if requested
         if open_browser:
-            # A short delay can sometimes be useful if your local backend 
+            # A short delay can sometimes be useful if your local backend
             # requires split-second initialization, though start_server handles it.
             webbrowser.open(url)
 
         if not block:
-            self._resources["live_server"] = handle  # Automatically closed when store.close() runs
+            self._resources["live_server"] = (
+                handle  # Automatically closed when store.close() runs
+            )
             return url
-            
+
         try:
             while True:
                 handle._thread.join(1)
@@ -737,14 +745,14 @@ class LineageStore:
             print("\nStopping Ancestree explorer server...")
         finally:
             handle.close()
-            
+
         return url
 
     # ------------------------------------------------------------------
     # Power tools
     # ------------------------------------------------------------------
 
-    def sql(self, query: str, params: Sequence[Any] = ()) -> List[sqlite3.Row]:
+    def sql(self, query: str, params: Sequence[Any] = ()) -> list[sqlite3.Row]:
         """Runs a read-only SELECT over the documented schema (blueprint
         section 6) and returns the rows. The connection is opened read-only
         with ``PRAGMA query_only``, so writes are impossible by
@@ -753,9 +761,7 @@ class LineageStore:
         Examples:
             >>> store.sql("SELECT step_type, count(*) FROM node GROUP BY 1")
         """
-        conn = sqlite3.connect(
-            f"file:{self._manager.db_path}?mode=ro", uri=True
-        )
+        conn = sqlite3.connect(f"file:{self._manager.db_path}?mode=ro", uri=True)
         try:
             conn.row_factory = sqlite3.Row
             conn.execute("PRAGMA query_only = ON")
@@ -763,7 +769,7 @@ class LineageStore:
         finally:
             conn.close()
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Store-level numbers that make deduplication visible: node/
         artifact/chunk counts, logical vs stored bytes, the dedup ratio
         (logical ÷ stored; higher is better) and the store's size on disk.
@@ -808,7 +814,7 @@ class LineageStore:
     # Internals the Node record reads through
     # ------------------------------------------------------------------
 
-    def _metadata_envelopes(self, node_id: str) -> Dict[str, Dict[str, Any]]:
+    def _metadata_envelopes(self, node_id: str) -> dict[str, dict[str, Any]]:
         return {
             key: {
                 "value": row.value,
@@ -819,7 +825,7 @@ class LineageStore:
             for key, row in self._metadata.metadata_for(node_id).items()
         }
 
-    def _artifact_paths(self, node_id: str, contains: str = "*") -> List[Path]:
+    def _artifact_paths(self, node_id: str, contains: str = "*") -> list[Path]:
         relpaths = sorted(self._chunks.artifact_manifest(node_id))
         return [
             self._chunks.reassemble(node_id, relpath)

@@ -80,11 +80,7 @@ def test_export_writes_a_complete_offline_file(
     ingest = store.latest(step_type="ingest")
     assert ingest is not None
     materialized = (
-        tmp_path
-        / "proj"
-        / "interactive_pipeline_files"
-        / ingest.node_id
-        / "raw.csv"
+        tmp_path / "proj" / "interactive_pipeline_files" / ingest.node_id / "raw.csv"
     )
     assert materialized.read_text() == "a,b\n1,2\n"
     assert f"interactive_pipeline_files/{ingest.node_id}/raw.csv" in html

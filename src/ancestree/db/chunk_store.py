@@ -37,10 +37,10 @@ import sqlite3
 import time
 import uuid
 import zlib
+from collections.abc import Sequence
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
 
 from ..errors import ArtifactNotFound, CorruptChunkError, IntegrityError
 from ..ingest.cdc import delta_decode, delta_encode, super_features
@@ -68,7 +68,7 @@ class ArtifactRecord:
     relpath: str
     size: int
     sha256: str
-    chunk_digests: Tuple[str, ...]
+    chunk_digests: tuple[str, ...]
 
 
 class ChunkStore:
@@ -79,7 +79,7 @@ class ChunkStore:
         Layer-2 resemblance/delta storage runs on every new chunk."""
         self._manager = manager
         self._delta = delta
-        self._cache_root: Optional[Path] = None
+        self._cache_root: Path | None = None
 
     # ------------------------------------------------------------------
     # Writes (the caller holds the write transaction)
@@ -158,7 +158,7 @@ class ChunkStore:
 
     def _find_base(
         self, conn: sqlite3.Connection, features: Sequence[int]
-    ) -> Optional[str]:
+    ) -> str | None:
         """The base chunk sharing the most super-features with the newcomer.
         Only non-delta chunks qualify — that is what caps delta depth at 1."""
         if not features:
@@ -178,8 +178,7 @@ class ChunkStore:
         self, conn: sqlite3.Connection, digest: str, features: Sequence[int]
     ) -> None:
         conn.executemany(
-            "INSERT OR IGNORE INTO chunk_feature (feature, digest) "
-            "VALUES (?, ?)",
+            "INSERT OR IGNORE INTO chunk_feature (feature, digest) VALUES (?, ?)",
             [(feature, digest) for feature in features],
         )
 
@@ -188,7 +187,7 @@ class ChunkStore:
         conn: sqlite3.Connection,
         digest: str,
         kind: int,
-        base_digest: Optional[str],
+        base_digest: str | None,
         blob: bytes,
         length: int,
     ) -> None:
@@ -211,8 +210,7 @@ class ChunkStore:
         """Records one artifact and its ordered chunk recipe. The chunks
         must already be in the pool (same transaction is fine)."""
         conn.execute(
-            "INSERT INTO artifact (node_id, relpath, size, sha256) "
-            "VALUES (?, ?, ?, ?)",
+            "INSERT INTO artifact (node_id, relpath, size, sha256) VALUES (?, ?, ?, ?)",
             (node_id, relpath, size, sha256),
         )
         conn.executemany(
@@ -241,16 +239,18 @@ class ChunkStore:
         """
         data = self._decode_chunk(digest, allow_delta=True)
         if hashlib.sha256(data).hexdigest() != digest:
-            raise CorruptChunkError(
-                f"Chunk {digest[:12]}… failed its integrity check."
-            )
+            raise CorruptChunkError(f"Chunk {digest[:12]}… failed its integrity check.")
         return data
 
     def _decode_chunk(self, digest: str, allow_delta: bool) -> bytes:
-        row = self._manager.read().execute(
-            "SELECT kind, base_digest, data FROM chunk WHERE digest = ?",
-            (digest,),
-        ).fetchone()
+        row = (
+            self._manager.read()
+            .execute(
+                "SELECT kind, base_digest, data FROM chunk WHERE digest = ?",
+                (digest,),
+            )
+            .fetchone()
+        )
         if row is None:
             raise IntegrityError(
                 f"Chunk {digest[:12]}… is referenced but missing from the "
@@ -281,28 +281,32 @@ class ChunkStore:
         )
 
     def has_artifacts(self, node_id: str) -> bool:
-        row = self._manager.read().execute(
-            "SELECT 1 FROM artifact WHERE node_id = ? LIMIT 1", (node_id,)
-        ).fetchone()
+        row = (
+            self._manager.read()
+            .execute("SELECT 1 FROM artifact WHERE node_id = ? LIMIT 1", (node_id,))
+            .fetchone()
+        )
         return row is not None
 
-    def artifact_manifest(self, node_id: str) -> Dict[str, ArtifactRecord]:
+    def artifact_manifest(self, node_id: str) -> dict[str, ArtifactRecord]:
         """Every artifact of a node, keyed by relpath, with its ordered
         chunk recipe. Empty for a node with no artifacts."""
-        rows = self._manager.read().execute(
-            "SELECT a.relpath, a.size, a.sha256, ac.digest "
-            "FROM artifact a "
-            "LEFT JOIN artifact_chunk ac "
-            "  ON ac.node_id = a.node_id AND ac.relpath = a.relpath "
-            "WHERE a.node_id = ? "
-            "ORDER BY a.relpath, ac.ordinal",
-            (node_id,),
-        ).fetchall()
-        grouped: Dict[str, Tuple[int, str, List[str]]] = {}
-        for row in rows:
-            entry = grouped.setdefault(
-                row["relpath"], (row["size"], row["sha256"], [])
+        rows = (
+            self._manager.read()
+            .execute(
+                "SELECT a.relpath, a.size, a.sha256, ac.digest "
+                "FROM artifact a "
+                "LEFT JOIN artifact_chunk ac "
+                "  ON ac.node_id = a.node_id AND ac.relpath = a.relpath "
+                "WHERE a.node_id = ? "
+                "ORDER BY a.relpath, ac.ordinal",
+                (node_id,),
             )
+            .fetchall()
+        )
+        grouped: dict[str, tuple[int, str, list[str]]] = {}
+        for row in rows:
+            entry = grouped.setdefault(row["relpath"], (row["size"], row["sha256"], []))
             if row["digest"] is not None:  # an empty artifact has no chunks
                 entry[2].append(row["digest"])
         return {
@@ -317,7 +321,7 @@ class ChunkStore:
 
     def artifact_sizes_many(
         self, node_ids: Sequence[str]
-    ) -> Dict[str, List[Tuple[str, int]]]:
+    ) -> dict[str, list[tuple[str, int]]]:
         """Every node's artifacts as (relpath, size), sorted, in one query.
 
         The whole-store render needs only the artifact *list*, never the
@@ -325,9 +329,7 @@ class ChunkStore:
         that makes ``artifact_manifest`` expensive. Ids with no artifacts
         map to an empty list.
         """
-        out: Dict[str, List[Tuple[str, int]]] = {
-            node_id: [] for node_id in node_ids
-        }
+        out: dict[str, list[tuple[str, int]]] = {node_id: [] for node_id in node_ids}
         ids = list(node_ids)
         for start in range(0, len(ids), 900):  # stay under SQLite's bind limit
             batch = ids[start : start + 900]
@@ -354,9 +356,7 @@ class ChunkStore:
             (node_id, relpath),
         ).fetchone()
         if artifact is None:
-            raise ArtifactNotFound(
-                f"Node {node_id!r} has no artifact {relpath!r}."
-            )
+            raise ArtifactNotFound(f"Node {node_id!r} has no artifact {relpath!r}.")
         digests = [
             row["digest"]
             for row in conn.execute(

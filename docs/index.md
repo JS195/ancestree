@@ -87,8 +87,6 @@ Every write is a real transaction, so a node is either committed whole or not at
 
     with store.create_node(step_type="ingest") as node:
         node.add_meta("source", "warehouse")
-
-
     ```
 
 === ":material-magnify: Search"
@@ -122,18 +120,25 @@ Metadata isn't just a search index — it's also the instruction set for how eac
 with store.create_node(step_type="model", parent=parent) as node:
     fig.savefig(node / "confusion.png")
 
-    node.add_meta("accuracy", 0.94, group="Metrics")          # searchable, shown as text
+    node.add_meta("accuracy", 0.94, group="Metrics")  # searchable, shown as text
 
-    node.add_meta("confusion_matrix", node / "confusion.png", # rendered inline as a figure
-                  data_type="auto", group="Figures")
+    node.add_meta(
+        "confusion_matrix",
+        node / "confusion.png",  # rendered inline as a figure
+        data_type="auto",
+        group="Figures",
+    )
 
-    node.add_meta("notes", "rerun after fix",                 # display-only, excluded from search
-                  searchable=False)
+    node.add_meta(
+        "notes",
+        "rerun after fix",  # display-only, excluded from search
+        searchable=False,
+    )
 ```
 
 You don't need metadata to expose your files: every artifact a node contains automatically appears as a clickable link under its **Artifacts** heading. Use `data_type="image"` when you want a figure actually displayed inline — a confusion matrix, a loss curve, a sample plot — so the graph doubles as a visual report of your pipeline.
 
 ## Next steps
 
-- Walk through the [Examples](examples.md) to see complete pipelines, including a full [machine learning workflow](examples/ML_pipeline.ipynb).
+- Walk through the [Examples](examples.md) to see complete pipelines, including a full [machine learning workflow](examples/ml_pipeline.ipynb).
 - Browse the [API Reference](reference.md) for full details on `LineageStore` and `Node`.

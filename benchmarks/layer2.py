@@ -15,7 +15,7 @@ import shutil
 import tempfile
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from ancestree.store import LineageStore
 
@@ -32,7 +32,7 @@ def _mutate(data: bytes, edits: int, seed: int) -> bytes:
     return bytes(out)
 
 
-def run(chunk_policy: bool) -> Dict[str, Any]:
+def run(chunk_policy: bool) -> dict[str, Any]:
     root = Path(tempfile.mkdtemp(prefix="ancestree-bench-"))
     try:
         store = LineageStore(root / "store", chunk=chunk_policy)

@@ -3,8 +3,8 @@ grammar, explorer-parity payloads (diff, runs table), DB-keyed artifact
 serving, and lifecycle."""
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator, Tuple
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -13,7 +13,7 @@ import pytest
 from ancestree.store import LineageStore
 from ancestree.web.server import search_ids, start_server
 
-Env = Tuple[LineageStore, str]
+Env = tuple[LineageStore, str]
 
 
 @pytest.fixture()
@@ -119,9 +119,7 @@ def test_api_diff_aligns_and_deltas(served: Env) -> None:
     clean = store.latest(step_type="clean")
     model = store.latest(step_type="model")
     assert clean is not None and model is not None
-    diff = _get_json(
-        url + f"/api/diff?a={clean.node_id}&b={model.node_id}"
-    )
+    diff = _get_json(url + f"/api/diff?a={clean.node_id}&b={model.node_id}")
     rows = {row["key"]: row for row in diff["rows"]}
     assert rows["step_type"]["same"] is False
     accuracy = rows["accuracy"]
@@ -192,7 +190,7 @@ def test_host_live_graph_nonblocking_closes_with_store(tmp_path: Path) -> None:
     url = store.host_live_graph(block=False, open_browser=False)
     assert _get_json(url + "/api/graph")["nodes"]
     store.close()  # shuts the server down too
-    with pytest.raises(Exception):
+    with pytest.raises(OSError):  # URLError / socket.timeout
         urlopen(url + "/api/graph", timeout=1)
 
 
@@ -204,6 +202,6 @@ def test_host_live_graph_rerun_replaces_previous_server(tmp_path: Path) -> None:
     first = store.host_live_graph(block=False, open_browser=False)
     second = store.host_live_graph(block=False, open_browser=False)
     assert _get_json(second + "/api/graph")["nodes"]
-    with pytest.raises(Exception):
+    with pytest.raises(OSError):  # URLError / socket.timeout
         urlopen(first + "/api/graph", timeout=1)
     store.close()

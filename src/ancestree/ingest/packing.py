@@ -19,8 +19,8 @@ See REBUILD_BLUEPRINT.md section 5.3 (Phase 3, issue #14).
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Sequence
 from dataclasses import dataclass, replace
-from typing import Dict, Sequence
 
 from ..db.chunk_store import ChunkStore
 from ..db.connection import ConnectionManager
@@ -40,7 +40,7 @@ class IngestResult:
     deduplication needs (Phase 5)."""
 
     record: NodeRecord
-    artifact_sha256s: Dict[str, str]
+    artifact_sha256s: dict[str, str]
 
 
 def ingest_node(
@@ -65,7 +65,7 @@ def ingest_node(
     files = workspace.files()
     total = sum(path.stat().st_size for _, path in files)
     final = replace(record, size_bytes=total)
-    sha256s: Dict[str, str] = {}
+    sha256s: dict[str, str] = {}
 
     with manager.write() as conn:
         # Node row first: artifact rows hold a foreign key onto it.

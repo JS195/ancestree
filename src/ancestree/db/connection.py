@@ -22,9 +22,9 @@ from __future__ import annotations
 import os
 import sqlite3
 import threading
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, List, Optional, Tuple, Union
 
 from .schema import ensure_schema
 
@@ -54,7 +54,7 @@ class ConnectionManager:
     than on the first query.
     """
 
-    def __init__(self, db_path: Union[str, Path]) -> None:
+    def __init__(self, db_path: str | Path) -> None:
         self.db_path = Path(db_path)
         self._local = threading.local()
         # An RLock plus per-thread depth makes write() reentrant: nested
@@ -67,7 +67,7 @@ class ConnectionManager:
         # (owner pid, connection): close() must only close connections this
         # process created — entries inherited across a fork belong to the
         # parent and are abandoned, never closed.
-        self._registry: List[Tuple[int, sqlite3.Connection]] = []
+        self._registry: list[tuple[int, sqlite3.Connection]] = []
         self._closed = False
         try:
             ensure_schema(self.read())
@@ -85,9 +85,7 @@ class ConnectionManager:
         """
         if self._closed:
             raise RuntimeError("This ConnectionManager has been closed.")
-        slot: Optional[Tuple[int, sqlite3.Connection]] = getattr(
-            self._local, "slot", None
-        )
+        slot: tuple[int, sqlite3.Connection] | None = getattr(self._local, "slot", None)
         pid = os.getpid()
         if slot is not None and slot[0] == pid:
             return slot[1]
@@ -121,7 +119,7 @@ class ConnectionManager:
         conn = self.read()
         with self._write_lock:
             pid = os.getpid()
-            slot: Optional[Tuple[int, int]] = getattr(self._txn, "slot", None)
+            slot: tuple[int, int] | None = getattr(self._txn, "slot", None)
             depth = slot[1] if slot is not None and slot[0] == pid else 0
             if depth == 0:
                 conn.execute("BEGIN IMMEDIATE")

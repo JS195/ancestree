@@ -13,7 +13,7 @@ See REBUILD_BLUEPRINT.md section 5.3 (Phase 7, issue #18).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any
 
 from ..errors import NodeNotFound
 from ..util import format_timestamp, parse_iso_utc
@@ -22,19 +22,17 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
     from ..store import LineageStore
 
 
-def assign_levels(
-    node_ids: List[str], edges: List[Tuple[str, str]]
-) -> Dict[str, int]:
+def assign_levels(node_ids: list[str], edges: list[tuple[str, str]]) -> dict[str, int]:
     """Longest-path-from-a-root depth for every node (Kahn's algorithm):
     the hierarchical layout column each node renders in."""
-    children: Dict[str, List[str]] = {node_id: [] for node_id in node_ids}
-    indegree: Dict[str, int] = {node_id: 0 for node_id in node_ids}
+    children: dict[str, list[str]] = {node_id: [] for node_id in node_ids}
+    indegree: dict[str, int] = {node_id: 0 for node_id in node_ids}
     for parent, child in edges:
         children.setdefault(parent, []).append(child)
         indegree[child] = indegree.get(child, 0) + 1
         indegree.setdefault(parent, 0)
 
-    level: Dict[str, int] = {node_id: 0 for node_id in indegree}
+    level: dict[str, int] = {node_id: 0 for node_id in indegree}
     ready = [node_id for node_id, degree in indegree.items() if degree == 0]
     while ready:
         current = ready.pop()
@@ -46,7 +44,7 @@ def assign_levels(
     return level
 
 
-def build_graph(store: "LineageStore") -> Dict[str, Any]:
+def build_graph(store: LineageStore) -> dict[str, Any]:
     """The layout skeleton: one entry per node (id, label, group, level,
     healthy) plus the parent→child edges, oldest node first."""
     records = store.find()
@@ -72,7 +70,7 @@ def build_graph(store: "LineageStore") -> Dict[str, Any]:
     }
 
 
-def explorer_graph(store: "LineageStore") -> Dict[str, Any]:
+def explorer_graph(store: LineageStore) -> dict[str, Any]:
     """``build_graph``'s skeleton with each node carrying its full
     ``entries`` dict — the classic explorer's ``window.PIPELINE_DATA``
     payload, matching the 0.1.x envelope shape key for key.
@@ -98,7 +96,7 @@ def explorer_graph(store: "LineageStore") -> Dict[str, Any]:
     return payload
 
 
-def envelopes(rows: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+def envelopes(rows: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """MetadataRow objects as the public envelope dicts."""
     return {
         key: {
@@ -111,14 +109,14 @@ def envelopes(rows: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     }
 
 
-def _node_entries(detail: Dict[str, Any]) -> Dict[str, Any]:
+def _node_entries(detail: dict[str, Any]) -> dict[str, Any]:
     """One node's ``entries`` envelopes, in the shape the template's JS
     reads: structural facts and provenance rebuilt as envelopes (the
     0.1.x store wrote them that way; the database keeps them as columns),
     user metadata as stored, and each artifact as a root-relative link
     the server resolves by database key."""
 
-    def structural(value: Any) -> Dict[str, Any]:
+    def structural(value: Any) -> dict[str, Any]:
         return {
             "value": value,
             "data_type": "text",
@@ -180,7 +178,7 @@ def _node_entries(detail: Dict[str, Any]) -> Dict[str, Any]:
     return entries
 
 
-def node_detail(store: "LineageStore", node_id: str) -> Dict[str, Any]:
+def node_detail(store: LineageStore, node_id: str) -> dict[str, Any]:
     """Everything the UI shows when a node is opened: structural facts,
     provenance, the metadata envelopes, and the artifact list (relpath +
     size; the exporter or live server decides how each becomes a link).
@@ -200,8 +198,8 @@ def node_detail(store: "LineageStore", node_id: str) -> Dict[str, Any]:
 
 
 def _detail(
-    node: Any, metadata: Dict[str, Any], artifacts: List[Any]
-) -> Dict[str, Any]:
+    node: Any, metadata: dict[str, Any], artifacts: list[Any]
+) -> dict[str, Any]:
     """One node's detail dict from pieces already fetched — the single
     shape both the per-node path and the batched whole-store render
     produce, so the two can never drift apart."""

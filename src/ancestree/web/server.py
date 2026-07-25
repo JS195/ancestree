@@ -27,7 +27,7 @@ import threading
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Set, Type
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 from urllib.parse import parse_qs, unquote, urlparse
 
 from ..errors import AncestreeError
@@ -68,7 +68,7 @@ _EDGES_MARKER = "{{PYTHON_EDGES}}"
 # ---------------------------------------------------------------------------
 
 _TERM = re.compile(r"^([A-Za-z_]\w*)(<=|>=|=|<|>)(.+)$")
-_OPS: Dict[str, Callable[[float, float], bool]] = {
+_OPS: dict[str, Callable[[float, float], bool]] = {
     ">": operator.gt,
     "<": operator.lt,
     ">=": operator.ge,
@@ -105,7 +105,7 @@ def _numeric_predicate(op: str, bound: float) -> Callable[[Any], bool]:
     return predicate
 
 
-def search_ids(store: "LineageStore", query: str) -> List[str]:
+def search_ids(store: LineageStore, query: str) -> list[str]:
     """The ids matching every term of `query`, oldest first. An empty
     query matches everything."""
     ordered = store._metadata.all_node_ids()
@@ -153,14 +153,14 @@ _DIFF_STRUCTURAL = (
 )
 
 
-def diff_payload(store: "LineageStore", a: str, b: str) -> Dict[str, Any]:
+def diff_payload(store: LineageStore, a: str, b: str) -> dict[str, Any]:
     """An aligned two-node comparison: structural facts plus the union of
     both nodes' metadata keys, each row flagged same/different with a
     numeric delta where both sides are numbers."""
     detail_a = node_detail(store, a)
     detail_b = node_detail(store, b)
 
-    def row(key: str, va: Any, vb: Any) -> Dict[str, Any]:
+    def row(key: str, va: Any, vb: Any) -> dict[str, Any]:
         delta = None
         numeric = (
             isinstance(va, (int, float))
@@ -181,14 +181,14 @@ def diff_payload(store: "LineageStore", a: str, b: str) -> Dict[str, Any]:
     return {"a": a, "b": b, "rows": rows}
 
 
-def runs_payload(store: "LineageStore") -> Dict[str, Any]:
+def runs_payload(store: LineageStore) -> dict[str, Any]:
     """The runs table: one row per node with its structural facts plus
     every numeric searchable metric — the "pick the best run" view."""
-    metric_keys: Set[str] = set()
-    rows: List[Dict[str, Any]] = []
+    metric_keys: set[str] = set()
+    rows: list[dict[str, Any]] = []
     for node_id in store._metadata.all_node_ids():
         detail = node_detail(store, node_id)
-        metrics: Dict[str, Any] = {}
+        metrics: dict[str, Any] = {}
         for key, envelope in detail["metadata"].items():
             value = envelope.get("value")
             if (
@@ -217,6 +217,10 @@ def runs_payload(store: "LineageStore") -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
+#: Self-type for __enter__; typing.Self needs 3.11 and there are no deps.
+_HandleT = TypeVar("_HandleT", bound="ServerHandle")
+
+
 @dataclass
 class ServerHandle:
     """A running explorer: its URL and the means to stop it."""
@@ -230,10 +234,10 @@ class ServerHandle:
         self._server.server_close()
         self._thread.join(timeout=5)
 
-    def __enter__(self) -> "ServerHandle":
+    def __enter__(self: _HandleT) -> _HandleT:  # noqa: PYI019 - typing.Self needs 3.11
         return self
 
-    def __exit__(self, *exc: Any) -> None:
+    def __exit__(self, *exc: object) -> None:
         self.close()
 
 
@@ -263,20 +267,18 @@ def _script_json(payload: Any) -> str:
     return json.dumps(payload).replace("</", "<\\/")
 
 
-def _render_page(store: "LineageStore", template: str) -> str:
+def _render_page(store: LineageStore, template: str) -> str:
     graph = explorer_graph(store)
     page = template.replace(_NODES_MARKER, _script_json(graph["nodes"]))
     return page.replace(_EDGES_MARKER, _script_json(graph["edges"]))
 
 
-def _make_handler(
-    store: "LineageStore", template: str
-) -> Type[BaseHTTPRequestHandler]:
+def _make_handler(store: LineageStore, template: str) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args: Any) -> None:
             pass  # a local dev explorer, not a log source
 
-        def do_GET(self) -> None:  # noqa: N802 - http.server's naming
+        def do_GET(self) -> None:
             try:
                 self._route()
             except (KeyError, IndexError):
@@ -285,7 +287,7 @@ def _make_handler(
                 self._send_json({"error": str(exc)}, 404)
             except BrokenPipeError:  # client went away mid-response
                 pass
-            except Exception as exc:  # a bug should show up in the browser
+            except Exception as exc:  # noqa: BLE001 - a bug should show up in the browser
                 self._send_json({"error": f"{type(exc).__name__}: {exc}"}, 500)
 
         def _route(self) -> None:
@@ -309,9 +311,7 @@ def _make_handler(
                 self._send_json({"ids": search_ids(store, query)})
                 return
             if path == "/api/diff":
-                self._send_json(
-                    diff_payload(store, params["a"][0], params["b"][0])
-                )
+                self._send_json(diff_payload(store, params["a"][0], params["b"][0]))
                 return
             node_match = re.match(r"^/api/node/([^/]+)$", path)
             if node_match:
@@ -338,16 +338,14 @@ def _make_handler(
             )
             self._send(data, content_type)
 
-        def _send(
-            self, body: bytes, content_type: str, status: int = 200
-        ) -> None:
+        def _send(self, body: bytes, content_type: str, status: int = 200) -> None:
             self.send_response(status)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
 
-        def _send_json(self, payload: Dict[str, Any], status: int = 200) -> None:
+        def _send_json(self, payload: dict[str, Any], status: int = 200) -> None:
             self._send(
                 json.dumps(payload).encode("utf-8"),
                 "application/json; charset=utf-8",
@@ -357,7 +355,7 @@ def _make_handler(
     return Handler
 
 
-def start_server(store: "LineageStore", port: int = 0) -> ServerHandle:
+def start_server(store: LineageStore, port: int = 0) -> ServerHandle:
     """Starts the explorer on 127.0.0.1 (an OS-assigned port when `port`
     is 0) and returns its handle. The caller stops it with
     ``handle.close()``; ``store.host_live_graph`` wraps this for the

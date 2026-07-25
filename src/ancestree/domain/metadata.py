@@ -16,17 +16,17 @@ import json
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, FrozenSet, Optional
+from typing import Any
 
 from ..util import is_pandas, to_jsonable
 
-VALID_DATA_TYPES: FrozenSet[str] = frozenset(
+VALID_DATA_TYPES: frozenset[str] = frozenset(
     {"auto", "image", "link", "table", "json", "code", "text"}
 )
 
 #: Keys the store owns — the structural columns and edge key — refused by
 #: add_meta so user metadata can never shadow a structural fact in queries.
-RESERVED_KEYS: FrozenSet[str] = frozenset(
+RESERVED_KEYS: frozenset[str] = frozenset(
     {
         "node_id",
         "parent_id",
@@ -42,7 +42,7 @@ RESERVED_KEYS: FrozenSet[str] = frozenset(
 )
 
 #: Path suffixes rendered inline as images when the data_type is inferred.
-IMAGE_SUFFIXES: FrozenSet[str] = frozenset(
+IMAGE_SUFFIXES: frozenset[str] = frozenset(
     {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
 )
 
@@ -54,7 +54,7 @@ class PreparedEntry:
     key: str
     value: Any
     data_type: str
-    group: Optional[str]
+    group: str | None
     searchable: bool
 
 
@@ -78,7 +78,7 @@ def infer_data_type(value: Any) -> str:
 def prepare_entry(
     key: str,
     value: Any,
-    group: Optional[str] = "General",
+    group: str | None = "General",
     data_type: str = "auto",
     searchable: bool = True,
 ) -> PreparedEntry:
@@ -115,8 +115,7 @@ def prepare_entry(
     if data_type == "table":
         if not is_pandas(value):
             raise TypeError(
-                f"Expected a pandas DataFrame for 'table', got "
-                f"{type(value).__name__}"
+                f"Expected a pandas DataFrame for 'table', got {type(value).__name__}"
             )
         split = value.to_dict(orient="split")
         value = {"columns": split["columns"], "rows": split["data"]}
@@ -125,8 +124,7 @@ def prepare_entry(
     if data_type == "json":
         if not isinstance(value, (dict, list)):
             raise TypeError(
-                f"Expected a dict or list for 'json', got "
-                f"{type(value).__name__}"
+                f"Expected a dict or list for 'json', got {type(value).__name__}"
             )
         searchable = False
 

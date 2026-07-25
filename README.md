@@ -124,18 +124,18 @@ Every node silently captures the operational and reproducibility context without
 Your history is a proper lineage DAG backed by SQL, so you can ask it real questions — with plain Python and native lambdas, or with SQL itself.
 
 ```python
-store.find(step_type="model")                     # all model runs
-store.find(accuracy=lambda a: a and a > 0.9)      # the good ones
-store.latest(step_type="clean")                   # resume where you left off
-store.lineage(best_model)                         # its full ancestry, oldest first
-store.ancestors(best_model, step_type="clean")    # which cleaning produced it?
-best_model.artifacts("*.bin")                     # locate its files
-store.prune(bad_branch)                           # preview a deletion (dry-run first)
-store.prune(bad_branch, dry_run=False)            # ...and reclaim the space
-store.backup("./nightly")                         # consistent copy, even while open
+store.find(step_type="model")  # all model runs
+store.find(accuracy=lambda a: a and a > 0.9)  # the good ones
+store.latest(step_type="clean")  # resume where you left off
+store.lineage(best_model)  # its full ancestry, oldest first
+store.ancestors(best_model, step_type="clean")  # which cleaning produced it?
+best_model.artifacts("*.bin")  # locate its files
+store.prune(bad_branch)  # preview a deletion (dry-run first)
+store.prune(bad_branch, dry_run=False)  # ...and reclaim the space
+store.backup("./nightly")  # consistent copy, even while open
 
-store.sql("SELECT step_type, count(*) FROM node GROUP BY 1")   # read-only SQL
-store.stats()                                     # counts, sizes, dedup ratio
+store.sql("SELECT step_type, count(*) FROM node GROUP BY 1")  # read-only SQL
+store.stats()  # counts, sizes, dedup ratio
 ```
 
 ---

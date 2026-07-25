@@ -40,9 +40,7 @@ def _ingest(store: LineageStore, payload: bytes = b"raw,data\n1,2\n") -> Node:
 # ---------------------------------------------------------------------------
 
 
-def test_create_node_persists_everything(
-    store: LineageStore, tmp_path: Path
-) -> None:
+def test_create_node_persists_everything(store: LineageStore, tmp_path: Path) -> None:
     with store.create_node(step_type="ingest") as node:
         (node / "raw.csv").write_text("a,b\n1,2\n")
         (node / "figs/plot.txt").write_text("plot")
@@ -77,9 +75,11 @@ def test_create_node_persists_everything(
 
 
 def test_untouched_node_is_discarded_with_warning(store: LineageStore) -> None:
-    with pytest.warns(UserWarning, match="was discarded"):
-        with store.create_node(step_type="ingest") as node:
-            pass
+    with (
+        pytest.warns(UserWarning, match="was discarded"),
+        store.create_node(step_type="ingest") as node,
+    ):
+        pass
     assert store.get(node.node_id) is None
     assert store.find() == []
 
@@ -92,10 +92,12 @@ def test_metadata_only_node_persists(store: LineageStore) -> None:
 
 
 def test_exception_keeps_partial_work_as_unhealthy(store: LineageStore) -> None:
-    with pytest.raises(RuntimeError, match="mid-run failure"):
-        with store.create_node(step_type="ingest") as node:
-            (node / "partial.csv").write_text("half-written")
-            raise RuntimeError("mid-run failure")
+    with (
+        pytest.raises(RuntimeError, match="mid-run failure"),
+        store.create_node(step_type="ingest") as node,
+    ):
+        (node / "partial.csv").write_text("half-written")
+        raise RuntimeError("mid-run failure")
 
     record = store.get(node.node_id)
     assert record is not None
@@ -114,22 +116,27 @@ def test_rules_are_enforced(store: LineageStore) -> None:
     with store.create_node(step_type="clean", parent=ingest) as node:
         node.add_meta("ok", True)
 
-    with pytest.raises(InvalidTransition):
-        with store.create_node(step_type="model", parent=ingest):
-            pass
+    with (
+        pytest.raises(InvalidTransition),
+        store.create_node(step_type="model", parent=ingest),
+    ):
+        pass
     # A rules-listed step type cannot be a root either.
-    with pytest.raises(InvalidTransition):
-        with store.create_node(step_type="clean"):
-            pass
+    with pytest.raises(InvalidTransition), store.create_node(step_type="clean"):
+        pass
 
 
 def test_step_type_is_validated(store: LineageStore) -> None:
-    with pytest.raises(ValueError, match="non-empty"):
-        with store.create_node(step_type="   "):
-            pass
-    with pytest.raises(ValueError, match="printable"):
-        with store.create_node(step_type="bad\nlabel"):
-            pass
+    with (
+        pytest.raises(ValueError, match="non-empty"),
+        store.create_node(step_type="   "),
+    ):
+        pass
+    with (
+        pytest.raises(ValueError, match="printable"),
+        store.create_node(step_type="bad\nlabel"),
+    ):
+        pass
 
 
 def test_gen_triggers_increment_generations(tmp_path: Path) -> None:
@@ -148,17 +155,17 @@ def test_gen_triggers_increment_generations(tmp_path: Path) -> None:
 
 
 def test_unknown_parent_is_rejected(store: LineageStore) -> None:
-    with pytest.raises(ValueError, match="not present in this store"):
-        with store.create_node(step_type="ingest", parent="deadbeef"):
-            pass
+    with (
+        pytest.raises(ValueError, match="not present in this store"),
+        store.create_node(step_type="ingest", parent="deadbeef"),
+    ):
+        pass
 
 
 def test_parents_accept_handles_ids_and_records(store: LineageStore) -> None:
     ingest = _ingest(store)
     # by record, by id string, duplicates de-duplicated, order preserved
-    with store.create_node(
-        step_type="clean", parent=[ingest, ingest.node_id]
-    ) as node:
+    with store.create_node(step_type="clean", parent=[ingest, ingest.node_id]) as node:
         node.add_meta("ok", True)
     record = store.get(node)
     assert record is not None and record.parent_id == (ingest.node_id,)
@@ -252,9 +259,7 @@ def test_policy_is_persisted_and_immutable(tmp_path: Path) -> None:
 
 def test_sql_is_read_only(store: LineageStore) -> None:
     _ingest(store)
-    rows = store.sql(
-        "SELECT step_type, count(*) AS n FROM node GROUP BY step_type"
-    )
+    rows = store.sql("SELECT step_type, count(*) AS n FROM node GROUP BY step_type")
     assert [(row["step_type"], row["n"]) for row in rows] == [("ingest", 1)]
     rows = store.sql("SELECT node_id FROM node WHERE step_type = ?", ["ingest"])
     assert len(rows) == 1
@@ -294,9 +299,7 @@ def test_find_by_parent_id_through_the_facade(store: LineageStore) -> None:
     ]
 
 
-def test_export_writes_grepable_sidecars(
-    store: LineageStore, tmp_path: Path
-) -> None:
+def test_export_writes_grepable_sidecars(store: LineageStore, tmp_path: Path) -> None:
     _ingest(store)
     node = store.latest(step_type="ingest")
     assert node is not None

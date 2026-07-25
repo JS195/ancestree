@@ -23,14 +23,14 @@ def test_to_jsonable_coerces_common_types() -> None:
     converted, changed = to_jsonable({"s": {3}})
     assert converted == {"s": [3]} and changed is True
 
-    stamp = datetime(2026, 7, 8, 12, 30)
+    stamp = datetime(2026, 7, 8, 12, 30)  # noqa: DTZ001 - naive on purpose
     converted, changed = to_jsonable(stamp)
     assert converted == stamp.isoformat() and changed is True
 
 
 def test_time_helpers_roundtrip_and_degrade() -> None:
     iso = "2026-07-08T03:04:05"
-    assert parse_iso_utc(iso) == datetime(2026, 7, 8, 3, 4, 5)
+    assert parse_iso_utc(iso) == datetime(2026, 7, 8, 3, 4, 5)  # noqa: DTZ001
     assert format_timestamp(iso) == "08 Jul 2026, 03:04:05"
     assert format_timestamp(None) == "N/A"
     assert format_timestamp("not-a-date") == "not-a-date"

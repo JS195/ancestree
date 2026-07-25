@@ -89,8 +89,6 @@ nav:
       - Overview: examples.md
       - Basic Usage: examples/basic_usage.ipynb
       - Machine Learning Pipeline: examples/ml_pipeline.ipynb
-      - Branching Stress Test: examples/stress_branching.ipynb
-      - CDC Deep Dive: examples/cdc_deep_dive.ipynb
   - Live Demo: demo.md
   - API Reference: reference.md
   - Caveats & Limitations: caveats.md

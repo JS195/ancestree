@@ -14,7 +14,6 @@ See REBUILD_BLUEPRINT.md sections 5.3 and 6 (Phase 1, issue #12).
 from __future__ import annotations
 
 import sqlite3
-from typing import Dict, FrozenSet, Set
 
 from ..errors import SchemaError
 
@@ -22,7 +21,7 @@ from ..errors import SchemaError
 SCHEMA_VERSION = 2
 
 #: Every table the schema defines; an opened store is verified against this.
-TABLES: FrozenSet[str] = frozenset(
+TABLES: frozenset[str] = frozenset(
     {
         "config",
         "node",
@@ -135,7 +134,7 @@ CREATE INDEX idx_ac_digest ON artifact_chunk(digest);
 """
 
 #: from_version -> SQL script upgrading the store to from_version + 1.
-_MIGRATIONS: Dict[int, str] = {
+_MIGRATIONS: dict[int, str] = {
     # v1 -> v2. Two changes, one of which is pure DDL:
     #
     # 1. The metadata equality index gains its value column (rebuilt here).
@@ -154,7 +153,7 @@ _MIGRATIONS: Dict[int, str] = {
 }
 
 
-def _tables(conn: sqlite3.Connection) -> Set[str]:
+def _tables(conn: sqlite3.Connection) -> set[str]:
     """The user tables present in the database (SQLite internals excluded)."""
     rows = conn.execute(
         "SELECT name FROM sqlite_master "
@@ -193,8 +192,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         conn.execute("PRAGMA auto_vacuum = INCREMENTAL")
         conn.execute("PRAGMA journal_mode = WAL")
         conn.executescript(
-            f"BEGIN;\n{SCHEMA_SQL}\n"
-            f"PRAGMA user_version = {SCHEMA_VERSION};\nCOMMIT;"
+            f"BEGIN;\n{SCHEMA_SQL}\nPRAGMA user_version = {SCHEMA_VERSION};\nCOMMIT;"
         )
         return
 

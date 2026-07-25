@@ -24,7 +24,7 @@ Inside a `create_node` block, `node / "file"` points at a transient scratch dire
 
 ## Write and read costs
 
-Your code writes files at native speed inside the block; the price is paid at block exit, where the artifact is chunked, hashed, compressed and committed. The chunking loop is pure Python (a few MB/s), so the cost scales with megabytes — files of 64 MiB and above switch to fixed boundaries at C speed. The first read of an artifact in a session reassembles it from chunks; every read after that is a plain file read from the cache. The [CDC deep dive notebook](examples/cdc_deep_dive.ipynb) measures all of this against a native baseline.
+Your code writes files at native speed inside the block; the price is paid at block exit, where the artifact is chunked, hashed, compressed and committed. The chunking loop is pure Python (~27 MB/s), so the cost scales with megabytes — files of 64 MiB and above switch to fixed boundaries at C speed. The first read of an artifact in a session reassembles it from chunks; every read after that is a plain file read from the cache. `benchmarks/RESULTS.md` measures all of this.
 
 ## Concurrency
 
@@ -50,7 +50,7 @@ Opening a store runs a sweep for scratch directories orphaned by a crashed sessi
 
 ## Scale
 
-Searches are answered by indexed SQL rather than linear scans, and opening a store no longer replays an index — cold opens are effectively instant. The practical limits are the write path (chunking cost scales with artifact megabytes) and the snapshot (one HTML file inlining everything). The [branching stress test](examples/stress_branching.ipynb) exercises a few hundred nodes; the 10k-node territory the old benchmark measured is comfortably in range for queries.
+Searches are answered by indexed SQL rather than linear scans, and opening a store no longer replays an index — cold opens are effectively instant. The practical limits are the write path (chunking cost scales with artifact megabytes) and the snapshot (one HTML file inlining everything). A few thousand nodes is comfortable territory: `find()` over 3000 nodes runs in ~26 ms, and a selective metadata lookup in ~0.04 ms.
 
 ## Metadata coercion and overwrites
 
