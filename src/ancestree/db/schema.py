@@ -19,7 +19,7 @@ from typing import Dict, FrozenSet, Set
 from ..errors import SchemaError
 
 #: Stamped into ``PRAGMA user_version``. Bump alongside a _MIGRATIONS entry.
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 #: Every table the schema defines; an opened store is verified against this.
 TABLES: FrozenSet[str] = frozenset(
@@ -89,11 +89,12 @@ CREATE INDEX idx_meta_key ON metadata(key) WHERE searchable = 1;
 CREATE INDEX idx_meta_num ON metadata(key, num_value) WHERE num_value IS NOT NULL;
 
 -- Content-addressed chunk pool. Each chunk stored once (INSERT OR IGNORE is
--- the dedup). A chunk is raw (zlib) or a delta: zlib dictionary-compressed
--- against base_digest. Depth is capped at 1: a base is always a RAW chunk.
+-- the dedup). A chunk is raw (zlib), stored (verbatim, when zlib made it no
+-- smaller), or a delta: zlib dictionary-compressed against base_digest.
+-- Depth is capped at 1: a base is never itself a delta.
 CREATE TABLE chunk (
     digest        TEXT PRIMARY KEY,            -- sha256 of the PLAINTEXT chunk
-    kind          INTEGER NOT NULL,            -- 0 = raw(zlib), 1 = delta(zdict)
+    kind          INTEGER NOT NULL,            -- 0 raw(zlib) 1 delta(zdict) 2 verbatim
     base_digest   TEXT REFERENCES chunk(digest),
     data          BLOB NOT NULL,               -- zlib(raw) or the delta stream
     length        INTEGER NOT NULL,            -- plaintext length
@@ -131,8 +132,16 @@ CREATE INDEX idx_ac_digest ON artifact_chunk(digest);
 """
 
 #: from_version -> SQL script upgrading the store to from_version + 1.
-#: Empty today: schema v1 is the first SQLite format.
-_MIGRATIONS: Dict[int, str] = {}
+_MIGRATIONS: Dict[int, str] = {
+    # v1 -> v2: no DDL change. The chunk *encoding* changed — a smaller
+    # average chunk size, and kind 2 (stored verbatim) for payloads zlib
+    # cannot shrink. Every v1 chunk still decodes unchanged, so an existing
+    # store opens and reads normally; only newly written artifacts use the
+    # new boundaries, and they will not deduplicate against v1-era chunks
+    # of the same content. The stamp exists so a v1 ancestree refuses a v2
+    # store up front instead of failing on an unknown chunk kind.
+    1: "",
+}
 
 
 def _tables(conn: sqlite3.Connection) -> Set[str]:

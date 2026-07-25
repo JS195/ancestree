@@ -4,10 +4,14 @@ The content-addressed pool lives in the ``chunk`` table: each chunk is
 stored once, keyed by the SHA-256 of its plaintext — a repeat put is a
 no-op, which is the exact dedup (Layer 1). With the store's ``chunk``
 policy on, Layer 2 engages: a new chunk's super-features nominate a
-similar raw chunk as a delta base, and the newcomer is stored as a
-zlib-zdict delta (kind 1) when that genuinely beats plain compression.
-Depth is capped at 1 — a base is always raw — so a read costs at most two
+similar base chunk, and the newcomer is stored as a zlib-zdict delta
+(kind 1) when that genuinely beats storing it on its own. Depth is capped
+at 1 — a base is never itself a delta — so a read costs at most two
 fetches and GC reachability is a single hop (AD5).
+
+A non-delta chunk is zlib (kind 0), or the plaintext verbatim (kind 2)
+when zlib made it no smaller — which is the normal case for payloads that
+arrive already compressed.
 
 Write methods take the caller's open write-transaction connection, so a
 node's chunks, artifact rows and metadata commit as ONE atomic unit (AD3) —
@@ -44,9 +48,14 @@ from .connection import ConnectionManager
 
 _KIND_RAW = 0
 _KIND_DELTA = 1  # zlib-zdict against a raw base; depth capped at 1
+_KIND_STORED = 2  # plaintext verbatim: zlib made this chunk no smaller
 
 # Layer-2 policy knobs: tiny chunks are not worth a trial encode, and a
-# delta is kept only when it beats plain compression by a real margin.
+# delta is kept only when it beats the best non-delta encoding by a real
+# margin. The margin is not conservatism about the delta itself — it is
+# about the resemblance index: only non-delta chunks can serve as bases, so
+# every delta taken is one fewer candidate base for what comes later.
+# Relaxing this to 1.0 measurably *costs* storage (ratio 2.63 -> 2.59).
 _DELTA_MIN_SIZE = 2048
 _DELTA_WIN = 0.8
 
@@ -93,29 +102,46 @@ class ChunkStore:
         if already is not None:
             return digest  # Layer 1: the second copy is free
 
+        # Compressed once, here: the delta trial needs this to decide, and
+        # the fallback path needs it to store. v1 computed it twice.
+        packed = zlib.compress(data)
+
         if self._delta and len(data) >= _DELTA_MIN_SIZE:
             features = super_features(data)
-            if not self._try_delta(conn, digest, data, features):
-                self._insert_chunk(
-                    conn, digest, _KIND_RAW, None, zlib.compress(data), len(data)
-                )
+            if not self._try_delta(conn, digest, data, packed, features):
+                self._insert_raw(conn, digest, data, packed)
                 self._store_features(conn, digest, features)
             return digest
 
-        self._insert_chunk(
-            conn, digest, _KIND_RAW, None, zlib.compress(data), len(data)
-        )
+        self._insert_raw(conn, digest, data, packed)
         return digest
+
+    def _insert_raw(
+        self,
+        conn: sqlite3.Connection,
+        digest: str,
+        data: bytes,
+        packed: bytes,
+    ) -> None:
+        """Inserts a base chunk as zlib, or verbatim when zlib made it no
+        smaller. Already-compressed payloads (PNG, parquet, zip) are the
+        common case: wrapping them cost bytes on write and a pointless
+        inflate on every read."""
+        if len(packed) < len(data):
+            self._insert_chunk(conn, digest, _KIND_RAW, None, packed, len(data))
+        else:
+            self._insert_chunk(conn, digest, _KIND_STORED, None, data, len(data))
 
     def _try_delta(
         self,
         conn: sqlite3.Connection,
         digest: str,
         data: bytes,
+        packed: bytes,
         features: Sequence[int],
     ) -> bool:
-        """Stores `data` as a delta if a similar raw base exists AND the
-        delta beats plain compression by the policy margin. A nominated
+        """Stores `data` as a delta if a similar base exists AND the delta
+        beats the best non-delta encoding of the chunk. A nominated
         candidate that encodes poorly just costs the trial — correctness
         never depends on the resemblance index being right."""
         base_digest = self._find_base(conn, features)
@@ -123,7 +149,7 @@ class ChunkStore:
             return False
         base = self.get_chunk(base_digest)
         delta_blob = delta_encode(base, data)
-        if len(delta_blob) >= len(zlib.compress(data)) * _DELTA_WIN:
+        if len(delta_blob) >= min(len(packed), len(data)) * _DELTA_WIN:
             return False
         self._insert_chunk(
             conn, digest, _KIND_DELTA, base_digest, delta_blob, len(data)
@@ -133,14 +159,14 @@ class ChunkStore:
     def _find_base(
         self, conn: sqlite3.Connection, features: Sequence[int]
     ) -> Optional[str]:
-        """The raw chunk sharing the most super-features with the newcomer.
-        Only raw chunks qualify — that is what caps delta depth at 1."""
+        """The base chunk sharing the most super-features with the newcomer.
+        Only non-delta chunks qualify — that is what caps delta depth at 1."""
         if not features:
             return None
         placeholders = ",".join("?" for _ in features)
         row = conn.execute(
             "SELECT cf.digest FROM chunk_feature cf "
-            f"JOIN chunk c ON c.digest = cf.digest AND c.kind = {_KIND_RAW} "
+            f"JOIN chunk c ON c.digest = cf.digest AND c.kind != {_KIND_DELTA} "
             f"WHERE cf.feature IN ({placeholders}) "
             "GROUP BY cf.digest "
             "ORDER BY count(*) DESC, c.created_epoch LIMIT 1",
@@ -232,6 +258,8 @@ class ChunkStore:
             )
         if row["kind"] == _KIND_RAW:
             return zlib.decompress(row["data"])
+        if row["kind"] == _KIND_STORED:
+            return bytes(row["data"])
         if row["kind"] == _KIND_DELTA:
             if not allow_delta:
                 raise IntegrityError(

@@ -46,10 +46,10 @@ Ancestree solves it by modelling the pipeline as a directed acyclic graph. **Eve
 Rules are optional, but if you declare them: `rules={"model": ["clean"]}`, illegal transitions raise at creation time. Every other tracker is a passive logbook. This is active grammar for your pipeline.
 
 **The whole store is one SQLite file.**
-Nodes are rows, not folders. Metadata, the lineage graph and the artifact bytes all live in `<root>/ancestree.db` — back it up by copying one file, query it with real SQL (`store.sql(...)` gives you a read-only escape hatch over a documented schema), and pull grep-able `meta.json` sidecars out any time with `store.export()`. One caveat I'll state up front: SQLite and NFS don't mix — keep stores on local disk.
+Nodes are rows, not folders. Metadata, the lineage graph and the artifact bytes all live in `<root>/ancestree.db` — back it up with `store.backup(dest)` (or by copying the file once the store is closed), query it with real SQL (`store.sql(...)` gives you a read-only escape hatch over a documented schema), and pull grep-able `meta.json` sidecars out any time with `store.export()`. One caveat I'll state up front: SQLite and NFS don't mix — keep stores on local disk.
 
 **It deduplicates twice.**
-Rerun a step that produces identical content and you get the *same node back*, not a copy. Underneath that, artifacts are split into content-defined chunks stored once — and near-identical artifacts (a config tweaked, values re-encoded) are stored as small deltas against what's already there. On my benchmark of twelve near-duplicate versions that's 2.3× less storage for a 7% ingest cost; `store.stats()` shows you the ratio on your own data.
+Rerun a step that produces identical content and you get the *same node back*, not a copy. Underneath that, artifacts are split into content-defined chunks stored once — and near-identical artifacts (a config tweaked, values re-encoded) are stored as small deltas against what's already there. On a 69 MB corpus of six file types across six revisions that's 2.6× less storage — and data that already arrives compressed (PNG, parquet, zip) is kept verbatim rather than pointlessly re-compressed. `store.stats()` shows you the ratio on your own data.
 
 **Forensic crash semantics.**
 A step that raises mid-run keeps its partial output, flagged `healthy=False` and searchable. A step that wrote nothing vanishes with a warning. And if a run gets hard-killed, the next store open adopts whatever it managed to write as an unhealthy node. Partial work is evidence, not garbage.
@@ -131,7 +131,8 @@ store.lineage(best_model)                         # its full ancestry, oldest fi
 store.ancestors(best_model, step_type="clean")    # which cleaning produced it?
 best_model.artifacts("*.bin")                     # locate its files
 store.prune(bad_branch)                           # preview a deletion (dry-run first)
-store.compact()                                   # reclaim the space afterwards
+store.prune(bad_branch, dry_run=False)            # ...and reclaim the space
+store.backup("./nightly")                         # consistent copy, even while open
 
 store.sql("SELECT step_type, count(*) FROM node GROUP BY 1")   # read-only SQL
 store.stats()                                     # counts, sizes, dedup ratio

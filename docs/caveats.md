@@ -30,13 +30,23 @@ Your code writes files at native speed inside the block; the price is paid at bl
 
 SQLite allows many readers but one writer at a time. Concurrent processes can share a store — a writer simply waits its turn (up to the busy timeout) — but heavy parallel writing is not what this is for. A single `LineageStore` instance serialises its own writes internally.
 
+Opening a store runs a sweep for scratch directories orphaned by a crashed session. That sweep never touches a node another process is still writing: a node is assembled in a staging directory and renamed into place only once it carries its crash-recovery seed, so an in-flight node is never mistaken for litter.
+
 ## NFS
 
 **Keep stores on local disk.** SQLite file locking over NFS is unreliable, and the 0.1.x file-based NFS guarantee did not survive the move to a database backend.
 
-## One file is the whole store
+## One file is the whole store — but a *live* store is three
 
-`ancestree.db` is the single source of truth — there is no side index to rebuild and no directory tree to fall back on. That cuts both ways: a corrupt database is real data loss. WAL journalling protects against crashes mid-write, `PRAGMA integrity_check` (reachable via `store.sql`) verifies the file, and `store.export()` writes grep-able per-node `meta.json` sidecars whenever you want plain files on record. Back the file up like you would anything else you care about.
+`ancestree.db` is the single source of truth — there is no side index to rebuild and no directory tree to fall back on. That cuts both ways: a corrupt database is real data loss. WAL journalling protects against crashes mid-write, `PRAGMA integrity_check` (reachable via `store.sql`) verifies the file, and `store.export()` writes grep-able per-node `meta.json` sidecars whenever you want plain files on record.
+
+**Backing up needs one moment's care.** While a store is open, WAL journalling keeps recent commits in `ancestree.db-wal`, not in `ancestree.db`. Copying `ancestree.db` alone out from under an open store therefore gives you a perfectly valid, perfectly **empty** store — silently, with no error. Any one of these is correct:
+
+- `store.backup(dest)` — a consistent single-file copy via SQLite's online backup API, safe to take at any time, including while another thread is writing. `dest` ending in `.db` writes that file; anything else is treated as a store root you can open directly.
+- copy `ancestree.db`, `ancestree.db-wal` and `ancestree.db-shm` together;
+- `store.close()` first (which checkpoints), then copy the single file.
+
+`store.stats()["database_bytes"]` counts the database and its WAL together, so it reflects what the store actually occupies rather than what has been checkpointed so far.
 
 ## Scale
 

@@ -536,14 +536,25 @@ class LineageStore:
     # Maintenance
     # ------------------------------------------------------------------
 
-    def prune(self, node: NodeLike, dry_run: bool = True) -> List[Node]:
-        """Deletes a node and the descendants it solely supports.
+    def prune(
+        self, node: NodeLike, dry_run: bool = True, compact: bool = True
+    ) -> List[Node]:
+        """Deletes a node and the descendants it solely supports, and
+        reclaims the space they occupied.
 
         A descendant is removed only when EVERY one of its parents is also
         being removed — a child still reachable from an unpruned branch
         survives, and its edge to the pruned parent disappears via the
-        foreign-key cascade. Preview with the default ``dry_run=True``;
-        chunk space is reclaimed by ``compact()``.
+        foreign-key cascade. Preview with the default ``dry_run=True``,
+        which never deletes and never compacts.
+
+        Args:
+            node: The node to prune.
+            dry_run: Preview only (the default). Nothing is deleted.
+            compact: Reclaim the freed chunk space afterwards (the
+                default). Pass False when pruning many nodes in a loop and
+                call ``compact()`` once at the end — compaction scans the
+                whole chunk pool, so doing it per node is wasted work.
 
         Returns:
             The nodes that were (or would be) deleted, deepest first.
@@ -555,14 +566,21 @@ class LineageStore:
         nodes = self._nodes_for_ids(doomed)  # fetched before deletion
         if not dry_run and doomed:
             self._pruner.delete(doomed)
+            if compact:
+                self.compact()
         return nodes
 
     def compact(self) -> int:
         """Reclaims space: deletes chunks no artifact references (a delta
         base still in use survives — the one-hop closure of AD5), then
         returns freed pages to the OS via ``incremental_vacuum`` and
-        truncates the WAL. The one space-reclamation verb, replacing the
-        0.1.x ``gc``/``flush``/``clear_cache`` trio.
+        truncates the WAL.
+
+        ``prune`` calls this for you, so it is only needed directly after a
+        batch of ``prune(..., compact=False)`` calls, or to tidy a store
+        pruned by an older version. It does not touch the session read
+        cache (``<root>/.cache/``), which is transient and cleaned up
+        automatically when the store closes.
 
         Returns:
             The number of chunks removed.
@@ -608,6 +626,45 @@ class LineageStore:
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(json.dumps(document, indent=2))
         return dest_dir
+
+    def backup(self, dest: Union[Path, str]) -> Path:
+        """Writes a consistent, self-contained copy of the whole store —
+        safe to take while the store is open and being written to.
+
+        A *live* store is not one file: WAL journalling keeps recent commits
+        in ``ancestree.db-wal`` until a checkpoint, so copying
+        ``ancestree.db`` out from under an open store silently loses
+        everything since the last one. This goes through SQLite's online
+        backup API, which reads through the WAL and produces a fully
+        checkpointed single file — the correct way to back a store up
+        without closing it.
+
+        Args:
+            dest: A path ending in ``.db``, written as that file; any other
+                path is treated as a store root and given an
+                ``ancestree.db`` inside it, so ``LineageStore(dest)`` opens
+                the copy directly. An existing destination is overwritten.
+
+        Returns:
+            The path of the database file written.
+
+        Raises:
+            ValueError: If the destination is this store's own database.
+        """
+        dest_path = Path(dest)
+        target = dest_path if dest_path.suffix == ".db" else dest_path / DB_FILENAME
+        if target.resolve() == self._manager.db_path.resolve():
+            raise ValueError(
+                "Refusing to back a store up onto itself; choose a different "
+                "destination."
+            )
+        target.parent.mkdir(parents=True, exist_ok=True)
+        destination = sqlite3.connect(target)
+        try:
+            self._manager.read().backup(destination)
+        finally:
+            destination.close()
+        return target
 
     # ------------------------------------------------------------------
     # Visualisation
@@ -706,7 +763,13 @@ class LineageStore:
     def stats(self) -> Dict[str, Any]:
         """Store-level numbers that make deduplication visible: node/
         artifact/chunk counts, logical vs stored bytes, the dedup ratio
-        (logical ÷ stored; higher is better) and the database file size."""
+        (logical ÷ stored; higher is better) and the store's size on disk.
+
+        ``database_bytes`` counts the database file **plus its write-ahead
+        log**: mid-session most recently written bytes live in the WAL, so
+        counting only ``ancestree.db`` understates real disk usage by
+        orders of magnitude until the next checkpoint.
+        """
         conn = self._manager.read()
         nodes = conn.execute("SELECT count(*) AS n FROM node").fetchone()["n"]
         art = conn.execute(
@@ -725,9 +788,18 @@ class LineageStore:
             "logical_bytes": logical,
             "chunk_plain_bytes": int(chunks["plain"]),
             "chunk_stored_bytes": stored,
-            "database_bytes": self._manager.db_path.stat().st_size,
+            "database_bytes": self._database_bytes(),
             "dedup_ratio": round(logical / stored, 3) if stored else None,
         }
+
+    def _database_bytes(self) -> int:
+        """The store's real size on disk: the database file plus its WAL."""
+        db_path = self._manager.db_path
+        total = db_path.stat().st_size
+        wal = db_path.with_name(db_path.name + "-wal")
+        if wal.exists():
+            total += wal.stat().st_size
+        return total
 
     # ------------------------------------------------------------------
     # Internals the Node record reads through

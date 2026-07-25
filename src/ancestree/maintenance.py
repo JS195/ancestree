@@ -30,7 +30,12 @@ from .db.chunk_store import ChunkStore
 from .db.connection import ConnectionManager
 from .db.metadata_store import MetadataStore, NodeRecord
 from .ingest.packing import ingest_node
-from .ingest.workspace import SEED_FILENAME, NodeWorkspace
+from .ingest.workspace import SEED_FILENAME, STAGING_PREFIX, NodeWorkspace
+
+#: How long an unseeded staging directory is left alone before being treated
+#: as litter. It only has to cover the microseconds between a staging
+#: directory being created and its seed being written.
+_STAGING_GRACE_SECONDS = 300
 
 
 class Pruner:
@@ -131,7 +136,15 @@ def compact_chunks(manager: ConnectionManager) -> int:
             ")"
         )
         removed = int(cursor.rowcount)
-    manager.read().execute("PRAGMA incremental_vacuum")
+    conn = manager.read()
+    # The WAL has to be folded in first: pages freed by the DELETE are only
+    # recorded there until a checkpoint, and incremental_vacuum can only
+    # truncate the main database file.
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchall()
+    # incremental_vacuum is a STEPPED statement — one page per step — so the
+    # cursor must be driven to exhaustion. Executing it without consuming the
+    # result frees exactly one page per call.
+    conn.execute("PRAGMA incremental_vacuum").fetchall()
     manager.checkpoint()
     return removed
 
@@ -149,6 +162,29 @@ def _pid_alive(pid: int) -> bool:
     except OSError:
         return False
     return True
+
+
+def _reap_staging(entry: Path) -> None:
+    """Removes an abandoned staging directory.
+
+    A staging directory exists only between a node's scratch being created
+    and it being renamed into place, which happens before any user code
+    runs — so it never holds artifacts. It must still never be removed
+    while that is in progress: a live owner, or a directory too young to
+    have been seeded yet, is left alone.
+    """
+    seed_path = entry / SEED_FILENAME
+    try:
+        if seed_path.exists():
+            seed = json.loads(seed_path.read_text())
+            pid = seed.get("pid")
+            if isinstance(pid, int) and _pid_alive(pid):
+                return  # still being renamed into place
+        elif time.time() - entry.stat().st_mtime < _STAGING_GRACE_SECONDS:
+            return  # created moments ago; its seed is on its way
+    except (json.JSONDecodeError, OSError):
+        pass
+    shutil.rmtree(entry, ignore_errors=True)
 
 
 def _sweep_stale_cache(root: Path) -> None:
@@ -196,6 +232,12 @@ def sweep_orphan_scratch(
     adopted: List[str] = []
     for entry in sorted(scratch_root.iterdir()):
         if not entry.is_dir():
+            continue
+        if entry.name.startswith(STAGING_PREFIX):
+            # A node being set up right now, by this or another process.
+            # Never a candidate for adoption, and only litter once its
+            # owner is gone.
+            _reap_staging(entry)
             continue
         seed_path = entry / SEED_FILENAME
         if not seed_path.exists():

@@ -47,7 +47,8 @@ def test_cli_compact_reports_reclaimed_chunks(
     root = tmp_path / "proj"
     node_id = _build_store(root)
     store = LineageStore(root)
-    store.prune(node_id, dry_run=False)  # orphan the chunks
+    # compact=False leaves the chunks orphaned for the CLI to reclaim.
+    store.prune(node_id, dry_run=False, compact=False)
     store.close()
 
     assert main(["compact", str(root)]) == 0

@@ -97,7 +97,8 @@ def test_compact_reclaims_orphaned_chunks(store: LineageStore) -> None:
     keep = _node(store, "keep", blob=random.Random(1).randbytes(150_000))
     doomed = _node(store, "doomed", blob=random.Random(2).randbytes(150_000))
 
-    store.prune(doomed, dry_run=False)
+    # prune compacts by default; defer it so this test can exercise compact.
+    store.prune(doomed, dry_run=False, compact=False)
     before = _chunk_count(store)
     assert before > 0  # orphans linger until compact
 

@@ -63,6 +63,38 @@ def _numeric(value: Any) -> Optional[float]:
     return float(value)
 
 
+def _node_id_of(value: Any) -> str:
+    """One node id from anything node-like. Node/RecordingNode are matched by
+    duck typing so the persistence layer need not import the domain."""
+    node_id = getattr(value, "node_id", None)
+    return str(value) if node_id is None else str(node_id)
+
+
+def _parent_id_list(value: Any) -> List[str]:
+    """The ordered parent-id list a ``parent_id=`` filter compares against.
+
+    Accepts the same node-like values as every other node-taking method: a
+    single id/Node/handle is one parent, a list or tuple is an ordered join,
+    and an empty list matches roots. A bare id used to be iterated into its
+    characters here, which matched nothing and reported no error.
+    """
+    if value is None:
+        raise TypeError(
+            "parent_id=None is ambiguous: pass parent_id=[] to match root "
+            "nodes, or a node/id to match that node's children."
+        )
+    if isinstance(value, (str, bytes)) or getattr(value, "node_id", None):
+        return [_node_id_of(value)]
+    try:
+        items = list(value)
+    except TypeError:
+        raise TypeError(
+            f"parent_id must be a node, a node id, or a list of them; got "
+            f"{type(value).__name__}."
+        ) from None
+    return [_node_id_of(item) for item in items]
+
+
 @dataclass(frozen=True)
 class NodeRecord:
     """One row of the node table, plus the node's ordered parent ids."""
@@ -287,7 +319,8 @@ class MetadataStore:
 
         A filter key is a node column (step_type, generation, healthy,
         ...), the special key ``parent_id`` (matched against the node's
-        ordered parent-id list, exactly as 0.1.x's flat index did — an
+        ordered parent-id list — a single node/id matches nodes with
+        exactly that one parent, a list matches an ordered join, and an
         empty list matches roots), or a user-metadata key. Non-callable
         values match by equality in SQL; callable values run as Python
         predicates over the SQL-narrowed candidates, receiving the stored
@@ -309,7 +342,7 @@ class MetadataStore:
                 if callable(value):
                     predicates.append((key, value))
                 else:
-                    parent_eq = [str(item) for item in value]
+                    parent_eq = _parent_id_list(value)
             elif callable(value):
                 predicates.append((key, value))
             elif key in _NODE_COLUMNS:

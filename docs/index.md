@@ -70,7 +70,7 @@ my_store/
 └── interactive_pipeline.html    # generated web graph (optional snapshot)
 ```
 
-Every write is a real transaction, so a node is either committed whole or not at all. Delete a branch with `prune()` and reclaim the space with `compact()`; pull grep-able `meta.json` sidecars out any time with `export()`; or ask the database anything with `store.sql(...)` — the schema is documented and versioned.
+Every write is a real transaction, so a node is either committed whole or not at all. Delete a branch with `prune()` — it reclaims the space for you; pull grep-able `meta.json` sidecars out any time with `export()`; or ask the database anything with `store.sql(...)` — the schema is documented and versioned.
 
 ## Track, search, and visualise your pipeline:
 

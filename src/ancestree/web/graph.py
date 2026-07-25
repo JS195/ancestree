@@ -122,11 +122,29 @@ def _node_entries(detail: Dict[str, Any]) -> Dict[str, Any]:
             "group": "Provenance",
             "searchable": False,
         }
-    entries.update(detail["metadata"])
-    for artifact in detail["artifacts"]:
-        relpath = artifact["relpath"]
+    node_id = detail["node_id"]
+    relpaths = {artifact["relpath"] for artifact in detail["artifacts"]}
+
+    # An image/link entry created as `add_meta("cm", node / "cm.png")` holds
+    # the *node-relative* artifact path ("cm.png", "figs/loss.png"). The
+    # browser resolves that against "/", which is not a route — the server
+    # serves artifacts under "/<node_id>/<relpath>". Without this rewrite
+    # every inline figure 404s, and a nested path mis-routes as though its
+    # first segment were a node id. Same mapping the static exporter does
+    # through artifact_hrefs.
+    for key, envelope in detail["metadata"].items():
+        value = envelope.get("value")
+        if (
+            envelope.get("data_type") in ("image", "link")
+            and isinstance(value, str)
+            and value in relpaths
+        ):
+            envelope = dict(envelope, value=f"{node_id}/{value}")
+        entries[key] = envelope
+
+    for relpath in sorted(relpaths):
         entries[relpath] = {
-            "value": f"{detail['node_id']}/{relpath}",
+            "value": f"{node_id}/{relpath}",
             "data_type": "link",
             "group": "Artifacts",
         }

@@ -35,10 +35,17 @@ from typing import Iterator, List
 _rng = random.Random(0xA5A5_5A5A_C3C3_3C3C)
 _GEAR = [_rng.getrandbits(64) for _ in range(256)]
 
+# AVG_SIZE is deliberately under _ZDICT_MAX (32,256 bytes): zlib's dictionary
+# window is 32 KiB, so a chunk larger than that cannot see the whole of its
+# delta base and the tail degrades to literals. Sitting at 32 KiB — as v1 did
+# — put every average-sized chunk right on that cliff. Halving it is the
+# single largest storage win available, and it costs nothing: the per-byte
+# Gear loop skips MIN_SIZE bytes per chunk, so smaller chunks mean *more*
+# bytes skipped and a faster ingest.
 MIN_SIZE = 8 * 1024
-AVG_SIZE = 32 * 1024
+AVG_SIZE = 16 * 1024
 MAX_SIZE = 256 * 1024
-_BITS = (AVG_SIZE).bit_length() - 1  # log2(avg) == 15
+_BITS = (AVG_SIZE).bit_length() - 1  # log2(avg) == 14
 # Normalised chunking: a denser mask before the average size makes an early
 # cut unlikely; a sparser one after it makes a late cut likely. Chunk sizes
 # cluster around the average, away from the min/max extremes.
