@@ -543,12 +543,12 @@
   <a href="#core-orchestration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Orchestration
+        Core orchestration
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Orchestration">
+    <nav class="md-nav" aria-label="Core orchestration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -775,12 +775,12 @@
   <a href="#working-with-nodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Working with Nodes
+        Working with nodes
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Working with Nodes">
+    <nav class="md-nav" aria-label="Working with nodes">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -964,12 +964,12 @@
   <a href="#core-orchestration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Orchestration
+        Core orchestration
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Orchestration">
+    <nav class="md-nav" aria-label="Core orchestration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1196,12 +1196,12 @@
   <a href="#working-with-nodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Working with Nodes
+        Working with nodes
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Working with Nodes">
+    <nav class="md-nav" aria-label="Working with nodes">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1341,9 +1341,8 @@
 
 
 <h1 id="api-reference">API Reference</h1>
-<p>Technical documentation for the <strong>Ancestree</strong> lineage system. The <code>LineageStore</code> is the public entry point and is accessible directly from the top-level <code>ancestree</code> package — searching, lineage traversal, and visualisation all happen through its methods.</p>
-<h2 id="core-orchestration">Core Orchestration</h2>
-<p>The <code>LineageStore</code> is the prime entry point for managing your pipeline.</p>
+<p><code>LineageStore</code> is the public entry point, available from the top-level <code>ancestree</code> package. Searching, lineage traversal and visualisation all happen through its methods.</p>
+<h2 id="core-orchestration">Core orchestration</h2>
 
 
 <div class="doc doc-object doc-class">
@@ -2652,7 +2651,7 @@ database itself.</p>
 </span><span id="__span-0-547"><a id="__codelineno-0-547" name="__codelineno-0-547"></a><span class="sd">        reclaims the space they occupied.</span>
 </span><span id="__span-0-548"><a id="__codelineno-0-548" name="__codelineno-0-548"></a>
 </span><span id="__span-0-549"><a id="__codelineno-0-549" name="__codelineno-0-549"></a><span class="sd">        A descendant is removed only when EVERY one of its parents is also</span>
-</span><span id="__span-0-550"><a id="__codelineno-0-550" name="__codelineno-0-550"></a><span class="sd">        being removed — a child still reachable from an unpruned branch</span>
+</span><span id="__span-0-550"><a id="__codelineno-0-550" name="__codelineno-0-550"></a><span class="sd">        being removed. A child still reachable from an unpruned branch</span>
 </span><span id="__span-0-551"><a id="__codelineno-0-551" name="__codelineno-0-551"></a><span class="sd">        survives, and its edge to the pruned parent disappears via the</span>
 </span><span id="__span-0-552"><a id="__codelineno-0-552" name="__codelineno-0-552"></a><span class="sd">        foreign-key cascade. Preview with the default ``dry_run=True``,</span>
 </span><span id="__span-0-553"><a id="__codelineno-0-553" name="__codelineno-0-553"></a><span class="sd">        which never deletes and never compacts.</span>
@@ -2662,7 +2661,7 @@ database itself.</p>
 </span><span id="__span-0-557"><a id="__codelineno-0-557" name="__codelineno-0-557"></a><span class="sd">            dry_run: Preview only (the default). Nothing is deleted.</span>
 </span><span id="__span-0-558"><a id="__codelineno-0-558" name="__codelineno-0-558"></a><span class="sd">            compact: Reclaim the freed chunk space afterwards (the</span>
 </span><span id="__span-0-559"><a id="__codelineno-0-559" name="__codelineno-0-559"></a><span class="sd">                default). Pass False when pruning many nodes in a loop and</span>
-</span><span id="__span-0-560"><a id="__codelineno-0-560" name="__codelineno-0-560"></a><span class="sd">                call ``compact()`` once at the end — compaction scans the</span>
+</span><span id="__span-0-560"><a id="__codelineno-0-560" name="__codelineno-0-560"></a><span class="sd">                call ``compact()`` once at the end. Compaction scans the</span>
 </span><span id="__span-0-561"><a id="__codelineno-0-561" name="__codelineno-0-561"></a><span class="sd">                whole chunk pool, so doing it per node is wasted work.</span>
 </span><span id="__span-0-562"><a id="__codelineno-0-562" name="__codelineno-0-562"></a>
 </span><span id="__span-0-563"><a id="__codelineno-0-563" name="__codelineno-0-563"></a><span class="sd">        Returns:</span>
@@ -2681,7 +2680,7 @@ database itself.</p>
 </span><span id="__span-0-576"><a id="__codelineno-0-576" name="__codelineno-0-576"></a>
 </span><span id="__span-0-577"><a id="__codelineno-0-577" name="__codelineno-0-577"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">compact</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 </span><span id="__span-0-578"><a id="__codelineno-0-578" name="__codelineno-0-578"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Reclaims space: deletes chunks no artifact references (a delta</span>
-</span><span id="__span-0-579"><a id="__codelineno-0-579" name="__codelineno-0-579"></a><span class="sd">        base still in use survives — the one-hop closure of AD5), then</span>
+</span><span id="__span-0-579"><a id="__codelineno-0-579" name="__codelineno-0-579"></a><span class="sd">        base still in use survives, the one-hop closure of AD5), then</span>
 </span><span id="__span-0-580"><a id="__codelineno-0-580" name="__codelineno-0-580"></a><span class="sd">        returns freed pages to the OS via ``incremental_vacuum`` and</span>
 </span><span id="__span-0-581"><a id="__codelineno-0-581" name="__codelineno-0-581"></a><span class="sd">        truncates the WAL.</span>
 </span><span id="__span-0-582"><a id="__codelineno-0-582" name="__codelineno-0-582"></a>
@@ -2700,7 +2699,7 @@ database itself.</p>
 </span><span id="__span-0-595"><a id="__codelineno-0-595" name="__codelineno-0-595"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes grep-able JSON sidecars: one ``meta.json`` per node under</span>
 </span><span id="__span-0-596"><a id="__codelineno-0-596" name="__codelineno-0-596"></a><span class="sd">        ``&lt;dest&gt;/&lt;node_id&gt;/`` (default ``&lt;root&gt;/export``), holding the</span>
 </span><span id="__span-0-597"><a id="__codelineno-0-597" name="__codelineno-0-597"></a><span class="sd">        node&#39;s structural facts, provenance, metadata envelopes and</span>
-</span><span id="__span-0-598"><a id="__codelineno-0-598" name="__codelineno-0-598"></a><span class="sd">        artifact digests. The database remains the source of truth — this</span>
+</span><span id="__span-0-598"><a id="__codelineno-0-598" name="__codelineno-0-598"></a><span class="sd">        artifact digests. The database remains the source of truth; this</span>
 </span><span id="__span-0-599"><a id="__codelineno-0-599" name="__codelineno-0-599"></a><span class="sd">        is the file-portability escape hatch (AD9), so lineage stays</span>
 </span><span id="__span-0-600"><a id="__codelineno-0-600" name="__codelineno-0-600"></a><span class="sd">        legible to grep even if ancestree is uninstalled tomorrow.</span>
 </span><span id="__span-0-601"><a id="__codelineno-0-601" name="__codelineno-0-601"></a>
@@ -2737,7 +2736,7 @@ database itself.</p>
 </span><span id="__span-0-632"><a id="__codelineno-0-632" name="__codelineno-0-632"></a>        <span class="k">return</span> <span class="n">dest_dir</span>
 </span><span id="__span-0-633"><a id="__codelineno-0-633" name="__codelineno-0-633"></a>
 </span><span id="__span-0-634"><a id="__codelineno-0-634" name="__codelineno-0-634"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">backup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-</span><span id="__span-0-635"><a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes a consistent, self-contained copy of the whole store —</span>
+</span><span id="__span-0-635"><a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes a consistent, self-contained copy of the whole store,</span>
 </span><span id="__span-0-636"><a id="__codelineno-0-636" name="__codelineno-0-636"></a><span class="sd">        safe to take while the store is open and being written to.</span>
 </span><span id="__span-0-637"><a id="__codelineno-0-637" name="__codelineno-0-637"></a>
 </span><span id="__span-0-638"><a id="__codelineno-0-638" name="__codelineno-0-638"></a><span class="sd">        A *live* store is not one file: WAL journalling keeps recent commits</span>
@@ -2745,7 +2744,7 @@ database itself.</p>
 </span><span id="__span-0-640"><a id="__codelineno-0-640" name="__codelineno-0-640"></a><span class="sd">        ``ancestree.db`` out from under an open store silently loses</span>
 </span><span id="__span-0-641"><a id="__codelineno-0-641" name="__codelineno-0-641"></a><span class="sd">        everything since the last one. This goes through SQLite&#39;s online</span>
 </span><span id="__span-0-642"><a id="__codelineno-0-642" name="__codelineno-0-642"></a><span class="sd">        backup API, which reads through the WAL and produces a fully</span>
-</span><span id="__span-0-643"><a id="__codelineno-0-643" name="__codelineno-0-643"></a><span class="sd">        checkpointed single file — the correct way to back a store up</span>
+</span><span id="__span-0-643"><a id="__codelineno-0-643" name="__codelineno-0-643"></a><span class="sd">        checkpointed single file, which is the correct way to back a store up</span>
 </span><span id="__span-0-644"><a id="__codelineno-0-644" name="__codelineno-0-644"></a><span class="sd">        without closing it.</span>
 </span><span id="__span-0-645"><a id="__codelineno-0-645" name="__codelineno-0-645"></a>
 </span><span id="__span-0-646"><a id="__codelineno-0-646" name="__codelineno-0-646"></a><span class="sd">        Args:</span>
@@ -2784,7 +2783,7 @@ database itself.</p>
 </span><span id="__span-0-679"><a id="__codelineno-0-679" name="__codelineno-0-679"></a>        <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-680"><a id="__codelineno-0-680" name="__codelineno-0-680"></a>        <span class="n">include_artifacts</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 </span><span id="__span-0-681"><a id="__codelineno-0-681" name="__codelineno-0-681"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-</span><span id="__span-0-682"><a id="__codelineno-0-682" name="__codelineno-0-682"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Renders the store into one shareable HTML file — a **view-only</span>
+</span><span id="__span-0-682"><a id="__codelineno-0-682" name="__codelineno-0-682"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Renders the store into one shareable HTML file: a **view-only</span>
 </span><span id="__span-0-683"><a id="__codelineno-0-683" name="__codelineno-0-683"></a><span class="sd">        snapshot**: the lineage graph plus click-to-view metadata (search</span>
 </span><span id="__span-0-684"><a id="__codelineno-0-684" name="__codelineno-0-684"></a><span class="sd">        lives in the live server, so the query grammar exists once).</span>
 </span><span id="__span-0-685"><a id="__codelineno-0-685" name="__codelineno-0-685"></a>
@@ -2803,7 +2802,7 @@ database itself.</p>
 </span><span id="__span-0-698"><a id="__codelineno-0-698" name="__codelineno-0-698"></a>
 </span><span id="__span-0-699"><a id="__codelineno-0-699" name="__codelineno-0-699"></a><span class="sd">        By default, this method runs non-blocking (``block=False``) and automatically</span>
 </span><span id="__span-0-700"><a id="__codelineno-0-700" name="__codelineno-0-700"></a><span class="sd">        opens the live application graph in your default web browser (``open_browser=True``).</span>
-</span><span id="__span-0-701"><a id="__codelineno-0-701" name="__codelineno-0-701"></a><span class="sd">        Calling it again replaces the running background server — re-running a</span>
+</span><span id="__span-0-701"><a id="__codelineno-0-701" name="__codelineno-0-701"></a><span class="sd">        Calling it again replaces the running background server, so re-running a</span>
 </span><span id="__span-0-702"><a id="__codelineno-0-702" name="__codelineno-0-702"></a><span class="sd">        notebook cell restarts the explorer rather than leaking a second one.</span>
 </span><span id="__span-0-703"><a id="__codelineno-0-703" name="__codelineno-0-703"></a>
 </span><span id="__span-0-704"><a id="__codelineno-0-704" name="__codelineno-0-704"></a><span class="sd">        Args:</span>
@@ -2861,7 +2860,7 @@ database itself.</p>
 </span><span id="__span-0-756"><a id="__codelineno-0-756" name="__codelineno-0-756"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs a read-only SELECT over the documented schema (blueprint</span>
 </span><span id="__span-0-757"><a id="__codelineno-0-757" name="__codelineno-0-757"></a><span class="sd">        section 6) and returns the rows. The connection is opened read-only</span>
 </span><span id="__span-0-758"><a id="__codelineno-0-758" name="__codelineno-0-758"></a><span class="sd">        with ``PRAGMA query_only``, so writes are impossible by</span>
-</span><span id="__span-0-759"><a id="__codelineno-0-759" name="__codelineno-0-759"></a><span class="sd">        construction — the escape hatch can never corrupt invariants.</span>
+</span><span id="__span-0-759"><a id="__codelineno-0-759" name="__codelineno-0-759"></a><span class="sd">        construction, so the escape hatch can never corrupt invariants.</span>
 </span><span id="__span-0-760"><a id="__codelineno-0-760" name="__codelineno-0-760"></a>
 </span><span id="__span-0-761"><a id="__codelineno-0-761" name="__codelineno-0-761"></a><span class="sd">        Examples:</span>
 </span><span id="__span-0-762"><a id="__codelineno-0-762" name="__codelineno-0-762"></a><span class="sd">            &gt;&gt;&gt; store.sql(&quot;SELECT step_type, count(*) FROM node GROUP BY 1&quot;)</span>
@@ -3244,14 +3243,14 @@ node itself) matching every filter, in lineage order.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Writes a consistent, self-contained copy of the whole store —
+        <p>Writes a consistent, self-contained copy of the whole store,
 safe to take while the store is open and being written to.</p>
 <p>A <em>live</em> store is not one file: WAL journalling keeps recent commits
 in <code>ancestree.db-wal</code> until a checkpoint, so copying
 <code>ancestree.db</code> out from under an open store silently loses
 everything since the last one. This goes through SQLite's online
 backup API, which reads through the WAL and produces a fully
-checkpointed single file — the correct way to back a store up
+checkpointed single file, which is the correct way to back a store up
 without closing it.</p>
 
 
@@ -3375,7 +3374,7 @@ the copy directly. An existing destination is overwritten.</p>
 <span class="normal"><a href="#__codelineno-0-669">669</a></span>
 <span class="normal"><a href="#__codelineno-0-670">670</a></span>
 <span class="normal"><a href="#__codelineno-0-671">671</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-634"><a id="__codelineno-0-634" name="__codelineno-0-634"></a><span class="k">def</span><span class="w"> </span><span class="nf">backup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-</span><span id="__span-0-635"><a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes a consistent, self-contained copy of the whole store —</span>
+</span><span id="__span-0-635"><a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes a consistent, self-contained copy of the whole store,</span>
 </span><span id="__span-0-636"><a id="__codelineno-0-636" name="__codelineno-0-636"></a><span class="sd">    safe to take while the store is open and being written to.</span>
 </span><span id="__span-0-637"><a id="__codelineno-0-637" name="__codelineno-0-637"></a>
 </span><span id="__span-0-638"><a id="__codelineno-0-638" name="__codelineno-0-638"></a><span class="sd">    A *live* store is not one file: WAL journalling keeps recent commits</span>
@@ -3383,7 +3382,7 @@ the copy directly. An existing destination is overwritten.</p>
 </span><span id="__span-0-640"><a id="__codelineno-0-640" name="__codelineno-0-640"></a><span class="sd">    ``ancestree.db`` out from under an open store silently loses</span>
 </span><span id="__span-0-641"><a id="__codelineno-0-641" name="__codelineno-0-641"></a><span class="sd">    everything since the last one. This goes through SQLite&#39;s online</span>
 </span><span id="__span-0-642"><a id="__codelineno-0-642" name="__codelineno-0-642"></a><span class="sd">    backup API, which reads through the WAL and produces a fully</span>
-</span><span id="__span-0-643"><a id="__codelineno-0-643" name="__codelineno-0-643"></a><span class="sd">    checkpointed single file — the correct way to back a store up</span>
+</span><span id="__span-0-643"><a id="__codelineno-0-643" name="__codelineno-0-643"></a><span class="sd">    checkpointed single file, which is the correct way to back a store up</span>
 </span><span id="__span-0-644"><a id="__codelineno-0-644" name="__codelineno-0-644"></a><span class="sd">    without closing it.</span>
 </span><span id="__span-0-645"><a id="__codelineno-0-645" name="__codelineno-0-645"></a>
 </span><span id="__span-0-646"><a id="__codelineno-0-646" name="__codelineno-0-646"></a><span class="sd">    Args:</span>
@@ -3505,7 +3504,7 @@ interpreter exits, so calling it explicitly is optional.</p>
     <div class="doc doc-contents ">
 
         <p>Reclaims space: deletes chunks no artifact references (a delta
-base still in use survives — the one-hop closure of AD5), then
+base still in use survives, the one-hop closure of AD5), then
 returns freed pages to the OS via <code>incremental_vacuum</code> and
 truncates the WAL.</p>
 <p><code>prune</code> calls this for you, so it is only needed directly after a
@@ -3557,7 +3556,7 @@ automatically when the store closes.</p>
 <span class="normal"><a href="#__codelineno-0-591">591</a></span>
 <span class="normal"><a href="#__codelineno-0-592">592</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-577"><a id="__codelineno-0-577" name="__codelineno-0-577"></a><span class="k">def</span><span class="w"> </span><span class="nf">compact</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 </span><span id="__span-0-578"><a id="__codelineno-0-578" name="__codelineno-0-578"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Reclaims space: deletes chunks no artifact references (a delta</span>
-</span><span id="__span-0-579"><a id="__codelineno-0-579" name="__codelineno-0-579"></a><span class="sd">    base still in use survives — the one-hop closure of AD5), then</span>
+</span><span id="__span-0-579"><a id="__codelineno-0-579" name="__codelineno-0-579"></a><span class="sd">    base still in use survives, the one-hop closure of AD5), then</span>
 </span><span id="__span-0-580"><a id="__codelineno-0-580" name="__codelineno-0-580"></a><span class="sd">    returns freed pages to the OS via ``incremental_vacuum`` and</span>
 </span><span id="__span-0-581"><a id="__codelineno-0-581" name="__codelineno-0-581"></a><span class="sd">    truncates the WAL.</span>
 </span><span id="__span-0-582"><a id="__codelineno-0-582" name="__codelineno-0-582"></a>
@@ -3830,7 +3829,7 @@ Every parent must exist in this store. None creates a root.</p>
         <p>Writes grep-able JSON sidecars: one <code>meta.json</code> per node under
 <code>&lt;dest&gt;/&lt;node_id&gt;/</code> (default <code>&lt;root&gt;/export</code>), holding the
 node's structural facts, provenance, metadata envelopes and
-artifact digests. The database remains the source of truth — this
+artifact digests. The database remains the source of truth; this
 is the file-portability escape hatch (AD9), so lineage stays
 legible to grep even if ancestree is uninstalled tomorrow.</p>
 
@@ -3902,7 +3901,7 @@ legible to grep even if ancestree is uninstalled tomorrow.</p>
 </span><span id="__span-0-595"><a id="__codelineno-0-595" name="__codelineno-0-595"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes grep-able JSON sidecars: one ``meta.json`` per node under</span>
 </span><span id="__span-0-596"><a id="__codelineno-0-596" name="__codelineno-0-596"></a><span class="sd">    ``&lt;dest&gt;/&lt;node_id&gt;/`` (default ``&lt;root&gt;/export``), holding the</span>
 </span><span id="__span-0-597"><a id="__codelineno-0-597" name="__codelineno-0-597"></a><span class="sd">    node&#39;s structural facts, provenance, metadata envelopes and</span>
-</span><span id="__span-0-598"><a id="__codelineno-0-598" name="__codelineno-0-598"></a><span class="sd">    artifact digests. The database remains the source of truth — this</span>
+</span><span id="__span-0-598"><a id="__codelineno-0-598" name="__codelineno-0-598"></a><span class="sd">    artifact digests. The database remains the source of truth; this</span>
 </span><span id="__span-0-599"><a id="__codelineno-0-599" name="__codelineno-0-599"></a><span class="sd">    is the file-portability escape hatch (AD9), so lineage stays</span>
 </span><span id="__span-0-600"><a id="__codelineno-0-600" name="__codelineno-0-600"></a><span class="sd">    legible to grep even if ancestree is uninstalled tomorrow.</span>
 </span><span id="__span-0-601"><a id="__codelineno-0-601" name="__codelineno-0-601"></a>
@@ -4075,7 +4074,7 @@ node or its parents cannot be resolved.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Renders the store into one shareable HTML file — a <strong>view-only
+        <p>Renders the store into one shareable HTML file: a <strong>view-only
 snapshot</strong>: the lineage graph plus click-to-view metadata (search
 lives in the live server, so the query grammar exists once).</p>
 <p>Small images inline as data URIs; other artifacts are copied
@@ -4107,7 +4106,7 @@ store with huge artifacts. Defaults to
 </span><span id="__span-0-679"><a id="__codelineno-0-679" name="__codelineno-0-679"></a>    <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-680"><a id="__codelineno-0-680" name="__codelineno-0-680"></a>    <span class="n">include_artifacts</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 </span><span id="__span-0-681"><a id="__codelineno-0-681" name="__codelineno-0-681"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-</span><span id="__span-0-682"><a id="__codelineno-0-682" name="__codelineno-0-682"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders the store into one shareable HTML file — a **view-only</span>
+</span><span id="__span-0-682"><a id="__codelineno-0-682" name="__codelineno-0-682"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders the store into one shareable HTML file: a **view-only</span>
 </span><span id="__span-0-683"><a id="__codelineno-0-683" name="__codelineno-0-683"></a><span class="sd">    snapshot**: the lineage graph plus click-to-view metadata (search</span>
 </span><span id="__span-0-684"><a id="__codelineno-0-684" name="__codelineno-0-684"></a><span class="sd">    lives in the live server, so the query grammar exists once).</span>
 </span><span id="__span-0-685"><a id="__codelineno-0-685" name="__codelineno-0-685"></a>
@@ -4184,7 +4183,7 @@ record. Returns None for None, "none", or an unknown id.</p>
         <p>Serves the searchable explorer on <code>127.0.0.1</code> and returns its URL.</p>
 <p>By default, this method runs non-blocking (<code>block=False</code>) and automatically
 opens the live application graph in your default web browser (<code>open_browser=True</code>).
-Calling it again replaces the running background server — re-running a
+Calling it again replaces the running background server, so re-running a
 notebook cell restarts the explorer rather than leaking a second one.</p>
 
 
@@ -4338,7 +4337,7 @@ notebook cell restarts the explorer rather than leaking a second one.</p>
 </span><span id="__span-0-698"><a id="__codelineno-0-698" name="__codelineno-0-698"></a>
 </span><span id="__span-0-699"><a id="__codelineno-0-699" name="__codelineno-0-699"></a><span class="sd">    By default, this method runs non-blocking (``block=False``) and automatically</span>
 </span><span id="__span-0-700"><a id="__codelineno-0-700" name="__codelineno-0-700"></a><span class="sd">    opens the live application graph in your default web browser (``open_browser=True``).</span>
-</span><span id="__span-0-701"><a id="__codelineno-0-701" name="__codelineno-0-701"></a><span class="sd">    Calling it again replaces the running background server — re-running a</span>
+</span><span id="__span-0-701"><a id="__codelineno-0-701" name="__codelineno-0-701"></a><span class="sd">    Calling it again replaces the running background server, so re-running a</span>
 </span><span id="__span-0-702"><a id="__codelineno-0-702" name="__codelineno-0-702"></a><span class="sd">    notebook cell restarts the explorer rather than leaking a second one.</span>
 </span><span id="__span-0-703"><a id="__codelineno-0-703" name="__codelineno-0-703"></a>
 </span><span id="__span-0-704"><a id="__codelineno-0-704" name="__codelineno-0-704"></a><span class="sd">    Args:</span>
@@ -4509,7 +4508,7 @@ appears once, after all of its parents.</p>
         <p>Deletes a node and the descendants it solely supports, and
 reclaims the space they occupied.</p>
 <p>A descendant is removed only when EVERY one of its parents is also
-being removed — a child still reachable from an unpruned branch
+being removed. A child still reachable from an unpruned branch
 survives, and its edge to the pruned parent disappears via the
 foreign-key cascade. Preview with the default <code>dry_run=True</code>,
 which never deletes and never compacts.</p>
@@ -4569,7 +4568,7 @@ which never deletes and never compacts.</p>
               <div class="doc-md-description">
                 <p>Reclaim the freed chunk space afterwards (the
 default). Pass False when pruning many nodes in a loop and
-call <code>compact()</code> once at the end — compaction scans the
+call <code>compact()</code> once at the end. Compaction scans the
 whole chunk pool, so doing it per node is wasted work.</p>
               </div>
             </td>
@@ -4650,7 +4649,7 @@ whole chunk pool, so doing it per node is wasted work.</p>
 </span><span id="__span-0-547"><a id="__codelineno-0-547" name="__codelineno-0-547"></a><span class="sd">    reclaims the space they occupied.</span>
 </span><span id="__span-0-548"><a id="__codelineno-0-548" name="__codelineno-0-548"></a>
 </span><span id="__span-0-549"><a id="__codelineno-0-549" name="__codelineno-0-549"></a><span class="sd">    A descendant is removed only when EVERY one of its parents is also</span>
-</span><span id="__span-0-550"><a id="__codelineno-0-550" name="__codelineno-0-550"></a><span class="sd">    being removed — a child still reachable from an unpruned branch</span>
+</span><span id="__span-0-550"><a id="__codelineno-0-550" name="__codelineno-0-550"></a><span class="sd">    being removed. A child still reachable from an unpruned branch</span>
 </span><span id="__span-0-551"><a id="__codelineno-0-551" name="__codelineno-0-551"></a><span class="sd">    survives, and its edge to the pruned parent disappears via the</span>
 </span><span id="__span-0-552"><a id="__codelineno-0-552" name="__codelineno-0-552"></a><span class="sd">    foreign-key cascade. Preview with the default ``dry_run=True``,</span>
 </span><span id="__span-0-553"><a id="__codelineno-0-553" name="__codelineno-0-553"></a><span class="sd">    which never deletes and never compacts.</span>
@@ -4660,7 +4659,7 @@ whole chunk pool, so doing it per node is wasted work.</p>
 </span><span id="__span-0-557"><a id="__codelineno-0-557" name="__codelineno-0-557"></a><span class="sd">        dry_run: Preview only (the default). Nothing is deleted.</span>
 </span><span id="__span-0-558"><a id="__codelineno-0-558" name="__codelineno-0-558"></a><span class="sd">        compact: Reclaim the freed chunk space afterwards (the</span>
 </span><span id="__span-0-559"><a id="__codelineno-0-559" name="__codelineno-0-559"></a><span class="sd">            default). Pass False when pruning many nodes in a loop and</span>
-</span><span id="__span-0-560"><a id="__codelineno-0-560" name="__codelineno-0-560"></a><span class="sd">            call ``compact()`` once at the end — compaction scans the</span>
+</span><span id="__span-0-560"><a id="__codelineno-0-560" name="__codelineno-0-560"></a><span class="sd">            call ``compact()`` once at the end. Compaction scans the</span>
 </span><span id="__span-0-561"><a id="__codelineno-0-561" name="__codelineno-0-561"></a><span class="sd">            whole chunk pool, so doing it per node is wasted work.</span>
 </span><span id="__span-0-562"><a id="__codelineno-0-562" name="__codelineno-0-562"></a>
 </span><span id="__span-0-563"><a id="__codelineno-0-563" name="__codelineno-0-563"></a><span class="sd">    Returns:</span>
@@ -4698,7 +4697,7 @@ whole chunk pool, so doing it per node is wasted work.</p>
         <p>Runs a read-only SELECT over the documented schema (blueprint
 section 6) and returns the rows. The connection is opened read-only
 with <code>PRAGMA query_only</code>, so writes are impossible by
-construction — the escape hatch can never corrupt invariants.</p>
+construction, so the escape hatch can never corrupt invariants.</p>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -4727,7 +4726,7 @@ construction — the escape hatch can never corrupt invariants.</p>
 </span><span id="__span-0-756"><a id="__codelineno-0-756" name="__codelineno-0-756"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs a read-only SELECT over the documented schema (blueprint</span>
 </span><span id="__span-0-757"><a id="__codelineno-0-757" name="__codelineno-0-757"></a><span class="sd">    section 6) and returns the rows. The connection is opened read-only</span>
 </span><span id="__span-0-758"><a id="__codelineno-0-758" name="__codelineno-0-758"></a><span class="sd">    with ``PRAGMA query_only``, so writes are impossible by</span>
-</span><span id="__span-0-759"><a id="__codelineno-0-759" name="__codelineno-0-759"></a><span class="sd">    construction — the escape hatch can never corrupt invariants.</span>
+</span><span id="__span-0-759"><a id="__codelineno-0-759" name="__codelineno-0-759"></a><span class="sd">    construction, so the escape hatch can never corrupt invariants.</span>
 </span><span id="__span-0-760"><a id="__codelineno-0-760" name="__codelineno-0-760"></a>
 </span><span id="__span-0-761"><a id="__codelineno-0-761" name="__codelineno-0-761"></a><span class="sd">    Examples:</span>
 </span><span id="__span-0-762"><a id="__codelineno-0-762" name="__codelineno-0-762"></a><span class="sd">        &gt;&gt;&gt; store.sql(&quot;SELECT step_type, count(*) FROM node GROUP BY 1&quot;)</span>
@@ -4843,8 +4842,8 @@ orders of magnitude until the next checkpoint.</p>
     </div>
 
 </div><hr />
-<h2 id="working-with-nodes">Working with Nodes</h2>
-<p>You never construct a node yourself. <code>LineageStore.create_node</code> yields a <strong>recording handle</strong> — the object you write artifacts and metadata through inside the <code>with</code> block — and the store's search and lineage methods return immutable <strong><code>Node</code> records</strong> for everything already persisted.</p>
+<h2 id="working-with-nodes">Working with nodes</h2>
+<p>You never construct a node yourself. <code>LineageStore.create_node</code> yields a recording handle, which is the object you write artifacts and metadata through inside the <code>with</code> block. The store's search and lineage methods return immutable <code>Node</code> records for everything already persisted.</p>
 
 
 <div class="doc doc-object doc-class">
@@ -4869,7 +4868,7 @@ orders of magnitude until the next checkpoint.</p>
         <p>One persisted pipeline step: an immutable, hashable record.</p>
 <p>Structural facts are attributes; <code>metadata</code> holds the user's entries;
 <code>artifacts()</code> and <code>/</code> return readable paths (reassembled on demand
-from the store — a node is a database row, not a directory).</p>
+from the store; a node is a database row, not a directory).</p>
 
 
 
@@ -4943,7 +4942,7 @@ from the store — a node is a database row, not a directory).</p>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    Structural facts are attributes; ``metadata`` holds the user&#39;s entries;</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    ``artifacts()`` and ``/`` return readable paths (reassembled on demand</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    from the store — a node is a database row, not a directory).</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    from the store; a node is a database row, not a directory).</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span>
@@ -5376,7 +5375,7 @@ as a parent reference (it carries the node_id).</p>
 </span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="sd">                pandas values are coerced with a warning).</span>
 </span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a><span class="sd">            group: A heading to group related entries under in the web</span>
 </span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="sd">                graph. Defaults to &quot;General&quot;.</span>
-</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a><span class="sd">            data_type: How the value renders — &#39;auto&#39; (infer), &#39;image&#39;,</span>
+</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a><span class="sd">            data_type: How the value renders: &#39;auto&#39; (infer), &#39;image&#39;,</span>
 </span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a><span class="sd">                &#39;link&#39;, &#39;table&#39; (DataFrame), &#39;json&#39;, &#39;code&#39;, or &#39;text&#39;.</span>
 </span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a><span class="sd">            searchable: False for display-only metadata.</span>
 </span><span id="__span-0-146"><a id="__codelineno-0-146" name="__codelineno-0-146"></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -5407,7 +5406,7 @@ as a parent reference (it carries the node_id).</p>
 </span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a>        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">candidate</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
 </span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a>
 </span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">artifacts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contains</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
-</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;The files written so far, as native scratch paths — matching the</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;The files written so far, as native scratch paths, matching the</span>
 </span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">        record&#39;s ``artifacts()`` semantics so code inside the block reads</span>
 </span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a><span class="sd">        what it just wrote at native speed.&quot;&quot;&quot;</span>
 </span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>        <span class="n">files</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workspace</span><span class="o">.</span><span class="n">files</span><span class="p">())</span>
@@ -5521,7 +5520,7 @@ graph. Defaults to "General".</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>How the value renders — 'auto' (infer), 'image',
+                <p>How the value renders: 'auto' (infer), 'image',
 'link', 'table' (DataFrame), 'json', 'code', or 'text'.</p>
               </div>
             </td>
@@ -5598,7 +5597,7 @@ graph. Defaults to "General".</p>
 </span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="sd">            pandas values are coerced with a warning).</span>
 </span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a><span class="sd">        group: A heading to group related entries under in the web</span>
 </span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="sd">            graph. Defaults to &quot;General&quot;.</span>
-</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a><span class="sd">        data_type: How the value renders — &#39;auto&#39; (infer), &#39;image&#39;,</span>
+</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a><span class="sd">        data_type: How the value renders: &#39;auto&#39; (infer), &#39;image&#39;,</span>
 </span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a><span class="sd">            &#39;link&#39;, &#39;table&#39; (DataFrame), &#39;json&#39;, &#39;code&#39;, or &#39;text&#39;.</span>
 </span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a><span class="sd">        searchable: False for display-only metadata.</span>
 </span><span id="__span-0-146"><a id="__codelineno-0-146" name="__codelineno-0-146"></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -5623,7 +5622,7 @@ graph. Defaults to "General".</p>
 
     <div class="doc doc-contents ">
 
-        <p>The files written so far, as native scratch paths — matching the
+        <p>The files written so far, as native scratch paths, matching the
 record's <code>artifacts()</code> semantics so code inside the block reads
 what it just wrote at native speed.</p>
 
@@ -5636,7 +5635,7 @@ what it just wrote at native speed.</p>
 <span class="normal"><a href="#__codelineno-0-176">176</a></span>
 <span class="normal"><a href="#__codelineno-0-177">177</a></span>
 <span class="normal"><a href="#__codelineno-0-178">178</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="k">def</span><span class="w"> </span><span class="nf">artifacts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contains</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
-</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;The files written so far, as native scratch paths — matching the</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;The files written so far, as native scratch paths, matching the</span>
 </span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">    record&#39;s ``artifacts()`` semantics so code inside the block reads</span>
 </span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a><span class="sd">    what it just wrote at native speed.&quot;&quot;&quot;</span>
 </span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>    <span class="n">files</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workspace</span><span class="o">.</span><span class="n">files</span><span class="p">())</span>
@@ -5735,7 +5734,7 @@ scratch directory (intermediate directories are created).</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 9, 2026 18:44:28 UTC">July 9, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 14:49:12 UTC">July 25, 2026</span>
   </span>
 
     
