@@ -315,6 +315,31 @@ class ChunkStore:
             for relpath, (size, sha256, digests) in grouped.items()
         }
 
+    def artifact_sizes_many(
+        self, node_ids: Sequence[str]
+    ) -> Dict[str, List[Tuple[str, int]]]:
+        """Every node's artifacts as (relpath, size), sorted, in one query.
+
+        The whole-store render needs only the artifact *list*, never the
+        chunk recipe — so this deliberately skips the artifact_chunk join
+        that makes ``artifact_manifest`` expensive. Ids with no artifacts
+        map to an empty list.
+        """
+        out: Dict[str, List[Tuple[str, int]]] = {
+            node_id: [] for node_id in node_ids
+        }
+        ids = list(node_ids)
+        for start in range(0, len(ids), 900):  # stay under SQLite's bind limit
+            batch = ids[start : start + 900]
+            placeholders = ",".join("?" for _ in batch)
+            for row in self._manager.read().execute(
+                f"SELECT node_id, relpath, size FROM artifact "
+                f"WHERE node_id IN ({placeholders}) ORDER BY node_id, relpath",
+                batch,
+            ):
+                out[row["node_id"]].append((row["relpath"], row["size"]))
+        return out
+
     def artifact_bytes(self, node_id: str, relpath: str) -> bytes:
         """Reassembles one artifact in memory, verified end to end.
 

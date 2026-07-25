@@ -27,7 +27,17 @@ from __future__ import annotations
 import json
 import warnings
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+)
 
 from ..errors import IntegrityError, NodeNotFound
 from .connection import ConnectionManager
@@ -156,6 +166,41 @@ def metadata_row(
     )
 
 
+#: SQLite's compiled-in limit on host parameters is 999 on builds older
+#: than 3.32; batching below it keeps a large "IN (...)" safe everywhere.
+_MAX_PARAMS = 900
+
+
+def _batched(items: List[str]) -> Iterator[List[str]]:
+    """`items` in slices small enough to bind as one IN clause."""
+    for start in range(0, len(items), _MAX_PARAMS):
+        yield items[start : start + _MAX_PARAMS]
+
+
+def _record_from_row(row: Any, parents: Tuple[str, ...]) -> NodeRecord:
+    """One node table row plus its ordered parent ids as a NodeRecord."""
+    return NodeRecord(
+        node_id=row["node_id"],
+        step_type=row["step_type"],
+        generation=row["generation"],
+        created_utc=row["created_utc"],
+        created_epoch=row["created_epoch"],
+        healthy=bool(row["healthy"]),
+        duration_s=row["duration_s"],
+        size_bytes=row["size_bytes"],
+        content_hash=row["content_hash"],
+        prov_user=row["prov_user"],
+        prov_python=row["prov_python"],
+        prov_platform=row["prov_platform"],
+        prov_git_commit=row["prov_git_commit"],
+        prov_git_branch=row["prov_git_branch"],
+        prov_git_dirty=None
+        if row["prov_git_dirty"] is None
+        else bool(row["prov_git_dirty"]),
+        parent_ids=parents,
+    )
+
+
 class MetadataStore:
     """Reads and writes nodes, edges and metadata in one SQLite store."""
 
@@ -257,26 +302,35 @@ class MetadataStore:
                 (node_id,),
             )
         )
-        return NodeRecord(
-            node_id=row["node_id"],
-            step_type=row["step_type"],
-            generation=row["generation"],
-            created_utc=row["created_utc"],
-            created_epoch=row["created_epoch"],
-            healthy=bool(row["healthy"]),
-            duration_s=row["duration_s"],
-            size_bytes=row["size_bytes"],
-            content_hash=row["content_hash"],
-            prov_user=row["prov_user"],
-            prov_python=row["prov_python"],
-            prov_platform=row["prov_platform"],
-            prov_git_commit=row["prov_git_commit"],
-            prov_git_branch=row["prov_git_branch"],
-            prov_git_dirty=None
-            if row["prov_git_dirty"] is None
-            else bool(row["prov_git_dirty"]),
-            parent_ids=parents,
-        )
+        return _record_from_row(row, parents)
+
+    def get_many(self, node_ids: Sequence[str]) -> Dict[str, NodeRecord]:
+        """``get`` for a whole list, keyed by node_id, in two queries total
+        rather than two per node.
+
+        ``find``, ``lineage`` and ``ancestors`` all resolve a list of ids
+        into records, and the per-id version made that O(n) round trips —
+        cheap each, but they dominate every list-shaped read. Unknown ids
+        are simply absent from the result, exactly as ``get`` returns None.
+        """
+        records: Dict[str, NodeRecord] = {}
+        for batch in _batched(list(node_ids)):
+            placeholders = ",".join("?" for _ in batch)
+            conn = self._manager.read()
+            parents: Dict[str, List[str]] = {}
+            for row in conn.execute(
+                "SELECT child_id, parent_id FROM edge "
+                f"WHERE child_id IN ({placeholders}) ORDER BY child_id, ordinal",
+                batch,
+            ):
+                parents.setdefault(row["child_id"], []).append(row["parent_id"])
+            for row in conn.execute(
+                f"SELECT * FROM node WHERE node_id IN ({placeholders})", batch
+            ):
+                records[row["node_id"]] = _record_from_row(
+                    row, tuple(parents.get(row["node_id"], ()))
+                )
+        return records
 
     def exists(self, node_id: str) -> bool:
         row = self._manager.read().execute(
@@ -302,6 +356,31 @@ class MetadataStore:
             )
             for row in rows
         }
+
+    def metadata_for_many(
+        self, node_ids: Sequence[str]
+    ) -> Dict[str, Dict[str, MetadataRow]]:
+        """``metadata_for`` over a list of ids, one query per batch instead
+        of one per node. Ids with no metadata map to an empty dict."""
+        out: Dict[str, Dict[str, MetadataRow]] = {
+            node_id: {} for node_id in node_ids
+        }
+        for batch in _batched(list(node_ids)):
+            placeholders = ",".join("?" for _ in batch)
+            for row in self._manager.read().execute(
+                "SELECT node_id, key, value, data_type, grp, searchable, "
+                f"num_value FROM metadata WHERE node_id IN ({placeholders})",
+                batch,
+            ):
+                out[row["node_id"]][row["key"]] = MetadataRow(
+                    key=row["key"],
+                    value_json=row["value"],
+                    data_type=row["data_type"],
+                    group=row["grp"],
+                    searchable=bool(row["searchable"]),
+                    num_value=row["num_value"],
+                )
+        return out
 
     def all_node_ids(self) -> List[str]:
         """Every node id, oldest first."""

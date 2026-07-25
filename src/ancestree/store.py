@@ -446,12 +446,15 @@ class LineageStore:
         )
 
     def _nodes_for_ids(self, node_ids: Sequence[str]) -> List[Node]:
-        nodes: List[Node] = []
-        for node_id in node_ids:
-            record = self._metadata.get(node_id)
-            if record is not None:
-                nodes.append(self._to_node(record))
-        return nodes
+        """Resolves ids to Nodes, preserving the caller's order. Batched:
+        every list-shaped read (find, lineage, ancestors) lands here, and
+        one query per id made these O(n) round trips."""
+        records = self._metadata.get_many(node_ids)
+        return [
+            self._to_node(records[node_id])
+            for node_id in node_ids
+            if node_id in records
+        ]
 
     def get(self, node: NodeLike) -> Optional[Node]:
         """Resolves a node_id (or an existing Node/handle) into a Node

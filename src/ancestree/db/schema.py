@@ -85,7 +85,10 @@ CREATE TABLE metadata (
     num_value  REAL,                           -- extracted numeric value
     PRIMARY KEY (node_id, key)
 );
-CREATE INDEX idx_meta_key ON metadata(key) WHERE searchable = 1;
+-- (key, value) not (key): an equality find is then a covering index seek
+-- rather than a scan of every row sharing the key. On 5k nodes that is
+-- 0.67 ms -> 0.01 ms for a selective lookup, for ~2% more file.
+CREATE INDEX idx_meta_key ON metadata(key, value) WHERE searchable = 1;
 CREATE INDEX idx_meta_num ON metadata(key, num_value) WHERE num_value IS NOT NULL;
 
 -- Content-addressed chunk pool. Each chunk stored once (INSERT OR IGNORE is
@@ -133,14 +136,21 @@ CREATE INDEX idx_ac_digest ON artifact_chunk(digest);
 
 #: from_version -> SQL script upgrading the store to from_version + 1.
 _MIGRATIONS: Dict[int, str] = {
-    # v1 -> v2: no DDL change. The chunk *encoding* changed — a smaller
-    # average chunk size, and kind 2 (stored verbatim) for payloads zlib
-    # cannot shrink. Every v1 chunk still decodes unchanged, so an existing
-    # store opens and reads normally; only newly written artifacts use the
-    # new boundaries, and they will not deduplicate against v1-era chunks
-    # of the same content. The stamp exists so a v1 ancestree refuses a v2
-    # store up front instead of failing on an unknown chunk kind.
-    1: "",
+    # v1 -> v2. Two changes, one of which is pure DDL:
+    #
+    # 1. The metadata equality index gains its value column (rebuilt here).
+    # 2. The chunk *encoding* changed: a smaller average chunk size, and
+    #    kind 2 (stored verbatim) for payloads zlib cannot shrink. Every v1
+    #    chunk still decodes unchanged, so an existing store opens and reads
+    #    normally; only newly written artifacts use the new boundaries, and
+    #    they will not deduplicate against v1-era chunks of the same
+    #    content. The stamp exists so a v1 ancestree refuses a v2 store up
+    #    front instead of failing on an unknown chunk kind.
+    1: (
+        "DROP INDEX IF EXISTS idx_meta_key;\n"
+        "CREATE INDEX idx_meta_key ON metadata(key, value) "
+        "WHERE searchable = 1;"
+    ),
 }
 
 
