@@ -1022,6 +1022,8 @@
 <p><code>store.get(stale)</code> returns <code>None</code> and passing it as a <code>parent</code> raises <code>ValueError</code>. Passing the <strong>handle itself</strong> (<code>parent=node</code>) is always correct and is the simplest habit; if you need the string, read it after the block.</p>
 <h2 id="paths-and-artifacts">Paths and artifacts</h2>
 <p><code>artifacts(contains=...)</code> matches both as a glob and as a case-insensitive substring anywhere in the filename.</p>
+<p>Artifacts must live <strong>inside</strong> the node. <code>node / "../outside.txt"</code> raises <code>ValueError</code>, and a symlink cannot be used to get around it: at commit, links whose target resolves outside the node are skipped with a <code>UserWarning</code> rather than followed. A link pointing at the node's own content is fine and is stored normally.</p>
+<p>This matters most when you copy a directory in wholesale — <code>shutil.copytree(src, node / "data", symlinks=True)</code> over a tree containing a link to a shared dataset would otherwise pull that file into the store silently. If you meant to store it, copy the file rather than the link.</p>
 <h2 id="automatic-provenance">Automatic provenance</h2>
 <p>Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to <code>git</code> — two subprocesses per node, run concurrently — which means your identity and repository state are recorded by default. Provenance is display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply <code>None</code>.</p>
 <h2 id="search-semantics">Search semantics</h2>
@@ -1047,7 +1049,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 14:20:28 UTC">July 25, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 14:34:12 UTC">July 25, 2026</span>
   </span>
 
     
