@@ -1013,6 +1013,13 @@
 <p>The default <code>auto</code> data type infers the rendering from the value's <em>type</em>, not by sniffing string contents: a <code>Path</code> becomes an image (by file suffix) or a file link, a <code>dict</code>/<code>list</code> becomes JSON, a DataFrame becomes a table, and an <code>http(s)://</code> string becomes a link. Any other string stays plain <code>text</code>. numpy/pandas scalars, arrays, sets and datetimes are coerced to native Python with a warning; anything still unserialisable is rejected at the <code>add_meta</code> call.</p>
 <h2 id="deduplication-surprises">Deduplication surprises</h2>
 <p>With <code>dedup</code> on (the default), re-running a step whose content — step type, parents, user metadata and artifact bytes — is identical gives you the <em>same node back</em>: the <code>with</code> block's variable is rebound onto the existing node and nothing new is stored. Change any of those and you get a distinct node. Failed (unhealthy) runs never merge. If you want every run recorded regardless, create the store with <code>dedup=False</code>.</p>
+<p><strong>Read <code>node.node_id</code> after the block, not inside it.</strong> The rebinding happens when the block exits, so an id copied out <em>during</em> the block is the provisional one — and if the node then deduplicates into an existing one, that id is never persisted:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">with</span> <span class="n">store</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">step_type</span><span class="o">=</span><span class="s2">&quot;clean&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">node</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">node</span><span class="o">.</span><span class="n">add_meta</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">stale</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">node_id</span>      <span class="c1"># provisional — may never exist</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">fresh</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">node_id</span>          <span class="c1"># the real id, after any rebinding</span>
+</span></code></pre></div>
+<p><code>store.get(stale)</code> returns <code>None</code> and passing it as a <code>parent</code> raises <code>ValueError</code>. Passing the <strong>handle itself</strong> (<code>parent=node</code>) is always correct and is the simplest habit; if you need the string, read it after the block.</p>
 <h2 id="paths-and-artifacts">Paths and artifacts</h2>
 <p><code>artifacts(contains=...)</code> matches both as a glob and as a case-insensitive substring anywhere in the filename.</p>
 <h2 id="automatic-provenance">Automatic provenance</h2>
@@ -1040,7 +1047,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 13:39:34 UTC">July 25, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 14:20:28 UTC">July 25, 2026</span>
   </span>
 
     
