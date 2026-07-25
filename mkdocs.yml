@@ -89,6 +89,10 @@ nav:
       - Overview: examples.md
       - Basic Usage: examples/basic_usage.ipynb
       - Machine Learning Pipeline: examples/ml_pipeline.ipynb
+      - Genomics Cohort: examples/genomics_cohort.ipynb
+      - Design Optimisation: examples/design_optimisation.ipynb
+      - Survey Reprocessing: examples/survey_reprocessing.ipynb
+      - Quant Backtest Grid: examples/quant_backtest.ipynb
   - Live Demo: demo.md
   - API Reference: reference.md
   - Caveats & Limitations: caveats.md
