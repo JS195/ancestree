@@ -93,6 +93,10 @@ fresh = node.node_id          # the real id, after any rebinding
 
 `artifacts(contains=...)` matches both as a glob and as a case-insensitive substring anywhere in the filename.
 
+Artifacts must live **inside** the node. `node / "../outside.txt"` raises `ValueError`, and a symlink cannot be used to get around it: at commit, links whose target resolves outside the node are skipped with a `UserWarning` rather than followed. A link pointing at the node's own content is fine and is stored normally.
+
+This matters most when you copy a directory in wholesale — `shutil.copytree(src, node / "data", symlinks=True)` over a tree containing a link to a shared dataset would otherwise pull that file into the store silently. If you meant to store it, copy the file rather than the link.
+
 ## Automatic provenance
 
 Every node silently records who and what produced it: the OS user, Python version, platform, and the current git commit, branch, and dirty state. The git fields are captured by shelling out to `git` — two subprocesses per node, run concurrently — which means your identity and repository state are recorded by default. Provenance is display-only (not searchable). Outside a git repository, or without git installed, the git fields are simply `None`.

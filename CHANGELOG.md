@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0]
+## [0.2.0] — 2026-07-25
 
 The SQLite rebuild. A clean break from 0.1.x — every decision is recorded in `REBUILD_BLUEPRINT.md`.
 
@@ -24,6 +24,7 @@ The SQLite rebuild. A clean break from 0.1.x — every decision is recorded in `
 - CLI: `python -m ancestree serve|export|compact <root>`.
 - Two executed example notebooks: basic usage and a branching ML pipeline. The 0.1.x notebooks are kept under `docs/examples/legacy-0.1/`; the chunking and timing measurements live in `benchmarks/RESULTS.md`.
 - Reads reassemble on demand: packed artifacts rebuild from the chunk pool into a per-session cache at `<root>/.cache/`, cleared when the session ends. The live explorer serves artifacts straight from the chunk pool and never touches that cache.
+- Artifact containment is enforced against symlinks as well as paths. `node / "../outside.txt"` has always raised, but a symlink pointing the same way used to be followed at commit and its target stored as a node artifact — reachable without meaning to via `shutil.copytree(..., symlinks=True)` over a tree containing a link to a shared file. Escaping links are now skipped with a warning; links resolving inside the node are still stored normally.
 
 ### Performance
 - The average chunk size is 16 KiB, not 32 KiB. At 32 KiB a delta base sat exactly on zlib's 32,256-byte dictionary window, so it could not be seen in full and the tail of every delta degenerated to literals. Halving it stores **14% less and ingests 22% faster** — and it is free, because the chunker skips `MIN_SIZE` bytes per chunk, so smaller chunks mean more bytes skipped.
