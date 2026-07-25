@@ -25,51 +25,23 @@
          <lastmod>2026-07-25</lastmod>
     </url>
     <url>
+         <loc>https://js195.github.io/ancestree/examples/design_optimisation/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://js195.github.io/ancestree/examples/genomics_cohort/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
          <loc>https://js195.github.io/ancestree/examples/ml_pipeline/</loc>
          <lastmod>2026-07-25</lastmod>
     </url>
     <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/</loc>
+         <loc>https://js195.github.io/ancestree/examples/quant_backtest/</loc>
          <lastmod>2026-07-25</lastmod>
     </url>
     <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/ML_pipeline/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/basic_usage/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/chaos_stress_suite/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/dedupe/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/load_timing_benchmark/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/stress_1_ml_pipeline/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/stress_2_iterative_deep_chain/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/stress_3_dedupe_quirks/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/stress_4_chunking_and_cache/</loc>
-         <lastmod>2026-07-25</lastmod>
-    </url>
-    <url>
-         <loc>https://js195.github.io/ancestree/examples/legacy-0.1/timing_benchmark/</loc>
+         <loc>https://js195.github.io/ancestree/examples/survey_reprocessing/</loc>
          <lastmod>2026-07-25</lastmod>
     </url>
 </urlset>

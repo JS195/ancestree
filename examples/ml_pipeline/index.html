@@ -18,7 +18,7 @@
         <link rel="prev" href="../basic_usage/">
       
       
-        <link rel="next" href="../../demo/">
+        <link rel="next" href="../genomics_cohort/">
       
       
         
@@ -558,6 +558,118 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../genomics_cohort/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Population genomics: a variant-calling cohort
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design_optimisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design optimisation: annealing a heat sink
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../survey_reprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Astronomical survey: calibration, detection, and a reprocessing campaign
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quant_backtest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quantitative finance: a walk-forward backtest grid
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1532,7 +1644,7 @@ its parent, so the whole experiment stays queryable once it has finished running
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -1619,7 +1731,7 @@ creation and every later open uses the stored policy.</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -1681,7 +1793,7 @@ full provenance tree as a side effect of simply running the experiment.</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -1867,7 +1979,7 @@ diffing there is also the live explorer: <code>store.host_live_graph()</code>.</
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -1880,9 +1992,9 @@ diffing there is also the live explorer: <code>store.host_live_graph()</code>.</
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">host_live_graph</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">store.host_live_graph()</div>
+<div class="clipboard-copy-txt" id="cell-4">store.generate_web_graph()</div>
 </div>
 </div>
 </div>
@@ -1891,17 +2003,10 @@ diffing there is also the live explorer: <code>store.host_live_graph()</code>.</
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Ancestree explorer running at: http://127.0.0.1:51625  (Store close will terminate background thread)
-</pre>
-</div>
-</div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'http://127.0.0.1:51625'</pre>
+<pre>PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-3f1d_1jn/demo/interactive_pipeline.html')</pre>
 </div>
 </div>
 </div>
@@ -1927,7 +2032,7 @@ came out below 1000.</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
@@ -1956,12 +2061,12 @@ bad_nodes</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>[Node(node_id='44a06c8b', step_type='clustering', generation=3),
- Node(node_id='11c52b9d', step_type='clustering', generation=3),
- Node(node_id='5442c9ad', step_type='clustering', generation=3),
- Node(node_id='def4a1c4', step_type='clustering', generation=3)]</pre>
+<pre>[Node(node_id='8a8f1c14', step_type='clustering', generation=3),
+ Node(node_id='cf16984b', step_type='clustering', generation=3),
+ Node(node_id='a53dbe89', step_type='clustering', generation=3),
+ Node(node_id='b30af4b8', step_type='clustering', generation=3)]</pre>
 </div>
 </div>
 </div>
@@ -1985,7 +2090,7 @@ Unpacking a dict keeps things tidy when the query is assembled programmatically.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
@@ -2018,10 +2123,10 @@ nodes_of_interest</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>[Node(node_id='8eb9c1e7', step_type='embedding', generation=2),
- Node(node_id='8b355a5b', step_type='embedding', generation=2)]</pre>
+<pre>[Node(node_id='ddbcb899', step_type='embedding', generation=2),
+ Node(node_id='4b10e9ba', step_type='embedding', generation=2)]</pre>
 </div>
 </div>
 </div>
@@ -2047,7 +2152,7 @@ clustering image.</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
@@ -2082,10 +2187,10 @@ for n in nodes_in_lineage:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>[PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-rnk3k698/demo/.cache/9403-60fd91e3/3c096a9f/data.csv')]
-[PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-rnk3k698/demo/.cache/9403-60fd91e3/a73ba053/scaled.csv')]
-[PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-rnk3k698/demo/.cache/9403-60fd91e3/8b355a5b/map.npy')]
-[PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-rnk3k698/demo/.cache/9403-60fd91e3/def4a1c4/clustering.png')]
+<pre>[PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-3f1d_1jn/demo/.cache/37844-7f3bc298/98133787/data.csv')]
+[PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-3f1d_1jn/demo/.cache/37844-7f3bc298/81fea7b1/scaled.csv')]
+[PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-3f1d_1jn/demo/.cache/37844-7f3bc298/4b10e9ba/map.npy')]
+[PosixPath('/var/folders/xf/n_m7ztrx4x577r3935n_1m1w0000gn/T/ancestree-ml-3f1d_1jn/demo/.cache/37844-7f3bc298/b30af4b8/clustering.png')]
 </pre>
 </div>
 </div>
@@ -2109,7 +2214,7 @@ for n in nodes_in_lineage:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
@@ -2198,7 +2303,7 @@ for n in nodes_in_lineage:
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 13:17:12 UTC">July 25, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 20:07:19 UTC">July 25, 2026</span>
   </span>
 
     
