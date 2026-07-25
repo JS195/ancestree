@@ -20,6 +20,7 @@ import json
 import os
 import shutil
 import uuid
+import warnings
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
@@ -112,12 +113,39 @@ class NodeWorkspace:
     def files(self) -> list[tuple[str, Path]]:
         """Every artifact file written so far, as (relpath, absolute path)
         pairs sorted by relpath. The seed file is excluded — it describes
-        the node, it is not its content."""
+        the node, it is not its content.
+
+        A symlink is only followed when its target is itself inside the
+        node. ``resolve()`` refuses paths that escape the node, and a
+        symlink must not be a way around that: without this check,
+        ``os.symlink`` — or ``shutil.copytree(..., symlinks=True)`` over a
+        directory holding one — silently pulls an arbitrary outside file
+        into the store as a node artifact. Escaping links are skipped with
+        a warning rather than an exception: they are usually incidental to
+        a copied tree, and the node's real work should still commit.
+        """
         found: list[tuple[str, Path]] = []
+        base = self.path.resolve()
+        escaped: list[str] = []
         for path in self.path.rglob("*"):
             if not path.is_file() or path.name == SEED_FILENAME:
                 continue
-            found.append((path.relative_to(self.path).as_posix(), path))
+            relpath = path.relative_to(self.path).as_posix()
+            # is_file() already dropped broken and device-node links; this
+            # is only about where a live link points.
+            if path.is_symlink() and not path.resolve().is_relative_to(base):
+                escaped.append(relpath)
+                continue
+            found.append((relpath, path))
+        if escaped:
+            warnings.warn(
+                f"Skipped {len(escaped)} symlink(s) pointing outside node "
+                f"{self.node_id!r}: {sorted(escaped)}. Artifacts must live "
+                "inside the node — copy the file in if you meant to store "
+                "it.",
+                UserWarning,
+                stacklevel=2,
+            )
         return sorted(found)
 
     def discard(self) -> None:

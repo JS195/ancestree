@@ -140,6 +140,7 @@ CREATE TABLE artifact_chunk (
 CREATE INDEX idx_ac_digest ON artifact_chunk(digest);
 """
 
+
 def _tables(conn: sqlite3.Connection) -> set[str]:
     """The user tables present in the database (SQLite internals excluded)."""
     rows = conn.execute(
@@ -209,4 +210,3 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             f"Store is missing expected tables {sorted(missing)}; the "
             "database may be corrupt."
         )
-

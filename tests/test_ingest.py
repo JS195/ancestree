@@ -87,6 +87,45 @@ def test_workspace_files_excludes_seed_and_sorts(tmp_path: Path) -> None:
     assert not ws.path.exists()
 
 
+def test_workspace_files_skips_symlinks_escaping_the_node(tmp_path: Path) -> None:
+    """A symlink must not be a way around resolve()'s containment guard.
+
+    ``resolve("../x")`` raises, so ingesting the target of a link pointing
+    the same way would silently pull an outside file into the store.
+    """
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "secret.txt").write_text("SECRET")
+
+    ws = NodeWorkspace(tmp_path / "store", "abc12345", "clean")
+    ws.resolve("real.txt").write_text("real")
+    (ws.path / "leak.txt").symlink_to(outside / "secret.txt")
+
+    with pytest.warns(UserWarning, match="pointing outside"):
+        listed = ws.files()
+    assert [rel for rel, _ in listed] == ["real.txt"]
+
+
+def test_workspace_files_follows_symlinks_inside_the_node(tmp_path: Path) -> None:
+    """Containment is the rule, not symlink-ness: a link to the node's own
+    content is a legitimate artifact and is still ingested."""
+    ws = NodeWorkspace(tmp_path / "store", "abc12345", "clean")
+    ws.resolve("data/real.txt").write_text("real")
+    (ws.path / "alias.txt").symlink_to(ws.path / "data" / "real.txt")
+
+    listed = ws.files()
+    assert [rel for rel, _ in listed] == ["alias.txt", "data/real.txt"]
+    assert dict(listed)["alias.txt"].read_text() == "real"
+
+
+def test_workspace_files_ignores_broken_and_dangling_symlinks(tmp_path: Path) -> None:
+    ws = NodeWorkspace(tmp_path / "store", "abc12345", "clean")
+    ws.resolve("real.txt").write_text("real")
+    (ws.path / "broken.txt").symlink_to(tmp_path / "nope" / "gone.txt")
+
+    assert [rel for rel, _ in ws.files()] == ["real.txt"]
+
+
 # ---------------------------------------------------------------------------
 # ingest_node
 # ---------------------------------------------------------------------------

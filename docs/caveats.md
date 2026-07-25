@@ -78,6 +78,17 @@ The default `auto` data type infers the rendering from the value's *type*, not b
 
 With `dedup` on (the default), re-running a step whose content — step type, parents, user metadata and artifact bytes — is identical gives you the *same node back*: the `with` block's variable is rebound onto the existing node and nothing new is stored. Change any of those and you get a distinct node. Failed (unhealthy) runs never merge. If you want every run recorded regardless, create the store with `dedup=False`.
 
+**Read `node.node_id` after the block, not inside it.** The rebinding happens when the block exits, so an id copied out *during* the block is the provisional one — and if the node then deduplicates into an existing one, that id is never persisted:
+
+```python
+with store.create_node(step_type="clean") as node:
+    node.add_meta("rows", 100)
+    stale = node.node_id      # provisional — may never exist
+fresh = node.node_id          # the real id, after any rebinding
+```
+
+`store.get(stale)` returns `None` and passing it as a `parent` raises `ValueError`. Passing the **handle itself** (`parent=node`) is always correct and is the simplest habit; if you need the string, read it after the block.
+
 ## Paths and artifacts
 
 `artifacts(contains=...)` matches both as a glob and as a case-insensitive substring anywhere in the filename.
