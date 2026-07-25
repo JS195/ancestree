@@ -1,15 +1,15 @@
 # Examples
 
-Explore how to use **Ancestree** for different scenarios. Each example is a runnable Jupyter notebook rendered directly in these docs — the same workflows as the original 0.1.x demonstrations, on the current API.
+Runnable Jupyter notebooks, rendered directly in these docs.
 
 <div class="grid cards" markdown>
 
 - :material-school: **[Basic Usage](examples/basic_usage.ipynb)**
 
-    Create a store, build a small lineage, and visualise it — the best place to start.
+    Create a store, build a small lineage, visualise it. Start here.
 
 - :material-robot: **[Machine Learning Pipeline](examples/ml_pipeline.ipynb)**
 
-    Track a realistic multi-step ML workflow: the iris dataset fanned out across scalers, embeddings and clusterers, then queried after the fact.
+    A multi-step workflow: the iris dataset fanned out across scalers, embeddings and clusterers, then queried after the fact.
 
 </div>

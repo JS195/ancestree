@@ -547,7 +547,7 @@ class LineageStore:
         reclaims the space they occupied.
 
         A descendant is removed only when EVERY one of its parents is also
-        being removed — a child still reachable from an unpruned branch
+        being removed. A child still reachable from an unpruned branch
         survives, and its edge to the pruned parent disappears via the
         foreign-key cascade. Preview with the default ``dry_run=True``,
         which never deletes and never compacts.
@@ -557,7 +557,7 @@ class LineageStore:
             dry_run: Preview only (the default). Nothing is deleted.
             compact: Reclaim the freed chunk space afterwards (the
                 default). Pass False when pruning many nodes in a loop and
-                call ``compact()`` once at the end — compaction scans the
+                call ``compact()`` once at the end. Compaction scans the
                 whole chunk pool, so doing it per node is wasted work.
 
         Returns:
@@ -576,7 +576,7 @@ class LineageStore:
 
     def compact(self) -> int:
         """Reclaims space: deletes chunks no artifact references (a delta
-        base still in use survives — the one-hop closure of AD5), then
+        base still in use survives, the one-hop closure of AD5), then
         returns freed pages to the OS via ``incremental_vacuum`` and
         truncates the WAL.
 
@@ -595,7 +595,7 @@ class LineageStore:
         """Writes grep-able JSON sidecars: one ``meta.json`` per node under
         ``<dest>/<node_id>/`` (default ``<root>/export``), holding the
         node's structural facts, provenance, metadata envelopes and
-        artifact digests. The database remains the source of truth — this
+        artifact digests. The database remains the source of truth; this
         is the file-portability escape hatch (AD9), so lineage stays
         legible to grep even if ancestree is uninstalled tomorrow.
 
@@ -632,7 +632,7 @@ class LineageStore:
         return dest_dir
 
     def backup(self, dest: Path | str) -> Path:
-        """Writes a consistent, self-contained copy of the whole store —
+        """Writes a consistent, self-contained copy of the whole store,
         safe to take while the store is open and being written to.
 
         A *live* store is not one file: WAL journalling keeps recent commits
@@ -640,7 +640,7 @@ class LineageStore:
         ``ancestree.db`` out from under an open store silently loses
         everything since the last one. This goes through SQLite's online
         backup API, which reads through the WAL and produces a fully
-        checkpointed single file — the correct way to back a store up
+        checkpointed single file, which is the correct way to back a store up
         without closing it.
 
         Args:
@@ -679,7 +679,7 @@ class LineageStore:
         dest: Path | str | None = None,
         include_artifacts: bool = True,
     ) -> Path:
-        """Renders the store into one shareable HTML file — a **view-only
+        """Renders the store into one shareable HTML file: a **view-only
         snapshot**: the lineage graph plus click-to-view metadata (search
         lives in the live server, so the query grammar exists once).
 
@@ -698,7 +698,7 @@ class LineageStore:
 
         By default, this method runs non-blocking (``block=False``) and automatically
         opens the live application graph in your default web browser (``open_browser=True``).
-        Calling it again replaces the running background server — re-running a
+        Calling it again replaces the running background server, so re-running a
         notebook cell restarts the explorer rather than leaking a second one.
 
         Args:
@@ -756,7 +756,7 @@ class LineageStore:
         """Runs a read-only SELECT over the documented schema (blueprint
         section 6) and returns the rows. The connection is opened read-only
         with ``PRAGMA query_only``, so writes are impossible by
-        construction — the escape hatch can never corrupt invariants.
+        construction, so the escape hatch can never corrupt invariants.
 
         Examples:
             >>> store.sql("SELECT step_type, count(*) FROM node GROUP BY 1")

@@ -1,9 +1,8 @@
 # API Reference
 
-Technical documentation for the **Ancestree** lineage system. The `LineageStore` is the public entry point and is accessible directly from the top-level `ancestree` package — searching, lineage traversal, and visualisation all happen through its methods.
+`LineageStore` is the public entry point, available from the top-level `ancestree` package. Searching, lineage traversal and visualisation all happen through its methods.
 
-## Core Orchestration
-The `LineageStore` is the prime entry point for managing your pipeline.
+## Core orchestration
 
 ::: ancestree.LineageStore
     handler: python
@@ -14,8 +13,9 @@ The `LineageStore` is the prime entry point for managing your pipeline.
 
 ---
 
-## Working with Nodes
-You never construct a node yourself. `LineageStore.create_node` yields a **recording handle** — the object you write artifacts and metadata through inside the `with` block — and the store's search and lineage methods return immutable **`Node` records** for everything already persisted.
+## Working with nodes
+
+You never construct a node yourself. `LineageStore.create_node` yields a recording handle, which is the object you write artifacts and metadata through inside the `with` block. The store's search and lineage methods return immutable `Node` records for everything already persisted.
 
 ::: ancestree.Node
     handler: python

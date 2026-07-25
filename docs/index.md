@@ -1,6 +1,6 @@
 # Ancestree
 
-**Lightweight, zero-dependency data lineage for Python.** Track every step of your pipeline, enforce valid transitions, and explore the whole flow as an interactive graph — built entirely on the standard library.
+Data lineage tracking for Python, built on the standard library. Track each step of a pipeline, enforce valid transitions, and explore the result as an interactive graph.
 
 [:material-rocket-launch: Quick Start](#quick-start){ .md-button }
 [:material-cursor-default-click: Live Demo](demo.md){ .md-button }
@@ -10,7 +10,7 @@
 
 ---
 
-## Why Ancestree?
+## Features
 
 <div class="grid cards" markdown>
 
@@ -18,43 +18,41 @@
 
     ---
 
-    One call renders your entire pipeline as a self-contained HTML file — open it in any browser, share it as-is, click any node to inspect its metadata and artifacts.
+    One call renders the pipeline as a self-contained HTML file. Open it in any browser, share it as-is, click a node for its metadata and artifacts.
 
 - :material-shield-check:{ .lg .middle } **Rule enforcement**
 
     ---
 
-    Rules are optional. But if you declare them, invalid transitions raise immediately so your pipeline can't drift into impossible states.
+    Rules are optional, but once declared, invalid transitions raise immediately rather than being recorded after the fact.
 
-- :material-database-search:{ .lg .middle } **Metadata works twice**
-
-    ---
-
-    Metadata entries are searchable by exact value or predicate, whilst also used as instructions to render the entry in the explorer.
-
-- :material-feather:{ .lg .middle } **Zero dependencies**
+- :material-database-search:{ .lg .middle } **Metadata does double duty**
 
     ---
 
-    Pure Python standard library. Nothing to pin, nothing to conflict with, it runs anywhere Python 3.9+ runs.
+    Metadata is searchable by value or predicate, and also decides how each entry renders in the explorer.
+
+- :material-feather:{ .lg .middle } **No dependencies**
+
+    ---
+
+    Pure standard library. Nothing to pin, nothing to conflict with, runs wherever Python 3.9+ runs.
 
 - :material-restore:{ .lg .middle } **Crash-safe by design**
 
     ---
 
-    Nodes are created in a context manager. If your code fails, partial work is kept and flagged unhealthy; untouched nodes vanish without a trace.
+    Nodes are created in a context manager. If the code fails, partial work is kept and flagged unhealthy; untouched nodes are discarded.
 
 - :material-database-outline:{ .lg .middle } **One SQLite file**
 
     ---
 
-    The whole store — metadata, lineage and deduplicated artifact bytes — is a single `ancestree.db`. No server, no database to run, nothing to configure. Back it up by copying one file, or query it directly with `store.sql(...)`.
+    Metadata, lineage and deduplicated artifact bytes all sit in a single `ancestree.db`. No server, nothing to configure. Back it up by copying one file, or query it with `store.sql(...)`.
 
 </div>
 
 ## Quick Start
-
-Install **Ancestree** directly via pip:
 
 ```bash
 pip install ancestree-track
@@ -62,7 +60,7 @@ pip install ancestree-track
 
 ## How it works
 
-There is no hidden state: a `LineageStore` is a root directory holding one SQLite database, and every node is a row in it — its artifacts stored as deduplicated, content-addressed chunks alongside its metadata and lineage.
+A `LineageStore` is a directory holding one SQLite database. Every node is a row, with its artifacts stored as deduplicated, content-addressed chunks alongside its metadata and lineage.
 
 ```
 my_store/
@@ -72,11 +70,11 @@ my_store/
 └── .cache/                      # artifacts reassembled for reading, per session
 ```
 
-Only `ancestree.db` holds anything you cannot regenerate. The two dotted directories are working space: `.scratch/` holds a node's files while its `with` block runs and is emptied when the node commits, and `.cache/` holds artifacts reassembled for reading and is cleared when the session ends. Deleting either at rest costs you nothing. While a store is *open*, SQLite also keeps `ancestree.db-wal` and `-shm` beside the database — see [Caveats](caveats.md#one-file-is-the-whole-store--but-a-live-store-is-three) before you back one up.
+Only `ancestree.db` holds anything you cannot regenerate. The dotted directories are working space: `.scratch/` holds a node's files while its `with` block runs and empties when the node commits, `.cache/` holds artifacts reassembled for reading and clears when the session ends. Deleting either at rest costs nothing. While a store is open SQLite also keeps `ancestree.db-wal` and `-shm` beside the database, so read [Caveats](caveats.md#one-file-is-the-whole-store-but-a-live-store-is-three) before backing one up.
 
-Every write is a real transaction, so a node is either committed whole or not at all. Delete a branch with `prune()` — it reclaims the space for you; pull grep-able `meta.json` sidecars out any time with `export()`; or ask the database anything with `store.sql(...)` — the schema is documented and versioned.
+Every write is a transaction, so a node is committed whole or not at all. `prune()` deletes a branch and reclaims the space, `export()` writes `meta.json` sidecars, and `store.sql(...)` queries a documented, versioned schema directly.
 
-## Track, search, and visualise your pipeline:
+## Track, search and visualise
 
 === ":material-source-branch: Track"
 
@@ -114,11 +112,11 @@ Every write is a real transaction, so a node is either committed whole or not at
     # Graph generated at my_store/interactive_pipeline.html
     ```
 
-    Open the file in any browser — no server required.
+    Open the file in any browser. No server required.
 
 ## Metadata does double duty
 
-Metadata isn't just a search index — it's also the instruction set for how each node is displayed in the web graph. Every entry you add appears in the node's panel, organised under its `group` heading, and its `data_type` controls how the value is rendered. `data_type` defaults to `auto` and the store will infer the correct data_type but this can be manually overridden offering flexibiliy. 
+Metadata is both a search index and the instruction set for how a node displays in the web graph. Each entry appears under its `group` heading, and `data_type` controls how the value renders. It defaults to `auto`, which infers the type from the value, and can be overridden.
 
 ```python
 with store.create_node(step_type="model", parent=parent) as node:
@@ -140,9 +138,9 @@ with store.create_node(step_type="model", parent=parent) as node:
     )
 ```
 
-You don't need metadata to expose your files: every artifact a node contains automatically appears as a clickable link under its **Artifacts** heading. Use `data_type="image"` when you want a figure actually displayed inline — a confusion matrix, a loss curve, a sample plot — so the graph doubles as a visual report of your pipeline.
+Metadata is not needed to expose files: every artifact appears as a clickable link under the node's **Artifacts** heading. Use `data_type="image"` to display a figure inline.
 
 ## Next steps
 
-- Walk through the [Examples](examples.md) to see complete pipelines, including a full [machine learning workflow](examples/ml_pipeline.ipynb).
-- Browse the [API Reference](reference.md) for full details on `LineageStore` and `Node`.
+- Work through the [Examples](examples.md), including a [machine learning workflow](examples/ml_pipeline.ipynb).
+- See the [API Reference](reference.md) for `LineageStore` and `Node`.

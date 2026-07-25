@@ -5,9 +5,9 @@ hide:
 
 # Live Demo
 
-This is a real, unmodified `interactive_pipeline.html` produced by the [Machine Learning Pipeline example](examples/ml_pipeline.ipynb) — the iris dataset run through two scalers, three embedding methods, and two clustering algorithms, tracked as 21 nodes across four generations.
+An unmodified `interactive_pipeline.html` from the [Machine Learning Pipeline example](examples/ml_pipeline.ipynb): the iris dataset run through two scalers, three embedding methods and two clustering algorithms, tracked as 21 nodes across four generations.
 
-Explore it exactly as you would on your own machine: drag to pan, scroll to zoom, and **click any node** to inspect its metadata — hyperparameters, scores, the cluster plots rendered inline as figures, and links to every artifact the node produced.
+It behaves the same here as on your own machine. Drag to pan, scroll to zoom, and click a node for its metadata, including hyperparameters, scores, cluster plots rendered inline, and links to every artifact.
 
 [:material-open-in-new: Open full screen](assets/demo/interactive_pipeline.html){ .md-button target="_blank" }
 
@@ -17,4 +17,4 @@ Explore it exactly as you would on your own machine: drag to pan, scroll to zoom
         title="Ancestree interactive pipeline demo"></iframe>
 
 !!! tip "Generate your own"
-    This file is the output of a single call — `store.generate_web_graph()` — and is fully self-contained: no server, no dependencies, just open it in a browser or share it as-is.
+    This file is the output of a single `store.generate_web_graph()` call and is fully self-contained. Open it in a browser or share it as-is.

@@ -33,7 +33,7 @@ class Node:
 
     Structural facts are attributes; ``metadata`` holds the user's entries;
     ``artifacts()`` and ``/`` return readable paths (reassembled on demand
-    from the store — a node is a database row, not a directory).
+    from the store; a node is a database row, not a directory).
     """
 
     node_id: str
@@ -140,7 +140,7 @@ class RecordingNode:
                 pandas values are coerced with a warning).
             group: A heading to group related entries under in the web
                 graph. Defaults to "General".
-            data_type: How the value renders — 'auto' (infer), 'image',
+            data_type: How the value renders: 'auto' (infer), 'image',
                 'link', 'table' (DataFrame), 'json', 'code', or 'text'.
             searchable: False for display-only metadata.
         """
@@ -171,7 +171,7 @@ class RecordingNode:
         return replace(entry, value=candidate.as_posix())
 
     def artifacts(self, contains: str = "*") -> list[Path]:
-        """The files written so far, as native scratch paths — matching the
+        """The files written so far, as native scratch paths, matching the
         record's ``artifacts()`` semantics so code inside the block reads
         what it just wrote at native speed."""
         files = dict(self._workspace.files())
