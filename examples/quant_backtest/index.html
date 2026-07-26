@@ -2006,7 +2006,7 @@ print(
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="3-a-store-built-for-an-audit">3. A store built for an audit<a class="anchor-link" href="#3-a-store-built-for-an-audit">¶</a></h2><p>Two policy choices worth being explicit about.</p>
-<p><code>dedup=False</code>. Everywhere else the default (collapsing an identical rerun
+<p><code>reuse_identical=False</code>. Everywhere else the default (collapsing an identical rerun
 onto the existing node) is what you want. Here it is not. If a backtest is
 rerun and produces byte-identical output, that is still a <em>separate
 execution</em>, at a separate time, by a separate person, against a possibly
@@ -2047,9 +2047,9 @@ Section 12 comes back to that honestly.</p>
 <span class="p">}</span>
 
 <span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span>
-    <span class="n">WORKDIR</span> <span class="o">/</span> <span class="s2">"research"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="p">[</span><span class="s2">"feature_set"</span><span class="p">],</span> <span class="n">dedup</span><span class="o">=</span><span class="kc">False</span>
+    <span class="n">WORKDIR</span> <span class="o">/</span> <span class="s2">"research"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="p">[</span><span class="s2">"feature_set"</span><span class="p">],</span> <span class="n">reuse_identical</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dedup </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">dedup</span><span class="si">}</span><span class="s2">   chunk </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">chunk</span><span class="si">}</span><span class="s2">   triggers </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">gen_triggers</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dedup </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">reuse_identical</span><span class="si">}</span><span class="s2">   chunk </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">chunk</span><span class="si">}</span><span class="s2">   triggers </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">gen_triggers</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">RULES = {
     "market_data": [None],
@@ -2061,9 +2061,9 @@ Section 12 comes back to that honestly.</p>
 }
 
 store = ancestree.LineageStore(
-    WORKDIR / "research", rules=RULES, gen_triggers=["feature_set"], dedup=False
+    WORKDIR / "research", rules=RULES, gen_triggers=["feature_set"], reuse_identical=False
 )
-print(f"dedup {store.dedup}   chunk {store.chunk}   triggers {store.gen_triggers}")</div>
+print(f"dedup {store.reuse_identical}   chunk {store.chunk}   triggers {store.gen_triggers}")</div>
 </div>
 </div>
 </div>
@@ -2152,7 +2152,7 @@ print(f"market_data {data_id}")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>market_data 9d139544
+<pre>market_data c9067d15
 </pre>
 </div>
 </div>
@@ -2277,7 +2277,7 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>feature_set v1 c2814c70  generation 1
+<pre>feature_set v1 78e2fbd0  generation 1
 </pre>
 </div>
 </div>
@@ -2572,13 +2572,7 @@ print(f"\n{len(grid_v1)} backtest nodes ({len(CONFIGS)} configs x {N_FOLDS} fold
   fold 2  train through 2020-09-23  test 2020-09-24 to 2022-02-04
   fold 3  train through 2022-02-04  test 2022-02-07 to 2023-06-21
   holdout   never used for selection: 2023-06-22 to 2024-12-18
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>
+
 24 backtest nodes (6 configs x 4 folds)
 </pre>
 </div>
@@ -3438,7 +3432,7 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>selection 0ea6af6d joins 24 backtests
+<pre>selection edda6498 joins 24 backtests
 </pre>
 </div>
 </div>
@@ -3722,7 +3716,7 @@ print(f"risk_report {report_id}")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>risk_report b826d9f1
+<pre>risk_report 9a5c6997
 </pre>
 </div>
 </div>
@@ -3782,12 +3776,12 @@ for record in store.lineage(report_id)[-2:]:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>  gen 0  market_data  9d139544
-  gen 1  feature_set  2272c022
-  gen 1  backtest     2ef0858a
+<pre>  gen 0  market_data  c9067d15
+  gen 1  feature_set  c110270a
+  gen 1  backtest     3a7b067a
   ... 24 backtest nodes ...
-  gen 1  validation   01068e86
-  gen 1  risk_report  b826d9f1
+  gen 1  validation   a93e86ad
+  gen 1  risk_report  9a5c6997
 </pre>
 </div>
 </div>
@@ -3851,7 +3845,7 @@ print(f"definition      {feature_used.metadata['definition']['value']}")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>feature_set     2272c022 (version 2)
+<pre>feature_set     c110270a (version 2)
 signal_lag_days 1
 definition      z = (trailing_return - xs_mean) / xs_std; shifted 1d, traded next close
 </pre>
@@ -3909,7 +3903,7 @@ definition      z = (trailing_return - xs_mean) / xs_std; shifted 1d, traded nex
 <pre>  user             js
   python_version   3.12.12
   platform         macOS-26.5.1-arm64-arm-64bit
-  git_commit       ad1becf604ad7136df3343dca3b57e268dbfa915
+  git_commit       c4088aa72d7cbc554f01467cd0ab06147535e4a2
   git_dirty        True
   git_branch       main
 </pre>
@@ -4197,7 +4191,7 @@ beat, not just reported on its own.</li>
 <li><strong>A negative result worth keeping.</strong> The conclusion was "do not deploy", and
 it is stored with the evidence that produced it rather than lost when the
 researcher moved on.</li>
-<li><strong><code>dedup=False</code>.</strong> Two identical runs stay two runs, which is the difference
+<li><strong><code>reuse_identical=False</code>.</strong> Two identical runs stay two runs, which is the difference
 between a research log and an audit trail.</li>
 </ul>
 </div>
@@ -4250,13 +4244,13 @@ web graph  interactive_pipeline.html (627 KiB)
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=63608ff3">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=63608ff3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [26]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-26">
@@ -4272,6 +4266,25 @@ web graph  interactive_pipeline.html (627 KiB)
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">host_live_graph</span><span class="p">()</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-26">store.host_live_graph()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Ancestree explorer running at: http://127.0.0.1:50828  (Store close will terminate background thread)
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[26]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
+<pre>'http://127.0.0.1:50828'</pre>
 </div>
 </div>
 </div>
@@ -4305,7 +4318,7 @@ web graph  interactive_pipeline.html (627 KiB)
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 25, 2026 20:07:19 UTC">July 25, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 13:59:44 UTC">July 26, 2026</span>
   </span>
 
     
