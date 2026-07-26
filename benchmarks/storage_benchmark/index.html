@@ -3941,13 +3941,14 @@ print("  bulk of it and is recorded on every node.")</div>
 <h2 id="7-the-headline-a-realistic-mixed-corpus">7. The headline: a realistic mixed corpus<a class="anchor-link" href="#7-the-headline-a-realistic-mixed-corpus">¶</a></h2><p>Six file types, six revisions each, roughly 1% of bytes edited per revision:
 60% overwrites, 20% insertions, 20% deletions, so shift-resilience is
 genuinely exercised rather than assumed.</p>
-<p>This is the same shape of corpus behind the 2.6x figure in the README and
-<code>RESULTS.md</code>, and it lands higher here. The difference is where the edits
-fall: that corpus scatters insertions and deletions as well as overwrites,
-while this one applies each insertion and deletion at a single point, which
-section 4 showed is by far the easier case. Take the README's number as the
-conservative one. The point of this table is not the headline but the
-comparison between the three rows.</p>
+<p>This is the corpus behind the headline figure in the README and <code>RESULTS.md</code>.
+Through 0.2.0's development that figure was 2.6x, measured on a corpus of real
+files which scattered its insertions and deletions rather than applying each at
+a single point — section 4 shows that is by far the harder case. Those files
+are not in this repository, so the published number was moved onto this
+measurement, which anyone can re-run.</p>
+<p>Read the ratio as belonging to this corpus rather than as a guarantee, and read
+the comparison between the three rows as the durable part.</p>
 </div>
 </div>
 </div>
@@ -4488,7 +4489,7 @@ print("done")</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 14:55:42 UTC">July 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 15:53:13 UTC">July 26, 2026</span>
   </span>
 
     
