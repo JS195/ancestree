@@ -2323,14 +2323,14 @@ fixed pattern. The chunk pool notices.</p>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">"  logical </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'logical_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2"> MB   "</span>
+    <span class="sa">f</span><span class="s2">"  logical </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'artifact_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2"> MB   "</span>
     <span class="sa">f</span><span class="s2">"stored </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'chunk_stored_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2"> MB   "</span>
     <span class="sa">f</span><span class="s2">"ratio </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'dedup_ratio'</span><span class="p">]</span><span class="si">}</span><span class="s2">x"</span>
 <span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">stats = store.stats()
 print(
-    f"  logical {stats['logical_bytes'] / 1e6:6.2f} MB   "
+    f"  logical {stats['artifact_bytes'] / 1e6:6.2f} MB   "
     f"stored {stats['chunk_stored_bytes'] / 1e6:6.2f} MB   "
     f"ratio {stats['dedup_ratio']}x"
 )</div>
@@ -2479,8 +2479,8 @@ for nid in (bias_master_id, flat_v1_id):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>master_bias  682c68a4  generation 0  parents 10
-master_flat  ab4ec8e4  generation 1  parents 10
+<pre>master_bias  fe995847  generation 0  parents 10
+master_flat  ddf1390d  generation 1  parents 10
 </pre>
 </div>
 </div>
@@ -2629,7 +2629,7 @@ print(f"\nstore still holds {store.stats()['nodes']} nodes")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>UserWarning: Node 'd5ed32ab' (step_type='raw_frame') was discarded: no artifacts were written and no metadata was added. Write at least one file or call node.add_meta() to persist the node.
+<pre>UserWarning: Node '2cfe1170' (step_type='raw_frame') was discarded: no artifacts were written and no metadata was added. Write at least one file or call node.add_meta() to persist the node.
 
 store still holds 28 nodes
 </pre>
@@ -2991,7 +2991,7 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>catalogue 0b8c8402  generation 1  46 sources from 6 frames
+<pre>catalogue 056b3f42  generation 1  46 sources from 6 frames
 </pre>
 </div>
 </div>
@@ -3213,7 +3213,7 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>master_flat v2 61efef63
+<pre>master_flat v2 f872341d
   generation 2 (v1 was 1)
   parents    11 (10 raw flats plus the flat it supersedes)
 </pre>
@@ -3323,7 +3323,7 @@ separates them.</p>
 <span class="sd">           count(*) AS nodes</span>
 <span class="sd">    FROM node</span>
 <span class="sd">    GROUP BY generation, step_type</span>
-<span class="sd">    ORDER BY generation, min(created_epoch)</span>
+<span class="sd">    ORDER BY generation, min(created_epoch_seconds)</span>
 <span class="sd">    """</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
@@ -3335,7 +3335,7 @@ separates them.</p>
            count(*) AS nodes
     FROM node
     GROUP BY generation, step_type
-    ORDER BY generation, min(created_epoch)
+    ORDER BY generation, min(created_epoch_seconds)
     """
 )
 print(pd.DataFrame([dict(r) for r in rows]).to_string(index=False))</div>
@@ -3437,11 +3437,11 @@ call regardless of how deep the pipeline is.</p>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>catalogue v1  (0b8c8402, generation 1)
-  built on master_flat ab4ec8e4  version 1  bias_subtracted False
+<pre>catalogue v1  (056b3f42, generation 1)
+  built on master_flat ddf1390d  version 1  bias_subtracted False
   sources 46, lineage depth 41 nodes
-catalogue v2  (dbd21499, generation 2)
-  built on master_flat 61efef63  version 2  bias_subtracted True
+catalogue v2  (1bde625b, generation 2)
+  built on master_flat f872341d  version 2  bias_subtracted True
   sources 43, lineage depth 42 nodes
 </pre>
 </div>
@@ -3507,8 +3507,8 @@ for flat in chain:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>  gen 1  ab4ec8e4  v1  debiased=False
-  gen 2  61efef63  v2  debiased=True
+<pre>  gen 1  ddf1390d  v1  debiased=False
+  gen 2  f872341d  v2  debiased=True
 </pre>
 </div>
 </div>
@@ -3986,7 +3986,7 @@ print(f"summary node {summary_id}")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>summary node e7bb0aaf
+<pre>summary node 846c49b0
 </pre>
 </div>
 </div>
@@ -4131,7 +4131,7 @@ gen_triggers:         ['master_flat']
 reuse_identical / chunk:  True / True
 nodes:                56
 
-latest catalogue:     e7bb0aaf (generation 2)
+latest catalogue:     846c49b0 (generation 2)
 its flat:             v2
 </pre>
 </div>
@@ -4171,10 +4171,10 @@ its flat:             v2
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span><span class="n">STORE_ROOT</span><span class="p">)</span>
 
-<span class="n">graph</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">export_graph</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"web graph  </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">  (</span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> KiB)"</span><span class="p">)</span>
 
-<span class="n">exported</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">WORKDIR</span> <span class="o">/</span> <span class="s2">"survey_export"</span><span class="p">)</span>
+<span class="n">exported</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">export_metadata</span><span class="p">(</span><span class="n">WORKDIR</span> <span class="o">/</span> <span class="s2">"survey_export"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sidecars   </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">exported</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s1">'meta.json'</span><span class="p">)))</span><span class="si">}</span><span class="s2"> meta.json files"</span><span class="p">)</span>
 
 <span class="n">backup</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="n">WORKDIR</span> <span class="o">/</span> <span class="s2">"survey_backup.db"</span><span class="p">)</span>
@@ -4183,17 +4183,17 @@ its flat:             v2
 <span class="n">final</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'nodes'</span><span class="p">]</span><span class="si">}</span><span class="s2"> nodes, </span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'artifacts'</span><span class="p">]</span><span class="si">}</span><span class="s2"> artifacts"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">"logical </span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'logical_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB  -&gt;  "</span>
+    <span class="sa">f</span><span class="s2">"logical </span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'artifact_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB  -&gt;  "</span>
     <span class="sa">f</span><span class="s2">"pool </span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'chunk_stored_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB  "</span>
     <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'dedup_ratio'</span><span class="p">]</span><span class="si">}</span><span class="s2">x), database </span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'database_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB"</span>
 <span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-23">store = ancestree.LineageStore(STORE_ROOT)
 
-graph = store.generate_web_graph()
+graph = store.export_graph()
 print(f"web graph  {graph.name}  ({graph.stat().st_size / 1024:.0f} KiB)")
 
-exported = store.export(WORKDIR / "survey_export")
+exported = store.export_metadata(WORKDIR / "survey_export")
 print(f"sidecars   {len(list(exported.rglob('meta.json')))} meta.json files")
 
 backup = store.backup(WORKDIR / "survey_backup.db")
@@ -4202,7 +4202,7 @@ print(f"backup     {backup.name} ({backup.stat().st_size / 1e6:.1f} MB)")
 final = store.stats()
 print(f"\n{final['nodes']} nodes, {final['artifacts']} artifacts")
 print(
-    f"logical {final['logical_bytes'] / 1e6:.1f} MB  -&gt;  "
+    f"logical {final['artifact_bytes'] / 1e6:.1f} MB  -&gt;  "
     f"pool {final['chunk_stored_bytes'] / 1e6:.1f} MB  "
     f"({final['dedup_ratio']}x), database {final['database_bytes'] / 1e6:.1f} MB"
 )</div>
@@ -4217,7 +4217,7 @@ print(
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>web graph  interactive_pipeline.html  (741 KiB)
+<pre>web graph  interactive_pipeline.html  (742 KiB)
 sidecars   56 meta.json files
 backup     survey_backup.db (10.4 MB)
 
@@ -4242,7 +4242,7 @@ raw frames are untouched between runs, and the reduced frames differ only by
 the calibration applied.</p>
 <p>For a store this shape the live explorer is worth more than the static
 snapshot, because you want to filter rather than browse:</p>
-<div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">host_live_graph</span><span class="p">()</span>          <span class="c1"># searchable explorer on localhost</span>
+<div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">serve_graph</span><span class="p">()</span>          <span class="c1"># searchable explorer on localhost</span>
 </pre></div>
 <p>It takes <code>field=value</code>, numeric filters like <code>sources_found&gt;40</code>, and free
 text. Pin the two catalogue nodes for a side-by-side diff of their metadata,
@@ -4282,11 +4282,11 @@ the flat it superseded.</li>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># store.close()</span>
 <span class="c1"># shutil.rmtree(WORKDIR, ignore_errors=True)</span>
-<span class="n">store</span><span class="o">.</span><span class="n">host_live_graph</span><span class="p">()</span>
+<span class="n">store</span><span class="o">.</span><span class="n">serve_graph</span><span class="p">()</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-24"># store.close()
 # shutil.rmtree(WORKDIR, ignore_errors=True)
-store.host_live_graph()</div>
+store.serve_graph()</div>
 </div>
 </div>
 </div>
@@ -4298,14 +4298,14 @@ store.host_live_graph()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Ancestree explorer running at: http://127.0.0.1:50846  (Store close will terminate background thread)
+<pre>Ancestree explorer running at: http://127.0.0.1:53584  (Store close will terminate background thread)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[24]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'http://127.0.0.1:50846'</pre>
+<pre>'http://127.0.0.1:53584'</pre>
 </div>
 </div>
 </div>
@@ -4339,7 +4339,7 @@ store.host_live_graph()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 14:29:26 UTC">July 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 14:52:31 UTC">July 26, 2026</span>
   </span>
 
     

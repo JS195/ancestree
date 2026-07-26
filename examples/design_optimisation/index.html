@@ -2183,7 +2183,7 @@ passed explicitly here to make the point.</p>
 <span class="w">    </span><span class="sd">"""Solve one design *inside* its node and record the result.</span>
 
 <span class="sd">    The solve happens in the block rather than before it, so the node's</span>
-<span class="sd">    ``duration_s`` measures the work rather than the write. ``decide`` is an</span>
+<span class="sd">    ``duration_seconds`` measures the work rather than the write. ``decide`` is an</span>
 <span class="sd">    optional callable taking the objective and returning extra metadata, which</span>
 <span class="sd">    is how the annealing accept/reject decision gets recorded on the node it</span>
 <span class="sd">    belongs to.</span>
@@ -2225,7 +2225,7 @@ def evaluate(step_type, parent, fins, decide=None, **meta):
     """Solve one design *inside* its node and record the result.
 
     The solve happens in the block rather than before it, so the node's
-    ``duration_s`` measures the work rather than the write. ``decide`` is an
+    ``duration_seconds`` measures the work rather than the write. ``decide`` is an
     optional callable taking the objective and returning extra metadata, which
     is how the annealing accept/reject decision gets recorded on the node it
     belongs to.
@@ -2317,7 +2317,7 @@ print(f"baseline {baseline_id}: peak {baseline_peak:.2f} C")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>baseline 7b110847: peak 86.71 C
+<pre>baseline 8006e870: peak 86.71 C
 </pre>
 </div>
 </div>
@@ -2332,7 +2332,7 @@ print(f"baseline {baseline_id}: peak {baseline_peak:.2f} C")</div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="5-the-search">5. The search<a class="anchor-link" href="#5-the-search">¶</a></h2><p>Standard annealing: perturb, solve, accept if better or by the Metropolis
-criterion, otherwise reject. The solve runs inside the node, so <code>duration_s</code>
+criterion, otherwise reject. The solve runs inside the node, so <code>duration_seconds</code>
 records what the iteration actually cost.</p>
 <p>The lineage decision is the one that matters. <strong>The parent is the accepted
 design, not the previous iteration.</strong> A rejected candidate is still recorded,
@@ -2510,7 +2510,7 @@ remainder that exact matching cannot.</p>
 <span class="p">}</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  nodes                </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'nodes'</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  artifacts            </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'artifacts'</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  logical bytes        </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'logical_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">&gt;10.2f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  logical bytes        </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'artifact_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">&gt;10.2f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  stored in the pool   </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'chunk_stored_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">&gt;10.2f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  database on disk     </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'database_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">&gt;10.2f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  dedup ratio          </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'dedup_ratio'</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">x"</span><span class="p">)</span>
@@ -2526,7 +2526,7 @@ kinds = {
 }
 print(f"  nodes                {stats['nodes']:&gt;10}")
 print(f"  artifacts            {stats['artifacts']:&gt;10}")
-print(f"  logical bytes        {stats['logical_bytes'] / 1e6:&gt;10.2f} MB")
+print(f"  logical bytes        {stats['artifact_bytes'] / 1e6:&gt;10.2f} MB")
 print(f"  stored in the pool   {stats['chunk_stored_bytes'] / 1e6:&gt;10.2f} MB")
 print(f"  database on disk     {stats['database_bytes'] / 1e6:&gt;10.2f} MB")
 print(f"  dedup ratio          {stats['dedup_ratio']:&gt;10}x")
@@ -2549,7 +2549,7 @@ print(
   artifacts                    93
   logical bytes             12.72 MB
   stored in the pool         5.81 MB
-  database on disk          10.90 MB
+  database on disk          10.91 MB
   dedup ratio               2.188x
 
   chunk encodings:  zlib 381   delta 14   verbatim 0
@@ -2821,11 +2821,11 @@ for node in ranked[:5]:
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
 <pre>18 designs at least 3% better than baseline
 
-  debd05d4  iter  28  peak   57.57 C  fin_area 1197
-  657f0f73  iter  29  peak   57.57 C  fin_area 1212
-  d7564c78  iter  30  peak   57.57 C  fin_area 1203
-  8f73f6b1  iter  21  peak   57.58 C  fin_area 1179
-  2ed485eb  iter  23  peak   57.58 C  fin_area 1185
+  92a20ef5  iter  28  peak   57.57 C  fin_area 1197
+  7ca1e30e  iter  29  peak   57.57 C  fin_area 1212
+  c29c2f68  iter  30  peak   57.57 C  fin_area 1203
+  f89b9f25  iter  21  peak   57.58 C  fin_area 1179
+  b81582be  iter  23  peak   57.58 C  fin_area 1185
 </pre>
 </div>
 </div>
@@ -2891,7 +2891,7 @@ print(f"children:   {len(store.children(resume))}")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>most recent accepted design: d7564c78 (iteration 30, peak 57.57 C)
+<pre>most recent accepted design: c29c2f68 (iteration 30, peak 57.57 C)
 its layout: ['layout.npy']
 children:   0
 </pre>
@@ -3108,13 +3108,13 @@ print(f"\nstore unchanged: {store.stats()['nodes']} nodes")</div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
 <pre>prune(branch_root) would delete 7 nodes:
 
-  ed141db2  iter 107  peak 110.16 C
-  f620ce2f  iter 106  peak 110.16 C
-  cb743d01  iter 105  peak 110.17 C
-  74bfb6d8  iter 104  peak 110.27 C
-  4f446f1e  iter 103  peak 110.27 C
-  7f82cabc  iter 102  peak 110.27 C
-  b87a6aa9  iter 101  peak 110.27 C
+  ee509aec  iter 107  peak 110.16 C
+  306cf84d  iter 106  peak 110.16 C
+  9f21a674  iter 105  peak 110.17 C
+  a17e42e4  iter 104  peak 110.27 C
+  83864f72  iter 103  peak 110.27 C
+  b466c9ae  iter 102  peak 110.27 C
+  b47a9e3e  iter 101  peak 110.27 C
 
 store unchanged: 38 nodes
 </pre>
@@ -3202,7 +3202,7 @@ print(f"\n  main line intact: {len(store.lineage(best_id))} nodes to the best de
   nodes            38 -&gt; 31
   chunks          488 -&gt; 395
   pool MB        7.15 -&gt; 5.81
-  file MB       10.90 -&gt; 6.66
+  file MB       10.91 -&gt; 6.66
 
   main line intact: 25 nodes to the best design
 </pre>
@@ -3411,7 +3411,7 @@ print(f"report {report_id}")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>report 218f827e
+<pre>report dffdc3c3
 </pre>
 </div>
 </div>
@@ -3425,7 +3425,7 @@ print(f"report {report_id}")</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="10-cost-of-the-search-from-the-store-itself">10. Cost of the search, from the store itself<a class="anchor-link" href="#10-cost-of-the-search-from-the-store-itself">¶</a></h2><p><code>duration_s</code> is recorded on every node without being asked for, so the store
+<h2 id="10-cost-of-the-search-from-the-store-itself">10. Cost of the search, from the store itself<a class="anchor-link" href="#10-cost-of-the-search-from-the-store-itself">¶</a></h2><p><code>duration_seconds</code> is recorded on every node without being asked for, so the store
 can answer where the wall time went. In an optimisation that is normally the
 solver, and knowing the ratio tells you whether to buy a faster solver or a
 smarter proposal distribution.</p>
@@ -3455,8 +3455,8 @@ smarter proposal distribution.</p>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    SELECT step_type,</span>
 <span class="sd">           count(*)                          AS nodes,</span>
-<span class="sd">           round(sum(duration_s), 2)         AS total_s,</span>
-<span class="sd">           round(avg(duration_s) * 1000, 1)  AS mean_ms,</span>
+<span class="sd">           round(sum(duration_seconds), 2)         AS total_s,</span>
+<span class="sd">           round(avg(duration_seconds) * 1000, 1)  AS mean_ms,</span>
 <span class="sd">           round(sum(size_bytes) / 1e6, 2)   AS artifact_MB</span>
 <span class="sd">    FROM node</span>
 <span class="sd">    GROUP BY step_type</span>
@@ -3469,8 +3469,8 @@ smarter proposal distribution.</p>
     """
     SELECT step_type,
            count(*)                          AS nodes,
-           round(sum(duration_s), 2)         AS total_s,
-           round(avg(duration_s) * 1000, 1)  AS mean_ms,
+           round(sum(duration_seconds), 2)         AS total_s,
+           round(avg(duration_seconds) * 1000, 1)  AS mean_ms,
            round(sum(size_bytes) / 1e6, 2)   AS artifact_MB
     FROM node
     GROUP BY step_type
@@ -3490,8 +3490,8 @@ print(pd.DataFrame([dict(r) for r in rows]).to_string(index=False))</div>
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
 <pre>step_type  nodes  total_s  mean_ms  artifact_MB
-candidate     30     1.08     36.1        12.31
-   report      1     0.18    182.0         0.05
+candidate     30     1.09     36.5        12.31
+   report      1     0.15    151.0         0.05
  baseline      1     0.04     35.0         0.41
 </pre>
 </div>
@@ -3623,7 +3623,7 @@ print(pd.DataFrame([dict(r) for r in rows]).to_string(index=False))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">graph</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">generate_web_graph</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">graph</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">export_graph</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"web graph  </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">  (</span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> KiB)"</span><span class="p">)</span>
 
 <span class="n">backup</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="n">WORKDIR</span> <span class="o">/</span> <span class="s2">"heatsink_backup"</span><span class="p">)</span>
@@ -3632,12 +3632,12 @@ print(pd.DataFrame([dict(r) for r in rows]).to_string(index=False))</div>
 <span class="n">final</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span>
     <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">final store: </span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'nodes'</span><span class="p">]</span><span class="si">}</span><span class="s2"> nodes, "</span>
-    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'logical_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB of fields stored in "</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'artifact_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB of fields stored in "</span>
     <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'database_bytes'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB on disk "</span>
     <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">final</span><span class="p">[</span><span class="s1">'dedup_ratio'</span><span class="p">]</span><span class="si">}</span><span class="s2">x)"</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-18">graph = store.generate_web_graph()
+<div class="clipboard-copy-txt" id="cell-18">graph = store.export_graph()
 print(f"web graph  {graph.name}  ({graph.stat().st_size / 1024:.0f} KiB)")
 
 backup = store.backup(WORKDIR / "heatsink_backup")
@@ -3646,7 +3646,7 @@ print(f"backup     {backup.parent.name}/{backup.name}")
 final = store.stats()
 print(
     f"\nfinal store: {final['nodes']} nodes, "
-    f"{final['logical_bytes'] / 1e6:.1f} MB of fields stored in "
+    f"{final['artifact_bytes'] / 1e6:.1f} MB of fields stored in "
     f"{final['database_bytes'] / 1e6:.1f} MB on disk "
     f"({final['dedup_ratio']}x)"
 )</div>
@@ -3680,7 +3680,7 @@ final store: 32 nodes, 12.8 MB of fields stored in 6.9 MB on disk (2.178x)
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>The live explorer is the better tool for a search this shape, because the
 chain is long and you want to scrub along it rather than click through it:</p>
-<div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">host_live_graph</span><span class="p">()</span>          <span class="c1"># searchable explorer on localhost</span>
+<div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">serve_graph</span><span class="p">()</span>          <span class="c1"># searchable explorer on localhost</span>
 </pre></div>
 <p>It takes <code>field=value</code>, numeric filters like <code>peak_C&lt;75</code>, and free text; you
 can pin two designs for a side-by-side diff, or sort the runs table by any
@@ -3719,11 +3719,11 @@ trusting an annealing schedule and checking it.</li>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># store.close()</span>
 <span class="c1"># shutil.rmtree(WORKDIR, ignore_errors=True)</span>
-<span class="n">store</span><span class="o">.</span><span class="n">host_live_graph</span><span class="p">()</span>
+<span class="n">store</span><span class="o">.</span><span class="n">serve_graph</span><span class="p">()</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-19"># store.close()
 # shutil.rmtree(WORKDIR, ignore_errors=True)
-store.host_live_graph()</div>
+store.serve_graph()</div>
 </div>
 </div>
 </div>
@@ -3735,14 +3735,14 @@ store.host_live_graph()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Ancestree explorer running at: http://127.0.0.1:50799  (Store close will terminate background thread)
+<pre>Ancestree explorer running at: http://127.0.0.1:53534  (Store close will terminate background thread)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[19]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'http://127.0.0.1:50799'</pre>
+<pre>'http://127.0.0.1:53534'</pre>
 </div>
 </div>
 </div>
@@ -3776,7 +3776,7 @@ store.host_live_graph()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 14:29:26 UTC">July 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 14:52:31 UTC">July 26, 2026</span>
   </span>
 
     

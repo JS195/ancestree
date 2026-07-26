@@ -814,10 +814,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#ancestree.LineageStore.generate_web_graph" class="md-nav__link">
+  <a href="#ancestree.LineageStore.export_graph" class="md-nav__link">
     <span class="md-ellipsis">
       
-        generate_web_graph
+        export_graph
       
     </span>
   </a>
@@ -825,10 +825,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ancestree.LineageStore.host_live_graph" class="md-nav__link">
+  <a href="#ancestree.LineageStore.serve_graph" class="md-nav__link">
     <span class="md-ellipsis">
       
-        host_live_graph
+        serve_graph
       
     </span>
   </a>
@@ -886,10 +886,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ancestree.LineageStore.export" class="md-nav__link">
+  <a href="#ancestree.LineageStore.export_metadata" class="md-nav__link">
     <span class="md-ellipsis">
       
-        export
+        export_metadata
       
     </span>
   </a>
@@ -1303,10 +1303,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#ancestree.LineageStore.generate_web_graph" class="md-nav__link">
+  <a href="#ancestree.LineageStore.export_graph" class="md-nav__link">
     <span class="md-ellipsis">
       
-        generate_web_graph
+        export_graph
       
     </span>
   </a>
@@ -1314,10 +1314,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ancestree.LineageStore.host_live_graph" class="md-nav__link">
+  <a href="#ancestree.LineageStore.serve_graph" class="md-nav__link">
     <span class="md-ellipsis">
       
-        host_live_graph
+        serve_graph
       
     </span>
   </a>
@@ -1375,10 +1375,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ancestree.LineageStore.export" class="md-nav__link">
+  <a href="#ancestree.LineageStore.export_metadata" class="md-nav__link">
     <span class="md-ellipsis">
       
-        export
+        export_metadata
       
     </span>
   </a>
@@ -2498,18 +2498,18 @@ node or its parents cannot be resolved.</p>
 
 </div><hr />
 <h2 id="visualisation">Visualisation</h2>
-<p>Two ways to look at a store. <code>generate_web_graph</code> writes a self-contained, view-only file you can share; <code>host_live_graph</code> serves the searchable explorer, with diffs and the runs table, on localhost.</p>
+<p>Two ways to look at a store. <code>export_graph</code> writes a self-contained, view-only file you can share; <code>serve_graph</code> serves the searchable explorer, with diffs and the runs table, on localhost.</p>
 
 
 <div class="doc doc-object doc-function">
 
 
-<h3 id="ancestree.LineageStore.generate_web_graph" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">generate_web_graph</span>
+<h3 id="ancestree.LineageStore.export_graph" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">export_graph</span>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">generate_web_graph</span><span class="p">(</span><span class="n">dest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_artifacts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">export_graph</span><span class="p">(</span><span class="n">dest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_artifacts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2541,7 +2541,7 @@ store with huge artifacts. Defaults to
 <span class="normal"><a href="#__codelineno-0-701">701</a></span>
 <span class="normal"><a href="#__codelineno-0-702">702</a></span>
 <span class="normal"><a href="#__codelineno-0-703">703</a></span>
-<span class="normal"><a href="#__codelineno-0-704">704</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-689"><a id="__codelineno-0-689" name="__codelineno-0-689"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_web_graph</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-704">704</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-689"><a id="__codelineno-0-689" name="__codelineno-0-689"></a><span class="k">def</span><span class="w"> </span><span class="nf">export_graph</span><span class="p">(</span>
 </span><span id="__span-0-690"><a id="__codelineno-0-690" name="__codelineno-0-690"></a>    <span class="bp">self</span><span class="p">,</span>
 </span><span id="__span-0-691"><a id="__codelineno-0-691" name="__codelineno-0-691"></a>    <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-692"><a id="__codelineno-0-692" name="__codelineno-0-692"></a>    <span class="n">include_artifacts</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -2566,12 +2566,12 @@ store with huge artifacts. Defaults to
 <div class="doc doc-object doc-function">
 
 
-<h3 id="ancestree.LineageStore.host_live_graph" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">host_live_graph</span>
+<h3 id="ancestree.LineageStore.serve_graph" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">serve_graph</span>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">host_live_graph</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">open_browser</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">serve_graph</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">open_browser</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2726,7 +2726,7 @@ notebook cell restarts the explorer rather than leaking a second one.</p>
 <span class="normal"><a href="#__codelineno-0-758">758</a></span>
 <span class="normal"><a href="#__codelineno-0-759">759</a></span>
 <span class="normal"><a href="#__codelineno-0-760">760</a></span>
-<span class="normal"><a href="#__codelineno-0-761">761</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-706"><a id="__codelineno-0-706" name="__codelineno-0-706"></a><span class="k">def</span><span class="w"> </span><span class="nf">host_live_graph</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-761">761</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-706"><a id="__codelineno-0-706" name="__codelineno-0-706"></a><span class="k">def</span><span class="w"> </span><span class="nf">serve_graph</span><span class="p">(</span>
 </span><span id="__span-0-707"><a id="__codelineno-0-707" name="__codelineno-0-707"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">block</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">open_browser</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 </span><span id="__span-0-708"><a id="__codelineno-0-708" name="__codelineno-0-708"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="__span-0-709"><a id="__codelineno-0-709" name="__codelineno-0-709"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Serves the searchable explorer on ``127.0.0.1`` and returns its URL.</span>
@@ -3256,12 +3256,12 @@ the copy directly. An existing destination is overwritten.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="ancestree.LineageStore.export" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">export</span>
+<h3 id="ancestree.LineageStore.export_metadata" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">export_metadata</span>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">export</span><span class="p">(</span><span class="n">dest</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">export_metadata</span><span class="p">(</span><span class="n">dest</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -3337,7 +3337,7 @@ legible to grep even if ancestree is uninstalled tomorrow.</p>
 <span class="normal"><a href="#__codelineno-0-641">641</a></span>
 <span class="normal"><a href="#__codelineno-0-642">642</a></span>
 <span class="normal"><a href="#__codelineno-0-643">643</a></span>
-<span class="normal"><a href="#__codelineno-0-644">644</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-606"><a id="__codelineno-0-606" name="__codelineno-0-606"></a><span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="normal"><a href="#__codelineno-0-644">644</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-606"><a id="__codelineno-0-606" name="__codelineno-0-606"></a><span class="k">def</span><span class="w"> </span><span class="nf">export_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 </span><span id="__span-0-607"><a id="__codelineno-0-607" name="__codelineno-0-607"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes grep-able JSON sidecars: one ``meta.json`` per node under</span>
 </span><span id="__span-0-608"><a id="__codelineno-0-608" name="__codelineno-0-608"></a><span class="sd">    ``&lt;dest&gt;/&lt;node_id&gt;/`` (default ``&lt;root&gt;/export``), holding the</span>
 </span><span id="__span-0-609"><a id="__codelineno-0-609" name="__codelineno-0-609"></a><span class="sd">    node&#39;s structural facts, provenance, metadata envelopes and</span>
@@ -3360,7 +3360,7 @@ legible to grep even if ancestree is uninstalled tomorrow.</p>
 </span><span id="__span-0-626"><a id="__codelineno-0-626" name="__codelineno-0-626"></a>            <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">parent_id</span><span class="p">),</span>
 </span><span id="__span-0-627"><a id="__codelineno-0-627" name="__codelineno-0-627"></a>            <span class="s2">&quot;created_utc&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">created_utc</span><span class="p">,</span>
 </span><span id="__span-0-628"><a id="__codelineno-0-628" name="__codelineno-0-628"></a>            <span class="s2">&quot;healthy&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">healthy</span><span class="p">,</span>
-</span><span id="__span-0-629"><a id="__codelineno-0-629" name="__codelineno-0-629"></a>            <span class="s2">&quot;duration_s&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">duration_s</span><span class="p">,</span>
+</span><span id="__span-0-629"><a id="__codelineno-0-629" name="__codelineno-0-629"></a>            <span class="s2">&quot;duration_seconds&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">duration_seconds</span><span class="p">,</span>
 </span><span id="__span-0-630"><a id="__codelineno-0-630" name="__codelineno-0-630"></a>            <span class="s2">&quot;size_bytes&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">size_bytes</span><span class="p">,</span>
 </span><span id="__span-0-631"><a id="__codelineno-0-631" name="__codelineno-0-631"></a>            <span class="s2">&quot;content_hash&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">content_hash</span><span class="p">,</span>
 </span><span id="__span-0-632"><a id="__codelineno-0-632" name="__codelineno-0-632"></a>            <span class="s2">&quot;provenance&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_node</span><span class="p">(</span><span class="n">record</span><span class="p">)</span><span class="o">.</span><span class="n">provenance</span><span class="p">,</span>
@@ -3500,8 +3500,10 @@ construction, so the escape hatch can never corrupt invariants.</p>
     <div class="doc doc-contents first">
 
         <p>Store-level numbers that make deduplication visible: node/
-artifact/chunk counts, logical vs stored bytes, the dedup ratio
-(logical ÷ stored; higher is better) and the store's size on disk.</p>
+artifact/chunk counts, the bytes the artifacts add up to versus the
+bytes the chunk pool actually holds, the dedup ratio
+(<code>artifact_bytes</code> ÷ <code>chunk_stored_bytes</code>; higher is better) and
+the store's size on disk.</p>
 <p><code>database_bytes</code> counts the database file <strong>plus its write-ahead
 log</strong>: mid-session most recently written bytes live in the WAL, so
 counting only <code>ancestree.db</code> understates real disk usage by
@@ -3540,37 +3542,41 @@ orders of magnitude until the next checkpoint.</p>
 <span class="normal"><a href="#__codelineno-0-811">811</a></span>
 <span class="normal"><a href="#__codelineno-0-812">812</a></span>
 <span class="normal"><a href="#__codelineno-0-813">813</a></span>
-<span class="normal"><a href="#__codelineno-0-814">814</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-784"><a id="__codelineno-0-784" name="__codelineno-0-784"></a><span class="k">def</span><span class="w"> </span><span class="nf">stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal"><a href="#__codelineno-0-814">814</a></span>
+<span class="normal"><a href="#__codelineno-0-815">815</a></span>
+<span class="normal"><a href="#__codelineno-0-816">816</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-784"><a id="__codelineno-0-784" name="__codelineno-0-784"></a><span class="k">def</span><span class="w"> </span><span class="nf">stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 </span><span id="__span-0-785"><a id="__codelineno-0-785" name="__codelineno-0-785"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Store-level numbers that make deduplication visible: node/</span>
-</span><span id="__span-0-786"><a id="__codelineno-0-786" name="__codelineno-0-786"></a><span class="sd">    artifact/chunk counts, logical vs stored bytes, the dedup ratio</span>
-</span><span id="__span-0-787"><a id="__codelineno-0-787" name="__codelineno-0-787"></a><span class="sd">    (logical ÷ stored; higher is better) and the store&#39;s size on disk.</span>
-</span><span id="__span-0-788"><a id="__codelineno-0-788" name="__codelineno-0-788"></a>
-</span><span id="__span-0-789"><a id="__codelineno-0-789" name="__codelineno-0-789"></a><span class="sd">    ``database_bytes`` counts the database file **plus its write-ahead</span>
-</span><span id="__span-0-790"><a id="__codelineno-0-790" name="__codelineno-0-790"></a><span class="sd">    log**: mid-session most recently written bytes live in the WAL, so</span>
-</span><span id="__span-0-791"><a id="__codelineno-0-791" name="__codelineno-0-791"></a><span class="sd">    counting only ``ancestree.db`` understates real disk usage by</span>
-</span><span id="__span-0-792"><a id="__codelineno-0-792" name="__codelineno-0-792"></a><span class="sd">    orders of magnitude until the next checkpoint.</span>
-</span><span id="__span-0-793"><a id="__codelineno-0-793" name="__codelineno-0-793"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-794"><a id="__codelineno-0-794" name="__codelineno-0-794"></a>    <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-</span><span id="__span-0-795"><a id="__codelineno-0-795" name="__codelineno-0-795"></a>    <span class="n">nodes</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT count(*) AS n FROM node&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="s2">&quot;n&quot;</span><span class="p">]</span>
-</span><span id="__span-0-796"><a id="__codelineno-0-796" name="__codelineno-0-796"></a>    <span class="n">art</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-</span><span id="__span-0-797"><a id="__codelineno-0-797" name="__codelineno-0-797"></a>        <span class="s2">&quot;SELECT count(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM artifact&quot;</span>
-</span><span id="__span-0-798"><a id="__codelineno-0-798" name="__codelineno-0-798"></a>    <span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
-</span><span id="__span-0-799"><a id="__codelineno-0-799" name="__codelineno-0-799"></a>    <span class="n">chunks</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-</span><span id="__span-0-800"><a id="__codelineno-0-800" name="__codelineno-0-800"></a>        <span class="s2">&quot;SELECT count(*) AS n, COALESCE(SUM(length), 0) AS plain, &quot;</span>
-</span><span id="__span-0-801"><a id="__codelineno-0-801" name="__codelineno-0-801"></a>        <span class="s2">&quot;COALESCE(SUM(LENGTH(data)), 0) AS stored FROM chunk&quot;</span>
-</span><span id="__span-0-802"><a id="__codelineno-0-802" name="__codelineno-0-802"></a>    <span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
-</span><span id="__span-0-803"><a id="__codelineno-0-803" name="__codelineno-0-803"></a>    <span class="n">stored</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;stored&quot;</span><span class="p">])</span>
-</span><span id="__span-0-804"><a id="__codelineno-0-804" name="__codelineno-0-804"></a>    <span class="n">logical</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">art</span><span class="p">[</span><span class="s2">&quot;bytes&quot;</span><span class="p">])</span>
-</span><span id="__span-0-805"><a id="__codelineno-0-805" name="__codelineno-0-805"></a>    <span class="k">return</span> <span class="p">{</span>
-</span><span id="__span-0-806"><a id="__codelineno-0-806" name="__codelineno-0-806"></a>        <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">nodes</span><span class="p">),</span>
-</span><span id="__span-0-807"><a id="__codelineno-0-807" name="__codelineno-0-807"></a>        <span class="s2">&quot;artifacts&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">art</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]),</span>
-</span><span id="__span-0-808"><a id="__codelineno-0-808" name="__codelineno-0-808"></a>        <span class="s2">&quot;chunks&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]),</span>
-</span><span id="__span-0-809"><a id="__codelineno-0-809" name="__codelineno-0-809"></a>        <span class="s2">&quot;logical_bytes&quot;</span><span class="p">:</span> <span class="n">logical</span><span class="p">,</span>
-</span><span id="__span-0-810"><a id="__codelineno-0-810" name="__codelineno-0-810"></a>        <span class="s2">&quot;chunk_plain_bytes&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;plain&quot;</span><span class="p">]),</span>
-</span><span id="__span-0-811"><a id="__codelineno-0-811" name="__codelineno-0-811"></a>        <span class="s2">&quot;chunk_stored_bytes&quot;</span><span class="p">:</span> <span class="n">stored</span><span class="p">,</span>
-</span><span id="__span-0-812"><a id="__codelineno-0-812" name="__codelineno-0-812"></a>        <span class="s2">&quot;database_bytes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_bytes</span><span class="p">(),</span>
-</span><span id="__span-0-813"><a id="__codelineno-0-813" name="__codelineno-0-813"></a>        <span class="s2">&quot;dedup_ratio&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">logical</span> <span class="o">/</span> <span class="n">stored</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">if</span> <span class="n">stored</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-814"><a id="__codelineno-0-814" name="__codelineno-0-814"></a>    <span class="p">}</span>
+</span><span id="__span-0-786"><a id="__codelineno-0-786" name="__codelineno-0-786"></a><span class="sd">    artifact/chunk counts, the bytes the artifacts add up to versus the</span>
+</span><span id="__span-0-787"><a id="__codelineno-0-787" name="__codelineno-0-787"></a><span class="sd">    bytes the chunk pool actually holds, the dedup ratio</span>
+</span><span id="__span-0-788"><a id="__codelineno-0-788" name="__codelineno-0-788"></a><span class="sd">    (``artifact_bytes`` ÷ ``chunk_stored_bytes``; higher is better) and</span>
+</span><span id="__span-0-789"><a id="__codelineno-0-789" name="__codelineno-0-789"></a><span class="sd">    the store&#39;s size on disk.</span>
+</span><span id="__span-0-790"><a id="__codelineno-0-790" name="__codelineno-0-790"></a>
+</span><span id="__span-0-791"><a id="__codelineno-0-791" name="__codelineno-0-791"></a><span class="sd">    ``database_bytes`` counts the database file **plus its write-ahead</span>
+</span><span id="__span-0-792"><a id="__codelineno-0-792" name="__codelineno-0-792"></a><span class="sd">    log**: mid-session most recently written bytes live in the WAL, so</span>
+</span><span id="__span-0-793"><a id="__codelineno-0-793" name="__codelineno-0-793"></a><span class="sd">    counting only ``ancestree.db`` understates real disk usage by</span>
+</span><span id="__span-0-794"><a id="__codelineno-0-794" name="__codelineno-0-794"></a><span class="sd">    orders of magnitude until the next checkpoint.</span>
+</span><span id="__span-0-795"><a id="__codelineno-0-795" name="__codelineno-0-795"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-796"><a id="__codelineno-0-796" name="__codelineno-0-796"></a>    <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</span><span id="__span-0-797"><a id="__codelineno-0-797" name="__codelineno-0-797"></a>    <span class="n">nodes</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT count(*) AS n FROM node&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="s2">&quot;n&quot;</span><span class="p">]</span>
+</span><span id="__span-0-798"><a id="__codelineno-0-798" name="__codelineno-0-798"></a>    <span class="n">art</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+</span><span id="__span-0-799"><a id="__codelineno-0-799" name="__codelineno-0-799"></a>        <span class="s2">&quot;SELECT count(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM artifact&quot;</span>
+</span><span id="__span-0-800"><a id="__codelineno-0-800" name="__codelineno-0-800"></a>    <span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+</span><span id="__span-0-801"><a id="__codelineno-0-801" name="__codelineno-0-801"></a>    <span class="n">chunks</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+</span><span id="__span-0-802"><a id="__codelineno-0-802" name="__codelineno-0-802"></a>        <span class="s2">&quot;SELECT count(*) AS n, COALESCE(SUM(length), 0) AS plain, &quot;</span>
+</span><span id="__span-0-803"><a id="__codelineno-0-803" name="__codelineno-0-803"></a>        <span class="s2">&quot;COALESCE(SUM(LENGTH(data)), 0) AS stored FROM chunk&quot;</span>
+</span><span id="__span-0-804"><a id="__codelineno-0-804" name="__codelineno-0-804"></a>    <span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+</span><span id="__span-0-805"><a id="__codelineno-0-805" name="__codelineno-0-805"></a>    <span class="n">stored</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;stored&quot;</span><span class="p">])</span>
+</span><span id="__span-0-806"><a id="__codelineno-0-806" name="__codelineno-0-806"></a>    <span class="n">artifact_bytes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">art</span><span class="p">[</span><span class="s2">&quot;bytes&quot;</span><span class="p">])</span>
+</span><span id="__span-0-807"><a id="__codelineno-0-807" name="__codelineno-0-807"></a>    <span class="k">return</span> <span class="p">{</span>
+</span><span id="__span-0-808"><a id="__codelineno-0-808" name="__codelineno-0-808"></a>        <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">nodes</span><span class="p">),</span>
+</span><span id="__span-0-809"><a id="__codelineno-0-809" name="__codelineno-0-809"></a>        <span class="s2">&quot;artifacts&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">art</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]),</span>
+</span><span id="__span-0-810"><a id="__codelineno-0-810" name="__codelineno-0-810"></a>        <span class="s2">&quot;chunks&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]),</span>
+</span><span id="__span-0-811"><a id="__codelineno-0-811" name="__codelineno-0-811"></a>        <span class="s2">&quot;artifact_bytes&quot;</span><span class="p">:</span> <span class="n">artifact_bytes</span><span class="p">,</span>
+</span><span id="__span-0-812"><a id="__codelineno-0-812" name="__codelineno-0-812"></a>        <span class="s2">&quot;chunk_plain_bytes&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;plain&quot;</span><span class="p">]),</span>
+</span><span id="__span-0-813"><a id="__codelineno-0-813" name="__codelineno-0-813"></a>        <span class="s2">&quot;chunk_stored_bytes&quot;</span><span class="p">:</span> <span class="n">stored</span><span class="p">,</span>
+</span><span id="__span-0-814"><a id="__codelineno-0-814" name="__codelineno-0-814"></a>        <span class="s2">&quot;database_bytes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_bytes</span><span class="p">(),</span>
+</span><span id="__span-0-815"><a id="__codelineno-0-815" name="__codelineno-0-815"></a>        <span class="s2">&quot;dedup_ratio&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">artifact_bytes</span> <span class="o">/</span> <span class="n">stored</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">if</span> <span class="n">stored</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-816"><a id="__codelineno-0-816" name="__codelineno-0-816"></a>    <span class="p">}</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3687,7 +3693,7 @@ from the store; a node is a database row, not a directory).</p>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>    <span class="n">parent_id</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">compare</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="n">created_utc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">compare</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>    <span class="n">healthy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">compare</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span class="n">duration_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">compare</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span class="n">duration_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">compare</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span class="n">size_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">compare</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span class="n">content_hash</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">compare</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>    <span class="n">_provenance</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">compare</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -4470,7 +4476,7 @@ scratch directory (intermediate directories are created).</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 14:29:26 UTC">July 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 15:09:10 UTC">July 26, 2026</span>
   </span>
 
     
