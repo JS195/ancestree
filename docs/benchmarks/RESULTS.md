@@ -249,14 +249,16 @@ The default policy stores **3.93× less** than the logical size, which is
 **2.22× better than Layer 1 alone**. Counting the whole database file rather
 than the pool, still **3.13×**.
 
-> **On the 2.6× figure quoted elsewhere.** The README and CHANGELOG quote 2.6×
-> for a corpus of this shape. That measurement was taken on a corpus of *real
-> files* rather than the generated payloads here, and it scattered its
-> insertions and deletions instead of applying each at a single point — which
-> section 5 shows is by far the harder case. The corpus behind it is not in
-> this repository, so 2.6× is not reproducible from these notebooks. Treat it
-> as the conservative end of the range, and the numbers above as what this
-> suite actually measures.
+This is the figure the README and CHANGELOG quote. Through 0.2.0's development
+they quoted 2.6× instead, measured on a corpus of real files that scattered its
+insertions and deletions rather than applying each at a single point — which
+section 5 shows is by far the harder case. That corpus is not in this
+repository and the number could not be reproduced from anything shipped, so the
+published claim was moved onto this measurement, which anyone can re-run.
+
+Read it as the ratio for *this* corpus, not a guarantee. Section 5 is the
+reminder of how wide the spread is: the same 1% edit budget swings the ratio
+from 3.9× to 26× depending only on where the edits land.
 
 ### 10. Reclaiming space
 
