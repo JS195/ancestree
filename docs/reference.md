@@ -157,7 +157,7 @@ Deleting, reclaiming space, and getting data out. `prune` defaults to a dry run.
         heading_level: 3
         separate_signature: true
 
-::: ancestree.LineageStore.export
+::: ancestree.LineageStore.export_metadata
     handler: python
     options:
         show_root_heading: true
