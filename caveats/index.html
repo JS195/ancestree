@@ -589,6 +589,146 @@
   
   
   
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Benchmarks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks/RESULTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks/storage_benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage benchmark: what deduplication actually saves
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks/timing_benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timing benchmark: where the time goes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../reference/" class="md-nav__link">
         
@@ -1098,7 +1238,7 @@
 <h2 id="the-web-graph">The web graph</h2>
 <p><code>export_graph()</code> writes a self-contained <code>interactive_pipeline.html</code> at the store root, overwriting any existing one. It is view-only; the searchable explorer with diffs and the runs table is the live server (<code>store.serve_graph()</code> or <code>python -m ancestree serve</code>). Everything is inlined into one file, with small images as data URIs and larger artifacts copied beside it, so very large stores produce very large HTML.</p>
 <h2 id="write-and-read-costs">Write and read costs</h2>
-<p>Your code writes files at native speed inside the block. The cost is paid at block exit, where the artifact is chunked, hashed, compressed and committed. The chunking loop is pure Python at roughly 27 MB/s, so it scales with megabytes; files of 64 MiB and above switch to fixed boundaries at C speed. The first read of an artifact in a session reassembles it from chunks, and every read after that is a plain file read from the cache. <code>benchmarks/RESULTS.md</code> measures all of this.</p>
+<p>Your code writes files at native speed inside the block. The cost is paid at block exit, where the artifact is chunked, hashed, compressed and committed. The chunking loop is pure Python at roughly 27 MB/s, so it scales with megabytes; files of 64 MiB and above switch to fixed boundaries at C speed. The first read of an artifact in a session reassembles it from chunks, and every read after that is a plain file read from the cache. The <a href="../benchmarks/RESULTS/">Benchmarks</a> measure all of this.</p>
 <h2 id="concurrency">Concurrency</h2>
 <p>SQLite allows many readers but one writer at a time. Concurrent processes can share a store, with writers waiting their turn up to the busy timeout, but heavy parallel writing is not what this is for. A single <code>LineageStore</code> instance serialises its own writes.</p>
 <p>Opening a store sweeps for scratch directories orphaned by a crashed session. The sweep never touches a node another process is still writing: a node is assembled in a staging directory and renamed into place only once it carries its crash-recovery seed, so in-flight nodes are not mistaken for litter.</p>
@@ -1162,7 +1302,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 15:39:30 UTC">July 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 15:47:39 UTC">July 26, 2026</span>
   </span>
 
     
