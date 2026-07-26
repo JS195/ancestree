@@ -42,7 +42,7 @@ Ancestree models the pipeline as a directed acyclic graph. Each step is a node h
 
 **Enforced lineage rules.** Rules are optional, but if you declare them (`rules={"model": ["clean"]}`) an illegal transition raises at creation time instead of being logged afterwards.
 
-**One SQLite file.** Nodes are rows, not folders. Metadata, lineage and artifact bytes all live in `<root>/ancestree.db`. Back it up with `store.backup(dest)`, query it with `store.sql(...)`, or write `meta.json` sidecars with `store.export()`. Keep stores on local disk; SQLite locking over NFS is unreliable.
+**One SQLite file.** Nodes are rows, not folders. Metadata, lineage and artifact bytes all live in `<root>/ancestree.db`. Back it up with `store.backup(dest)`, query it with `store.sql(...)`, or write `meta.json` sidecars with `store.export_metadata()`. Keep stores on local disk; SQLite locking over NFS is unreliable.
 
 **Two layers of deduplication.** Rerunning a step that produces identical content returns the same node, not a copy. Below that, artifacts are split into content-defined chunks stored once, and near-identical artifacts are stored as deltas against existing ones. On a 69 MB corpus of six file types across six revisions, 2.6x less storage. Already-compressed data (PNG, parquet, zip) is stored verbatim. `store.stats()` reports the ratio on your own data.
 
@@ -80,8 +80,8 @@ with store.create_node(step_type="ingest") as node:
     df.to_csv(node / "raw.csv")
     node.add_meta("rows", len(df))
 
-store.host_live_graph()      # searchable explorer on localhost
-store.generate_web_graph()   # or a self-contained HTML snapshot
+store.serve_graph()      # searchable explorer on localhost
+store.export_graph()   # or a self-contained HTML snapshot
 ```
 
 ---
@@ -94,7 +94,7 @@ store.generate_web_graph()   # or a self-contained HTML snapshot
 | `generation`  | Which generation the step belongs to                           |
 | `step_type`   | The step performed                                             |
 | `created_utc` | When it ran                                                    |
-| `duration_s`  | How long it took                                               |
+| `duration_seconds`  | How long it took                                               |
 | `size_bytes`  | Total size of the node's artifacts                             |
 | `healthy`     | Whether the step completed or raised                           |
 | `provenance`  | User, Python version, platform, git commit/branch, dirty flag  |
@@ -122,9 +122,9 @@ store.stats()                                    # counts, sizes, dedup ratio
 
 ## Explorers
 
-**Live.** `store.host_live_graph()`, or `python -m ancestree serve ./my_project`. The graph is laid out by generation and coloured by step type. Search takes `field=value`, numeric filters like `accuracy>0.9`, and free text. Click a node for its metadata with images and tables inline, pin two for a diff, or sort the runs table. Light and dark themes. From a notebook the call returns immediately and serves in the background until the store closes; re-running the cell replaces it. The CLI form blocks until Ctrl+C.
+**Live.** `store.serve_graph()`, or `python -m ancestree serve ./my_project`. The graph is laid out by generation and coloured by step type. Search takes `field=value`, numeric filters like `accuracy>0.9`, and free text. Click a node for its metadata with images and tables inline, pin two for a diff, or sort the runs table. Light and dark themes. From a notebook the call returns immediately and serves in the background until the store closes; re-running the cell replaces it. The CLI form blocks until Ctrl+C.
 
-**Snapshot.** `store.generate_web_graph()` renders the store into one self-contained, view-only HTML file. Small images are embedded; larger artifacts are copied beside it so links work offline.
+**Snapshot.** `store.export_graph()` renders the store into one self-contained, view-only HTML file. Small images are embedded; larger artifacts are copied beside it so links work offline.
 
 CLI: `python -m ancestree serve|export|compact <root>`.
 

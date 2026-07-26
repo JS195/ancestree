@@ -26,7 +26,7 @@ Compaction scans the whole chunk pool, so pruning in a loop repeats that work. P
 
 ## The web graph
 
-`generate_web_graph()` writes a self-contained `interactive_pipeline.html` at the store root, overwriting any existing one. It is view-only; the searchable explorer with diffs and the runs table is the live server (`store.host_live_graph()` or `python -m ancestree serve`). Everything is inlined into one file, with small images as data URIs and larger artifacts copied beside it, so very large stores produce very large HTML.
+`export_graph()` writes a self-contained `interactive_pipeline.html` at the store root, overwriting any existing one. It is view-only; the searchable explorer with diffs and the runs table is the live server (`store.serve_graph()` or `python -m ancestree serve`). Everything is inlined into one file, with small images as data URIs and larger artifacts copied beside it, so very large stores produce very large HTML.
 
 ## Write and read costs
 
@@ -48,7 +48,7 @@ Keep stores on local disk. SQLite file locking over NFS is unreliable, and the 0
 
 ## One file is the whole store, but a live store is three
 
-`ancestree.db` is the single source of truth. There is no side index to rebuild and no directory tree to fall back on, which also means a corrupt database is real data loss. WAL journalling protects against crashes mid-write, `PRAGMA integrity_check` (via `store.sql`) verifies the file, and `store.export()` writes `meta.json` sidecars whenever you want plain files on record.
+`ancestree.db` is the single source of truth. There is no side index to rebuild and no directory tree to fall back on, which also means a corrupt database is real data loss. WAL journalling protects against crashes mid-write, `PRAGMA integrity_check` (via `store.sql`) verifies the file, and `store.export_metadata()` writes `meta.json` sidecars whenever you want plain files on record.
 
 Backing up needs care. While a store is open, WAL journalling keeps recent commits in `ancestree.db-wal` rather than `ancestree.db`. Copying `ancestree.db` alone out from under an open store gives a valid but empty store, silently. Any of these is correct:
 
@@ -64,7 +64,7 @@ Searches are answered by indexed SQL rather than linear scans, and opening a sto
 
 ## Metadata coercion and overwrites
 
-The structural keys the store owns (`node_id`, `parent_id`, `step_type`, `generation`, `healthy`, `created_utc`, `created_epoch`, `duration_s`, `size_bytes`, `content_hash`) are reserved. `add_meta` raises `ValueError` on them, so you cannot shadow the facts the store relies on for lineage, recency and health. They are attributes on the returned records, not metadata entries.
+The structural keys the store owns (`node_id`, `parent_id`, `step_type`, `generation`, `healthy`, `created_utc`, `created_epoch_seconds`, `duration_seconds`, `size_bytes`, `content_hash`) are reserved. `add_meta` raises `ValueError` on them, so you cannot shadow the facts the store relies on for lineage, recency and health. They are attributes on the returned records, not metadata entries.
 
 `table` and `json` entries are always stored non-searchable. `image` and `link` entries pointing at files rather than URLs are rewritten relative to the node and also forced non-searchable. They render in the explorers but cannot be matched by `find`.
 

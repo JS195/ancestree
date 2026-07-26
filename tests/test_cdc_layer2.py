@@ -151,7 +151,7 @@ def test_compact_keeps_live_delta_bases(tmp_path: Path) -> None:
             step_type="step",
             generation=0,
             created_utc="t",
-            created_epoch=0.0,
+            created_epoch_seconds=0.0,
             healthy=True,
         )
     )

@@ -50,7 +50,7 @@ def test_create_node_persists_everything(store: LineageStore, tmp_path: Path) ->
     assert record is not None
     assert record.step_type == "ingest"
     assert record.healthy is True
-    assert record.duration_s is not None and record.duration_s >= 0
+    assert record.duration_seconds is not None and record.duration_seconds >= 0
     assert record.size_bytes == len("a,b\n1,2\n") + len("plot")
     assert record.parent_id == ()
     assert record.metadata["rows"]["value"] == 1
@@ -283,8 +283,8 @@ def test_stats_show_storage_dedup(store: LineageStore) -> None:
     assert stats["nodes"] == 2
     assert stats["artifacts"] == 2
     assert stats["chunks"] > 0
-    assert stats["logical_bytes"] == 2 * len(payload)
-    # The second copy cost no new chunks, so logical > stored.
+    assert stats["artifact_bytes"] == 2 * len(payload)
+    # The second copy cost no new chunks, so artifact > stored.
     assert stats["dedup_ratio"] is not None and stats["dedup_ratio"] > 1.5
     assert stats["database_bytes"] > 0
 
@@ -304,7 +304,7 @@ def test_export_writes_grepable_sidecars(store: LineageStore, tmp_path: Path) ->
     node = store.latest(step_type="ingest")
     assert node is not None
 
-    dest = store.export()
+    dest = store.export_metadata()
     assert dest == tmp_path / "proj" / "export"
     document = json.loads((dest / node.node_id / "meta.json").read_text())
     assert document["step_type"] == "ingest"
@@ -313,5 +313,5 @@ def test_export_writes_grepable_sidecars(store: LineageStore, tmp_path: Path) ->
     assert "raw.csv" in document["artifacts"]
     assert set(document["provenance"]) >= {"user", "git_commit"}
 
-    custom = store.export(dest=tmp_path / "sidecars")
+    custom = store.export_metadata(dest=tmp_path / "sidecars")
     assert (custom / node.node_id / "meta.json").exists()

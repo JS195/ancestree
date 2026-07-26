@@ -169,7 +169,7 @@ class ChunkStore:
             f"JOIN chunk c ON c.digest = cf.digest AND c.kind != {_KIND_DELTA} "
             f"WHERE cf.feature IN ({placeholders}) "
             "GROUP BY cf.digest "
-            "ORDER BY count(*) DESC, c.created_epoch LIMIT 1",
+            "ORDER BY count(*) DESC, c.created_epoch_seconds LIMIT 1",
             list(features),
         ).fetchone()
         return None if row is None else str(row["digest"])
@@ -193,7 +193,7 @@ class ChunkStore:
     ) -> None:
         conn.execute(
             "INSERT INTO chunk "
-            "(digest, kind, base_digest, data, length, created_epoch) "
+            "(digest, kind, base_digest, data, length, created_epoch_seconds) "
             "VALUES (?, ?, ?, ?, ?, ?)",
             (digest, kind, base_digest, blob, length, time.time()),
         )

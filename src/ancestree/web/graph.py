@@ -139,7 +139,7 @@ def _node_entries(detail: dict[str, Any]) -> dict[str, Any]:
         "step_type": structural(detail["step_type"]),
         "timestamp": timestamp,
         "healthy": structural(detail["healthy"]),
-        "duration_s": structural(detail["duration_s"]),
+        "duration_seconds": structural(detail["duration_seconds"]),
         "size_bytes": structural(detail["size_bytes"]),
     }
     for key, value in detail["provenance"].items():
@@ -211,7 +211,7 @@ def _detail(
         "created_utc": node.created_utc,
         "created_display": format_timestamp(node.created_utc),
         "healthy": node.healthy,
-        "duration_s": node.duration_s,
+        "duration_seconds": node.duration_seconds,
         "size_bytes": node.size_bytes,
         "provenance": node.provenance,
         "metadata": metadata,

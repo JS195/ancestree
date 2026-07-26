@@ -57,10 +57,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "serve":
             # The CLI has no cell to return to: block until Ctrl+C.
-            store.host_live_graph(port=args.port, block=True)
+            store.serve_graph(port=args.port, block=True)
             return 0
         if args.command == "export":
-            dest = store.export(dest=args.dest)
+            dest = store.export_metadata(dest=args.dest)
             count = len(store.find())
             print(f"wrote sidecars for {count} node(s) to {dest}")
             return 0

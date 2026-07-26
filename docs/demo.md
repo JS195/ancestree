@@ -17,4 +17,4 @@ It behaves the same here as on your own machine. Drag to pan, scroll to zoom, an
         title="Ancestree interactive pipeline demo"></iframe>
 
 !!! tip "Generate your own"
-    This file is the output of a single `store.generate_web_graph()` call and is fully self-contained. Open it in a browser or share it as-is.
+    This file is the output of a single `store.export_graph()` call and is fully self-contained. Open it in a browser or share it as-is.

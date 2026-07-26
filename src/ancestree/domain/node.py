@@ -43,7 +43,7 @@ class Node:
     parent_id: tuple[str, ...] = field(compare=False)
     created_utc: str = field(compare=False)
     healthy: bool = field(compare=False)
-    duration_s: float | None = field(compare=False)
+    duration_seconds: float | None = field(compare=False)
     size_bytes: int = field(compare=False)
     content_hash: str | None = field(compare=False, repr=False)
     _provenance: dict[str, Any] = field(compare=False, repr=False)

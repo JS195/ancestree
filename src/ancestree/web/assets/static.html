@@ -215,7 +215,7 @@ function renderDetail(id) {
     ["created", d.created_display],
     ["generation", d.generation],
     ["parents", parents],
-    ["duration", d.duration_s === null ? "" : d.duration_s + " s"],
+    ["duration", d.duration_seconds === null ? "" : d.duration_seconds + " s"],
     ["size", fmtBytes(d.size_bytes)]
   ]));
 

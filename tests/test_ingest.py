@@ -35,7 +35,7 @@ def _record(node_id: str, parents: tuple[str, ...] = ()) -> NodeRecord:
         step_type="clean",
         generation=0,
         created_utc="2026-07-08T00:00:00+00:00",
-        created_epoch=1_750_000_000.0,
+        created_epoch_seconds=1_750_000_000.0,
         healthy=True,
         parent_id=parents,
     )

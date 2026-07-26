@@ -109,9 +109,9 @@ The one context manager everything else depends on. On clean exit the node commi
 
 ## Visualisation
 
-Two ways to look at a store. `generate_web_graph` writes a self-contained, view-only file you can share; `host_live_graph` serves the searchable explorer, with diffs and the runs table, on localhost.
+Two ways to look at a store. `export_graph` writes a self-contained, view-only file you can share; `serve_graph` serves the searchable explorer, with diffs and the runs table, on localhost.
 
-::: ancestree.LineageStore.generate_web_graph
+::: ancestree.LineageStore.export_graph
     handler: python
     options:
         show_root_heading: true
@@ -119,7 +119,7 @@ Two ways to look at a store. `generate_web_graph` writes a self-contained, view-
         heading_level: 3
         separate_signature: true
 
-::: ancestree.LineageStore.host_live_graph
+::: ancestree.LineageStore.serve_graph
     handler: python
     options:
         show_root_heading: true

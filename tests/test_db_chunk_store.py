@@ -28,7 +28,7 @@ def _add_node(metadata_store: MetadataStore, node_id: str) -> None:
             step_type="step",
             generation=0,
             created_utc="t",
-            created_epoch=0.0,
+            created_epoch_seconds=0.0,
             healthy=True,
         )
     )

@@ -38,15 +38,15 @@ CREATE TABLE config (
 
 -- One row per node. Structural + provenance facts are real columns.
 CREATE TABLE node (
-    node_id         TEXT PRIMARY KEY,          -- 8-char id
-    step_type       TEXT NOT NULL,
-    generation      INTEGER NOT NULL,
-    created_utc     TEXT NOT NULL,             -- ISO-8601
-    created_epoch   REAL NOT NULL,             -- latest() / colour-by-time
-    healthy         INTEGER NOT NULL,          -- 0/1
-    duration_s      REAL,
-    size_bytes      INTEGER NOT NULL DEFAULT 0,
-    content_hash    TEXT,                      -- content-identity bucket key
+    node_id               TEXT PRIMARY KEY,    -- 8-char id
+    step_type             TEXT NOT NULL,
+    generation            INTEGER NOT NULL,
+    created_utc           TEXT NOT NULL,       -- ISO-8601
+    created_epoch_seconds REAL NOT NULL,       -- latest() / colour-by-time
+    healthy               INTEGER NOT NULL,    -- 0/1
+    duration_seconds      REAL,
+    size_bytes            INTEGER NOT NULL DEFAULT 0,
+    content_hash          TEXT,                -- content-identity bucket key
     prov_user       TEXT,
     prov_python     TEXT,
     prov_platform   TEXT,
@@ -91,11 +91,11 @@ CREATE INDEX idx_meta_num ON metadata(key, num_value) WHERE num_value IS NOT NUL
 -- Depth is capped at 1: a base is never itself a delta.
 CREATE TABLE chunk (
     digest        TEXT PRIMARY KEY,            -- sha256 of the PLAINTEXT chunk
-    kind          INTEGER NOT NULL,            -- 0 raw(zlib) 1 delta(zdict) 2 verbatim
-    base_digest   TEXT REFERENCES chunk(digest),
-    data          BLOB NOT NULL,               -- zlib(raw) or the delta stream
-    length        INTEGER NOT NULL,            -- plaintext length
-    created_epoch REAL NOT NULL
+    kind                  INTEGER NOT NULL,    -- 0 raw(zlib) 1 delta(zdict) 2 verbatim
+    base_digest           TEXT REFERENCES chunk(digest),
+    data                  BLOB NOT NULL,       -- zlib(raw) or the delta stream
+    length                INTEGER NOT NULL,    -- plaintext length
+    created_epoch_seconds REAL NOT NULL
 );
 
 -- Resemblance index: super-feature -> chunk, for near-duplicate discovery.

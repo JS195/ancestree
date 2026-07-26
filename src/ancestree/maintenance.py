@@ -280,7 +280,7 @@ def sweep_orphan_scratch(
                 step_type=str(seed.get("step_type") or "unknown"),
                 generation=int(seed.get("generation") or 0),
                 created_utc=started,
-                created_epoch=epoch,
+                created_epoch_seconds=epoch,
                 healthy=False,  # a hard kill is never a clean completion
                 parent_id=tuple(str(p) for p in seed.get("parent_id") or []),
             )

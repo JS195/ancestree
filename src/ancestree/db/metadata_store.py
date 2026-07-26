@@ -44,11 +44,11 @@ _NODE_COLUMNS = frozenset(
         "step_type",
         "generation",
         "healthy",
-        "duration_s",
+        "duration_seconds",
         "size_bytes",
         "content_hash",
         "created_utc",
-        "created_epoch",
+        "created_epoch_seconds",
     }
 )
 
@@ -107,9 +107,9 @@ class NodeRecord:
     step_type: str
     generation: int
     created_utc: str
-    created_epoch: float
+    created_epoch_seconds: float
     healthy: bool
-    duration_s: float | None = None
+    duration_seconds: float | None = None
     size_bytes: int = 0
     content_hash: str | None = None
     prov_user: str | None = None
@@ -179,9 +179,9 @@ def _record_from_row(row: Any, parents: tuple[str, ...]) -> NodeRecord:
         step_type=row["step_type"],
         generation=row["generation"],
         created_utc=row["created_utc"],
-        created_epoch=row["created_epoch"],
+        created_epoch_seconds=row["created_epoch_seconds"],
         healthy=bool(row["healthy"]),
-        duration_s=row["duration_s"],
+        duration_seconds=row["duration_seconds"],
         size_bytes=row["size_bytes"],
         content_hash=row["content_hash"],
         prov_user=row["prov_user"],
@@ -220,7 +220,7 @@ class MetadataStore:
         with self._manager.write() as conn:
             conn.execute(
                 "INSERT INTO node (node_id, step_type, generation, "
-                "created_utc, created_epoch, healthy, duration_s, "
+                "created_utc, created_epoch_seconds, healthy, duration_seconds, "
                 "size_bytes, content_hash, prov_user, prov_python, "
                 "prov_platform, prov_git_commit, prov_git_branch, "
                 "prov_git_dirty) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
@@ -230,9 +230,9 @@ class MetadataStore:
                     record.step_type,
                     record.generation,
                     record.created_utc,
-                    record.created_epoch,
+                    record.created_epoch_seconds,
                     int(record.healthy),
-                    record.duration_s,
+                    record.duration_seconds,
                     record.size_bytes,
                     record.content_hash,
                     record.prov_user,
@@ -383,7 +383,7 @@ class MetadataStore:
         """Every node id, oldest first."""
         rows = (
             self._manager.read()
-            .execute("SELECT node_id FROM node ORDER BY created_epoch, node_id")
+            .execute("SELECT node_id FROM node ORDER BY created_epoch_seconds, node_id")
             .fetchall()
         )
         return [row["node_id"] for row in rows]
@@ -457,7 +457,7 @@ class MetadataStore:
         sql = "SELECT * FROM node"
         if conditions:
             sql += " WHERE " + " AND ".join(conditions)
-        sql += " ORDER BY created_epoch, node_id"
+        sql += " ORDER BY created_epoch_seconds, node_id"
         candidates = self._manager.read().execute(sql, params).fetchall()
 
         parent_lists: dict[str, list[str]] = (
@@ -547,7 +547,7 @@ class MetadataStore:
             self._manager.read()
             .execute(
                 f"SELECT node_id FROM node WHERE node_id IN ({placeholders}) "
-                "ORDER BY created_epoch DESC, node_id DESC LIMIT 1",
+                "ORDER BY created_epoch_seconds DESC, node_id DESC LIMIT 1",
                 list(node_ids),
             )
             .fetchone()
@@ -580,7 +580,7 @@ class MetadataStore:
             .execute(
                 "SELECT e.child_id FROM edge e JOIN node n ON n.node_id = "
                 "e.child_id WHERE e.parent_id = ? "
-                "ORDER BY n.created_epoch, n.node_id",
+                "ORDER BY n.created_epoch_seconds, n.node_id",
                 (node_id,),
             )
             .fetchall()

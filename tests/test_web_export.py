@@ -67,7 +67,7 @@ def test_export_writes_a_complete_offline_file(
     store: LineageStore, tmp_path: Path
 ) -> None:
     _chain(store)
-    dest = store.generate_web_graph()
+    dest = store.export_graph()
     assert dest == tmp_path / "proj" / "interactive_pipeline.html"
     html = dest.read_text()
 
@@ -92,7 +92,7 @@ def test_inline_only_stores_stay_single_file(
 ) -> None:
     with store.create_node(step_type="ingest") as node:
         (node / "plot.png").write_bytes(_TINY_PNG)
-    dest = store.generate_web_graph()
+    dest = store.export_graph()
     assert "data:image/png;base64," in dest.read_text()
     assert not (tmp_path / "proj" / "interactive_pipeline_files").exists()
 
@@ -101,7 +101,7 @@ def test_metadata_only_export_skips_artifact_copies(
     store: LineageStore, tmp_path: Path
 ) -> None:
     _chain(store)
-    dest = store.generate_web_graph(include_artifacts=False)
+    dest = store.export_graph(include_artifacts=False)
     html = dest.read_text()
     assert not (tmp_path / "proj" / "interactive_pipeline_files").exists()
     assert "data:image/png;base64," not in html
@@ -112,7 +112,7 @@ def test_embedded_json_cannot_break_out_of_its_script_tag(
     store: LineageStore,
 ) -> None:
     _chain(store)
-    html = store.generate_web_graph().read_text()
+    html = store.export_graph().read_text()
     # The malicious metadata value survives as data but its "</" is
     # escaped, so the JSON block cannot terminate the script element.
     assert "<\\/script><b>sneaky<\\/b>" in html
@@ -121,7 +121,7 @@ def test_embedded_json_cannot_break_out_of_its_script_tag(
 
 def test_export_to_custom_destination(store: LineageStore, tmp_path: Path) -> None:
     _chain(store)
-    dest = store.generate_web_graph(dest=tmp_path / "out" / "snap.html")
+    dest = store.export_graph(dest=tmp_path / "out" / "snap.html")
     assert dest.exists()
     ingest = store.latest(step_type="ingest")
     assert ingest is not None

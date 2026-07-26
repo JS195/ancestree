@@ -108,7 +108,7 @@ Every write is a transaction, so a node is committed whole or not at all. `prune
 === ":material-chart-timeline-variant: Visualise"
 
     ```python
-    store.generate_web_graph()
+    store.export_graph()
     # Graph generated at my_store/interactive_pipeline.html
     ```
 

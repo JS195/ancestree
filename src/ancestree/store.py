@@ -358,9 +358,9 @@ class LineageStore:
             step_type=handle.step_type,
             generation=handle.generation,
             created_utc=datetime.now(timezone.utc).isoformat(),
-            created_epoch=time.time(),
+            created_epoch_seconds=time.time(),
             healthy=healthy,
-            duration_s=round(duration, 3),
+            duration_seconds=round(duration, 3),
             size_bytes=0,  # recomputed by ingest from the actual files
             content_hash=content_hash,
             prov_user=prov["user"],
@@ -444,7 +444,7 @@ class LineageStore:
             parent_id=record.parent_id,
             created_utc=record.created_utc,
             healthy=record.healthy,
-            duration_s=record.duration_s,
+            duration_seconds=record.duration_seconds,
             size_bytes=record.size_bytes,
             content_hash=record.content_hash,
             _provenance={
@@ -603,7 +603,7 @@ class LineageStore:
         """
         return compact_chunks(self._manager)
 
-    def export(self, dest: Path | str | None = None) -> Path:
+    def export_metadata(self, dest: Path | str | None = None) -> Path:
         """Writes grep-able JSON sidecars: one ``meta.json`` per node under
         ``<dest>/<node_id>/`` (default ``<root>/export``), holding the
         node's structural facts, provenance, metadata envelopes and
@@ -626,7 +626,7 @@ class LineageStore:
                 "parent_id": list(record.parent_id),
                 "created_utc": record.created_utc,
                 "healthy": record.healthy,
-                "duration_s": record.duration_s,
+                "duration_seconds": record.duration_seconds,
                 "size_bytes": record.size_bytes,
                 "content_hash": record.content_hash,
                 "provenance": self._to_node(record).provenance,
@@ -686,7 +686,7 @@ class LineageStore:
     # Visualisation
     # ------------------------------------------------------------------
 
-    def generate_web_graph(
+    def export_graph(
         self,
         dest: Path | str | None = None,
         include_artifacts: bool = True,
@@ -703,7 +703,7 @@ class LineageStore:
         """
         return export_static(self, dest=dest, include_artifacts=include_artifacts)
 
-    def host_live_graph(
+    def serve_graph(
         self, port: int = 0, block: bool = False, open_browser: bool = True
     ) -> str:
         """Serves the searchable explorer on ``127.0.0.1`` and returns its URL.
@@ -783,8 +783,10 @@ class LineageStore:
 
     def stats(self) -> dict[str, Any]:
         """Store-level numbers that make deduplication visible: node/
-        artifact/chunk counts, logical vs stored bytes, the dedup ratio
-        (logical ÷ stored; higher is better) and the store's size on disk.
+        artifact/chunk counts, the bytes the artifacts add up to versus the
+        bytes the chunk pool actually holds, the dedup ratio
+        (``artifact_bytes`` ÷ ``chunk_stored_bytes``; higher is better) and
+        the store's size on disk.
 
         ``database_bytes`` counts the database file **plus its write-ahead
         log**: mid-session most recently written bytes live in the WAL, so
@@ -801,16 +803,16 @@ class LineageStore:
             "COALESCE(SUM(LENGTH(data)), 0) AS stored FROM chunk"
         ).fetchone()
         stored = int(chunks["stored"])
-        logical = int(art["bytes"])
+        artifact_bytes = int(art["bytes"])
         return {
             "nodes": int(nodes),
             "artifacts": int(art["n"]),
             "chunks": int(chunks["n"]),
-            "logical_bytes": logical,
+            "artifact_bytes": artifact_bytes,
             "chunk_plain_bytes": int(chunks["plain"]),
             "chunk_stored_bytes": stored,
             "database_bytes": self._database_bytes(),
-            "dedup_ratio": round(logical / stored, 3) if stored else None,
+            "dedup_ratio": round(artifact_bytes / stored, 3) if stored else None,
         }
 
     def _database_bytes(self) -> int:

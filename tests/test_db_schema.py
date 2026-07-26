@@ -22,7 +22,7 @@ def _pragma(conn: sqlite3.Connection, name: str) -> object:
 def _add_node(conn: sqlite3.Connection, node_id: str) -> None:
     conn.execute(
         "INSERT INTO node (node_id, step_type, generation, created_utc, "
-        "created_epoch, healthy) VALUES (?, 'step', 0, 't', 0.0, 1)",
+        "created_epoch_seconds, healthy) VALUES (?, 'step', 0, 't', 0.0, 1)",
         (node_id,),
     )
 

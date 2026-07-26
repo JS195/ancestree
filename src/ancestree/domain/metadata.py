@@ -34,8 +34,8 @@ RESERVED_KEYS: frozenset[str] = frozenset(
         "generation",
         "healthy",
         "created_utc",
-        "created_epoch",
-        "duration_s",
+        "created_epoch_seconds",
+        "duration_seconds",
         "size_bytes",
         "content_hash",
     }

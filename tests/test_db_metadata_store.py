@@ -41,7 +41,7 @@ def _record(
         step_type=step_type,
         generation=generation,
         created_utc="2026-07-08T00:00:00+00:00",
-        created_epoch=_EPOCH + epoch_offset,
+        created_epoch_seconds=_EPOCH + epoch_offset,
         healthy=healthy,
         parent_id=parents,
     )
@@ -205,7 +205,7 @@ def test_find_by_hash(store: MetadataStore) -> None:
             step_type="step",
             generation=0,
             created_utc="t",
-            created_epoch=_EPOCH,
+            created_epoch_seconds=_EPOCH,
             healthy=True,
             content_hash="cafe123",
         )

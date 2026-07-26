@@ -39,7 +39,7 @@ This rebuild moves **all durable state into one SQLite database (`ancestree.db`)
 - **Nodes become rows, not folders.** A short-lived scratch directory exists only while a node's artifacts are being written, then it is ingested and deleted.
 - **Deduplication gets a second layer**: FastCDC (variable, content-defined chunking) plus resemblance-matched delta storage via zlib dictionary compression, which catches near-duplicate blocks that exact chunking cannot.
 - **The two big classes** (`LineageStore`, 899 lines; `Node`, 716 lines) get broken into focused, testable units.
-- **A locally hosted live explorer** (`host_live_graph()`, stdlib `http.server`) joins the emailable single-file HTML export instead of replacing it.
+- **A locally hosted live explorer** (`serve_graph()`, stdlib `http.server`) joins the emailable single-file HTML export instead of replacing it.
 
 The result: faster loading (memory-mapped, indexed queries instead of an O(N) directory reconcile on every cold start), native-speed writes (user code still just writes files), far simpler persistence, better storage efficiency — no new dependencies, and a public API I have deliberately redesigned rather than preserved (see [§11](#11-public-api)).
 
@@ -144,7 +144,7 @@ Each decision records what I chose, why, and what it costs. Everything in [§5](
 - **Cost.** Reading a delta chunk fetches its base too (bounded by depth 1); the resemblance index adds one lookup plus a few rows per new chunk; `compact()` has to keep live bases (a one-hop closure).
 
 ### AD6 — Structural & provenance fields become columns
-- **Decision.** `step_type`, `generation`, `timestamp`, `healthy`, `duration_s`, `size`, `content_hash` and the provenance fields become real columns on `node`. The `metadata` table holds **only** user metadata.
+- **Decision.** `step_type`, `generation`, `timestamp`, `healthy`, `duration_seconds`, `size`, `content_hash` and the provenance fields become real columns on `node`. The `metadata` table holds **only** user metadata.
 - **Why.** The system-vs-user distinction becomes schema, enforced by the database, instead of three overlapping key-sets maintained by convention.
 - **Cost.** Nothing material.
 
@@ -153,7 +153,7 @@ Each decision records what I chose, why, and what it costs. Everything in [§5](
 - **Why.** Collapses `flatten_meta`, `to_db` and most of `is_match`, and scales past linear scans. Lambdas stay because they are one of the nicest parts of the API.
 
 ### AD8 — Keep the `/` ergonomics and the static export; add the server
-- **Decision.** `node / "x"` and `node.artifacts()` keep their feel (HC2). `generate_web_graph()` still writes an emailable single-file HTML, now a **view-only snapshot** (graph + click-to-view metadata, no search box — see AD11). `host_live_graph()` is **added** as the searchable, always-current explorer.
+- **Decision.** `node / "x"` and `node.artifacts()` keep their feel (HC2). `export_graph()` still writes an emailable single-file HTML, now a **view-only snapshot** (graph + click-to-view metadata, no search box — see AD11). `serve_graph()` is **added** as the searchable, always-current explorer.
 - **Why.** I keep a shareable offline artifact whilst the rich exploring moves to the server.
 
 ### AD9 — Accept single-DB-as-truth resilience posture
@@ -164,13 +164,13 @@ Each decision records what I chose, why, and what it costs. Everything in [§5](
 - **Decision.** Backwards compatibility is dropped (pre-1.0). The API gets one consistent vocabulary and sheds surface that stops meaning anything after the rebuild.
 - **Removed.** `Node.path` (nodes are rows); `rebuild_db_from_disk()` (no separate index to rebuild); `flush()`/`clear_cache()` (lifecycle is automatic; space is reclaimed by `compact()`).
 - **Renamed** into one query vocabulary: `get_node`→`get`, `find_node`→`find`, `get_most_recent_node`→`latest`, `get_child_nodes`→`children`, `get_lineage`→`lineage`, `find_in_lineage`→`ancestors`.
-- **Reshaped.** `reuse_identical`/`delta` become persisted store policy set once at creation (like `rules`), not per-open flags; maintenance converges on `compact()`; visualisation is `generate_web_graph()` (static) + `host_live_graph()` (live).
+- **Reshaped.** `reuse_identical`/`delta` become persisted store policy set once at creation (like `rules`), not per-open flags; maintenance converges on `compact()`; visualisation is `export_graph()` (static) + `serve_graph()` (live).
 - **Restructured.** The mutable **recording handle** yielded by `create_node` (write API: `/`, `add_meta`) is split from the immutable **`Node` record** returned by queries (read API: attributes, `metadata`, `artifacts`). This kills the old footgun of calling `add_meta` on a queried node and lets the record be a proper hashable value object.
 - **Why.** The old verbs mixed `get_*`/`find_*` inconsistently and several methods stop making sense post-rebuild. A coherent API is one of the goals, not a casualty.
 - **Cost.** A breaking change for 0.1.x, which I am fine with pre-1.0. The test suite gets rewritten to the new API rather than pinned to the old one.
 
 ### AD11 — The live server queries the database directly; no client-side "grep"
-- **Decision.** In `host_live_graph`, all search, filtering, lineage highlighting, node detail and diff are answered by **the server running SQL** against `ancestree.db`. The browser is a thin client: it fetches a lightweight graph skeleton for layout and asks the server for everything else. No metadata blob gets shipped to the browser, and no query engine runs there.
+- **Decision.** In `serve_graph`, all search, filtering, lineage highlighting, node detail and diff are answered by **the server running SQL** against `ancestree.db`. The browser is a thin client: it fetches a lightweight graph skeleton for layout and asks the server for everything else. No metadata blob gets shipped to the browser, and no query engine runs there.
 - **Why.** Metadata lives in SQL now. Re-inlining it all and re-implementing a query language in JavaScript would duplicate the Python query engine and does not scale — 10k annotated nodes is a multi-MB blob. One query grammar (Python → SQL) serves both `store.find(...)` and `/api/search`.
 - **Static export.** An offline single file has no server to ask, so rather than keep a second query implementation in JS, the static export is a **view-only snapshot**: graph plus click-to-view metadata, no search box. Exactly one query implementation exists as a result.
 - **Cost.** Rich search needs the server running (which is the point of live mode). The emailable file becomes a shareable snapshot rather than a search tool.
@@ -246,7 +246,7 @@ The reassembled-artifact **read cache** lives at `<root>/.cache/<session>/` — 
 
 **`__main__.py`** — an `argparse` CLI: `python -m ancestree serve|export|compact <root>`. The live server and the maintenance verbs should be usable without writing Python; stdlib only (HC1).
 
-**`store.py` — `LineageStore` (facade).** Construction and wiring of `ConnectionManager`, `MetadataStore`, `ChunkStore`, `RuleEngine`, `Pruner`; the context manager; and thin delegating methods (`create_node`, `get`/`find`/`latest`/`lineage`/`children`/`ancestors`, `prune`, `compact`, `sql`, `stats`, `export`, `generate_web_graph`, `host_live_graph`). The old 899-line class did everything itself; this one only orchestrates — every algorithm lives in a focused module.
+**`store.py` — `LineageStore` (facade).** Construction and wiring of `ConnectionManager`, `MetadataStore`, `ChunkStore`, `RuleEngine`, `Pruner`; the context manager; and thin delegating methods (`create_node`, `get`/`find`/`latest`/`lineage`/`children`/`ancestors`, `prune`, `compact`, `sql`, `stats`, `export_metadata`, `export_graph`, `serve_graph`). The old 899-line class did everything itself; this one only orchestrates — every algorithm lives in a focused module.
 
 **`maintenance.py`.** `Pruner.prune(node_id, dry_run=True)` (DAG-aware: a child dies only if all its parents die — expressed with SQL + `ON DELETE CASCADE`); `compact()` (delete chunks nothing references — a one-hop closure under depth-1 — then `PRAGMA incremental_vacuum`, with full `VACUUM` as the deep option); and the **orphan-scratch sweep** run at store open (adopt a dead process's seeded scratch as an unhealthy node — §7.5 — and reap dead sessions' read-cache directories). Destructive and space ops kept away from the read/write path; top-level because they cut across `db/` and `ingest/`. One verb (`compact`) replaces the old `gc`/`flush`/`clear_cache` trio.
 
@@ -290,7 +290,7 @@ The reassembled-artifact **read cache** lives at `<root>/.cache/<session>/` — 
 
 **`export.py`.** `export_static(store, dest)` — the **view-only** single-file HTML (graph + click-to-view metadata, no search box; AD11), rendered through validated named markers (each must appear exactly once or the export fails loudly — no more brittle exact-string tag matching). Artifact bytes live in SQLite now, so references get materialised at export time: small images inline as data URIs (the common case stays genuinely single-file), everything else lands beside the file under `<name>_files/`, and `include_artifacts=False` gives a metadata-only snapshot. The embedded JSON escapes `</` so no metadata value can break out of its script tag.
 
-**`server.py`.** The live explorer: `http.server` on `127.0.0.1` serving the **classic 0.1.x front end** (`template_new.html` with `styles.css`, `actions.js` and vis-network inlined at the template's original markers), the store baked in as `window.PIPELINE_DATA` and re-rendered on every page load — refresh the browser and nodes created since the server started appear. Artifact links resolve at `/<node_id>/<relpath>`, and the SQL-backed JSON API (`/api/graph`, `/api/node`, `/api/search`, `/api/diff`, `/api/runs`, `/api/artifact`) stays for programmatic use. **Every endpoint resolves by database key, never a filesystem path — traversal is structurally impossible.** Deliberately single-threaded: one SQLite read connection, trivial lifecycle. `host_live_graph` defaults to non-blocking + opening the browser, and re-running it replaces the previous server (notebook-friendly); the CLI passes `block=True`.
+**`server.py`.** The live explorer: `http.server` on `127.0.0.1` serving the **classic 0.1.x front end** (`template_new.html` with `styles.css`, `actions.js` and vis-network inlined at the template's original markers), the store baked in as `window.PIPELINE_DATA` and re-rendered on every page load — refresh the browser and nodes created since the server started appear. Artifact links resolve at `/<node_id>/<relpath>`, and the SQL-backed JSON API (`/api/graph`, `/api/node`, `/api/search`, `/api/diff`, `/api/runs`, `/api/artifact`) stays for programmatic use. **Every endpoint resolves by database key, never a filesystem path — traversal is structurally impossible.** Deliberately single-threaded: one SQLite read connection, trivial lifecycle. `serve_graph` defaults to non-blocking + opening the browser, and re-running it replaces the previous server (notebook-friendly); the CLI passes `block=True`.
 
 **`web/assets/`** holds `static.html` (the view-only snapshot) and vis-network; the classic explorer's assets live at the package root (`ancestree/assets/`), shared verbatim with the 0.1.x repo.
 
@@ -335,15 +335,15 @@ CREATE TABLE config (
 
 -- One row per node. Structural + provenance facts are real columns.
 CREATE TABLE node (
-    node_id         TEXT PRIMARY KEY,          -- 8-char id
-    step_type       TEXT NOT NULL,
-    generation      INTEGER NOT NULL,
-    created_utc     TEXT NOT NULL,             -- ISO-8601
-    created_epoch   REAL NOT NULL,             -- latest() / colour-by-time
-    healthy         INTEGER NOT NULL,          -- 0/1
-    duration_s      REAL,
-    size_bytes      INTEGER NOT NULL DEFAULT 0,
-    content_hash    TEXT,                      -- content-identity bucket key
+    node_id               TEXT PRIMARY KEY,    -- 8-char id
+    step_type             TEXT NOT NULL,
+    generation            INTEGER NOT NULL,
+    created_utc           TEXT NOT NULL,       -- ISO-8601
+    created_epoch_seconds REAL NOT NULL,       -- latest() / colour-by-time
+    healthy               INTEGER NOT NULL,    -- 0/1
+    duration_seconds      REAL,
+    size_bytes            INTEGER NOT NULL DEFAULT 0,
+    content_hash          TEXT,                -- content-identity bucket key
     prov_user       TEXT,
     prov_python     TEXT,
     prov_platform   TEXT,
@@ -384,12 +384,12 @@ CREATE INDEX idx_meta_num ON metadata(key, num_value)     WHERE num_value IS NOT
 -- zlib dictionary-compressed against base_digest. Depth is capped at 1:
 -- a base_digest always names a RAW chunk.
 CREATE TABLE chunk (
-    digest        TEXT PRIMARY KEY,            -- sha256 of the PLAINTEXT chunk
-    kind          INTEGER NOT NULL,            -- 0 = raw(zlib), 1 = delta(zdict)
-    base_digest   TEXT REFERENCES chunk(digest),
-    data          BLOB NOT NULL,               -- zlib(raw) or the delta stream
-    length        INTEGER NOT NULL,            -- plaintext length
-    created_epoch REAL NOT NULL
+    digest                TEXT PRIMARY KEY,    -- sha256 of the PLAINTEXT chunk
+    kind                  INTEGER NOT NULL,    -- 0 = raw(zlib), 1 = delta(zdict)
+    base_digest           TEXT REFERENCES chunk(digest),
+    data                  BLOB NOT NULL,       -- zlib(raw) or the delta stream
+    length                INTEGER NOT NULL,    -- plaintext length
+    created_epoch_seconds REAL NOT NULL
 );
 
 -- Resemblance index: super-feature -> chunk, for near-duplicate discovery.
@@ -558,7 +558,7 @@ Each phase is independently testable and leaves the suite green. I tick items as
 - **Exit:** export coverage rewritten and green; the generated HTML opens offline with working artifact links.
 
 ### Phase 8 — Local live server
-- [x] `web/server.py` — `host_live_graph()`; SQL-backed endpoints (`/api/graph`, `/api/node`, `/api/search`, `/api/diff`, `/api/runs`, `/api/artifact`); on-demand artifact reassembly.
+- [x] `web/server.py` — `serve_graph()`; SQL-backed endpoints (`/api/graph`, `/api/node`, `/api/search`, `/api/diff`, `/api/runs`, `/api/artifact`); on-demand artifact reassembly.
 - [x] Live front end — thin client fetching from the API; no client-side query engine (AD11).
 - [x] **Explorer parity (gap review):** the 0.1.x file's README-marketed search, node **diff** and sortable **runs table** live HERE now — the static export stays view-only, so the live server is where that parity had to land.
 - [x] `__main__.py` CLI with the `serve` subcommand (`python -m ancestree serve <root>`).
@@ -594,11 +594,11 @@ Backwards compatibility is **not** a goal (pre-1.0). The API is redesigned aroun
 | `store.ancestors(node, **filters)` | `find_in_lineage` | filtered ancestry |
 | `store.from_parent(node, pattern)` | `from_parent` | unchanged |
 
-**Node record** — `node.node_id`, `.step_type`, `.generation`, `.parent_id`, `.created_utc`, `.healthy`, `.duration_s`, `.size_bytes`, `.metadata`, `.provenance`, `.artifacts(pattern)`, `node / "file"` (read → readable path). Immutable and hashable. `Node.path` is **gone**.
+**Node record** — `node.node_id`, `.step_type`, `.generation`, `.parent_id`, `.created_utc`, `.healthy`, `.duration_seconds`, `.size_bytes`, `.metadata`, `.provenance`, `.artifacts(pattern)`, `node / "file"` (read → readable path). Immutable and hashable. `Node.path` is **gone**.
 
-**Maintenance & output** — `store.prune(node, dry_run=True)`, `store.compact()` (replaces `gc`/`flush`/`clear_cache`), `store.export(dest=None)` (grep-able `meta.json` sidecars), `store.generate_web_graph()` (view-only static HTML), `store.host_live_graph(port=0)` (the searchable explorer).
+**Maintenance & output** — `store.prune(node, dry_run=True)`, `store.compact()` (replaces `gc`/`flush`/`clear_cache`), `store.export_metadata(dest=None)` (grep-able `meta.json` sidecars), `store.export_graph()` (view-only static HTML), `store.serve_graph(port=0)` (the searchable explorer).
 
-**Power queries & introspection** — `store.sql(query, params=())`: any read-only `SELECT` over the documented schema, on a `query_only` connection (the schema is a documented public contract, canonically `schema.py`); the natural first step toward DataFrame querying. `store.stats()`: node/chunk counts, raw vs stored bytes, dedup ratio, database size — makes the deduplication visible.
+**Power queries & introspection** — `store.sql(query, params=())`: any read-only `SELECT` over the documented schema, on a `query_only` connection (the schema is a documented public contract, canonically `schema.py`); the natural first step toward DataFrame querying. `store.stats()`: node/chunk counts, artifact vs stored bytes, dedup ratio, database size — makes the deduplication visible.
 
 **CLI** — `python -m ancestree serve|export|compact <root>` (stdlib `argparse`).
 
@@ -651,4 +651,5 @@ A deliberate **clean break** (v2.5): the on-disk format and the API both change,
 | 2026-07-09 | v2.6 — **read cache moved back inside the store**: `<root>/.cache/<pid>-<suffix>/` instead of the system temp dir, so the paths reads hand back make sense at a glance and the layout matches what I'm used to from 0.1.x. This partially reverses v2.1 — the reason it lived in temp was "zero reaping code", and that argument expired when the Phase 5 sweep landed: it already runs at every store open with a pid-liveness check, so reaping dead cache sessions is ~15 extra lines on machinery that exists anyway. Cache dirs hold only derived data, so reaping can never lose work. Reads deliberately do NOT resolve into `.scratch` (the other half of the question that prompted this): the sweep adopts orphaned scratch as unhealthy nodes, so cache copies there would masquerade as crashed work. |
 | 2026-07-09 | v2.7 — **the classic explorer is back as live mode** (my call): the server renders the 0.1.x `template_new.html` + `styles.css` + `actions.js` with the whole store as `window.PIPELINE_DATA`, fresh on every page load — I missed the old front end, and a refresh is all the "live" a local tool needs. Its search/diff/runs table run client-side; the SQL JSON API stays for programmatic use, so AD11 is amended rather than reversed (the Python→SQL grammar remains the one the library exposes). `live.html` deleted; `ancestree/assets/` is tracked and ships again. `host_live_graph` is now non-blocking by default, opens the browser, and re-running it replaces the previous server; store teardown runs via a `weakref` finalizer so close() is optional. Repo cleanup in the same pass: the temporarily-restored V1 modules and their test suite deleted again, and the docs site pages (index, caveats, reference, examples, mkdocs nav) rewritten for the new API — no V1 references remain outside `docs/examples/legacy-0.1/`, which stays on record. |
 | 2026-07-25 | v2.8 — **chunk encoding and indexes settled before release.** The average chunk size drops to 16 KiB so a delta base fits inside zlib's 32,256-byte dictionary window (−14% stored, −22% ingest), payloads zlib cannot shrink are stored verbatim (kind 2), and `idx_meta_key` covers `(key, value)`. |
+| 2026-07-26 | v3.0 — **the public vocabulary made consistent before release.** `dedup` → `reuse_identical` and `chunk` → `delta` (the old `chunk=False` never disabled chunking — Layer 1 always runs — so the name described the wrong thing); `NodeRecord.parent_ids` → `parent_id`, matching the record, the filter and the edge column; and the three output methods take one verb pair each: `generate_web_graph` → `export_graph`, `host_live_graph` → `serve_graph`, `export` → `export_metadata`, which also lines the API up with the `serve`/`export` CLI. All pre-1.0 and pre-release, so no deprecation shims. |
 | 2026-07-26 | v2.9 — **schema version stamping removed.** `SCHEMA_VERSION`, `schema_version()` and the version checks in `ensure_schema` are deleted; a store no longer records what wrote it. `ensure_schema` now creates the schema or verifies the expected tables are present, which still refuses a SQLite file ancestree did not write. The one fact worth stating is that 0.1.x stores do not open in 0.2.0, and it is stated once, in the caveats. |

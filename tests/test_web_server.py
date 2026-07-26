@@ -183,24 +183,24 @@ def test_unknown_route_is_404_and_close_is_clean(tmp_path: Path) -> None:
     store.close()
 
 
-def test_host_live_graph_nonblocking_closes_with_store(tmp_path: Path) -> None:
+def test_serve_graph_nonblocking_closes_with_store(tmp_path: Path) -> None:
     store = LineageStore(tmp_path / "proj")
     with store.create_node(step_type="ingest") as node:
         node.add_meta("ok", True)
-    url = store.host_live_graph(block=False, open_browser=False)
+    url = store.serve_graph(block=False, open_browser=False)
     assert _get_json(url + "/api/graph")["nodes"]
     store.close()  # shuts the server down too
     with pytest.raises(OSError):  # URLError / socket.timeout
         urlopen(url + "/api/graph", timeout=1)
 
 
-def test_host_live_graph_rerun_replaces_previous_server(tmp_path: Path) -> None:
+def test_serve_graph_rerun_replaces_previous_server(tmp_path: Path) -> None:
     # Dash-style: re-running the cell restarts the server, no leaked thread.
     store = LineageStore(tmp_path / "proj")
     with store.create_node(step_type="ingest") as node:
         node.add_meta("ok", True)
-    first = store.host_live_graph(block=False, open_browser=False)
-    second = store.host_live_graph(block=False, open_browser=False)
+    first = store.serve_graph(block=False, open_browser=False)
+    second = store.serve_graph(block=False, open_browser=False)
     assert _get_json(second + "/api/graph")["nodes"]
     with pytest.raises(OSError):  # URLError / socket.timeout
         urlopen(first + "/api/graph", timeout=1)

@@ -147,7 +147,7 @@ _DIFF_STRUCTURAL = (
     "step_type",
     "generation",
     "healthy",
-    "duration_s",
+    "duration_seconds",
     "size_bytes",
     "created_display",
 )
@@ -204,7 +204,7 @@ def runs_payload(store: LineageStore) -> dict[str, Any]:
                 "step_type": detail["step_type"],
                 "created": detail["created_display"],
                 "healthy": detail["healthy"],
-                "duration_s": detail["duration_s"],
+                "duration_seconds": detail["duration_seconds"],
                 "size_bytes": detail["size_bytes"],
                 "metrics": metrics,
             }
@@ -358,7 +358,7 @@ def _make_handler(store: LineageStore, template: str) -> type[BaseHTTPRequestHan
 def start_server(store: LineageStore, port: int = 0) -> ServerHandle:
     """Starts the explorer on 127.0.0.1 (an OS-assigned port when `port`
     is 0) and returns its handle. The caller stops it with
-    ``handle.close()``; ``store.host_live_graph`` wraps this for the
+    ``handle.close()``; ``store.serve_graph`` wraps this for the
     blocking Ctrl+C workflow."""
     server = HTTPServer(("127.0.0.1", port), _make_handler(store, _load_template()))
     thread = threading.Thread(
