@@ -16,7 +16,7 @@ The SQLite rebuild, and a clean break from 0.1.x. Every decision is recorded in 
 ### Added
 - `store.serve_graph()` and `python -m ancestree serve`: a live explorer on localhost. Search (`field=value`, `accuracy>0.9`, free text), node diffs and the sortable runs table are answered by SQL on the server.
 - Layer-2 deduplication: near-identical artifacts are stored as chunk deltas against similar chunks already in the pool, using zlib dictionary compression. On a mixed 69 MB corpus of six file types across six revisions the store is 2.63x smaller, and 2.23x on the synthetic near-duplicate benchmark. Numbers are in `benchmarks/RESULTS.md`. Payloads zlib cannot shrink (PNG, parquet, zip) are stored verbatim rather than re-compressed.
-- `store.sql(query)`: read-only SQL over a documented schema, for questions the API does not cover.
+- `store.sql(query)`: read-only SQL over a documented, versioned schema, for questions the API does not cover.
 - `store.stats()`: node and chunk counts, `artifact_bytes` versus `chunk_stored_bytes`, and the dedup ratio. `database_bytes` counts the WAL alongside the database, so it reflects what the store occupies.
 - `store.export_metadata()`: per-node `meta.json` sidecars, for reading a store without ancestree installed.
 - `store.compact()`: drops unreferenced chunks and shrinks the database file, replacing `gc()`, `flush()` and `clear_cache()`. It is rarely needed directly, since `prune(node, dry_run=False)` compacts for you and `compact=False` defers it when pruning in a loop.
@@ -34,7 +34,7 @@ The SQLite rebuild, and a clean break from 0.1.x. Every decision is recorded in 
 - `find`, `lineage` and `ancestors` batch their id lookups instead of issuing two queries per node, and `idx_meta_key` covers `(key, value)`. A selective `find()` over 3000 nodes went from 0.40 ms to 0.04 ms. The live explorer's page render no longer costs four queries per node.
 
 ### Removed
-- Stores written by 0.1.x do not open in 0.2.0. Keep 0.1.x installed to read them; it remains on PyPI.
+- No migration, from 0.1.x or between any two versions. A store records its format version in the database at creation, and ancestree checks it on open and refuses anything it did not write, leaving the file untouched. Table names cannot stand in for this: the chunk encoding can change without the schema's shape changing. A 0.1.x store predates the database (a directory per node plus `.lineage_config.json`) and is refused on that layout rather than reopened as an empty store beside the old nodes. Converting stores is not a goal; keep the version that wrote a store installed to read it. 0.1.x remains on PyPI.
 - `Node.path` (nodes are not directories), `rebuild_db_from_disk()` (there is no separate index), `gc()`, `flush()` and `clear_cache()`.
 - The NFS-safety claim. SQLite file locking over NFS is unreliable, so keep stores on local disk.
 

@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from ancestree.domain.node import Node
-from ancestree.errors import InvalidTransition, NodeNotFound
+from ancestree.errors import InvalidTransition, NodeNotFound, SchemaError
 from ancestree.store import LineageStore
 
 
@@ -315,3 +315,47 @@ def test_export_writes_grepable_sidecars(store: LineageStore, tmp_path: Path) ->
 
     custom = store.export_metadata(dest=tmp_path / "sidecars")
     assert (custom / node.node_id / "meta.json").exists()
+
+
+# ---------------------------------------------------------------------------
+# Refusing roots this ancestree cannot open
+# ---------------------------------------------------------------------------
+
+
+def _legacy_root(tmp_path: Path) -> Path:
+    """A 0.1.x store root: a config file at the top, a directory per node."""
+    root = tmp_path / "old_project"
+    (root / "ab12cd34").mkdir(parents=True)
+    (root / ".lineage_config.json").write_text('{"rules": {}, "gen_triggers": []}')
+    (root / "ab12cd34" / "meta.json").write_text('{"node_id": "ab12cd34"}')
+    return root
+
+
+def test_legacy_0_1_x_root_is_refused_not_reopened_empty(tmp_path: Path) -> None:
+    """0.1.x kept nodes as directories, so there is no database to check a
+    version stamp against. Without this guard the root looks fresh and the
+    user is handed an empty store beside their old nodes."""
+    root = _legacy_root(tmp_path)
+
+    with pytest.raises(SchemaError, match="0.1.x store"):
+        LineageStore(root)
+
+    # Nothing created, nothing touched.
+    assert not (root / "ancestree.db").exists()
+    assert sorted(p.name for p in root.iterdir()) == [
+        ".lineage_config.json",
+        "ab12cd34",
+    ]
+
+
+def test_legacy_config_beside_a_real_store_still_opens(tmp_path: Path) -> None:
+    """The guard keys on the database being absent. A 0.2.0 store whose root
+    happens to carry the old config file is a working store, not a 0.1.x one."""
+    root = _legacy_root(tmp_path)
+    (root / ".lineage_config.json").unlink()
+    LineageStore(root).close()
+    (root / ".lineage_config.json").write_text("{}")
+
+    store = LineageStore(root)
+    assert store.find() == []
+    store.close()

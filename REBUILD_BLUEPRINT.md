@@ -204,7 +204,7 @@ src/ancestree/
 ├── db/                       # how state is PERSISTED — all SQLite
 │   ├── __init__.py
 │   ├── connection.py         # ConnectionManager: pragmas, per-thread/PID conns, write lock, fork reset
-│   ├── schema.py             # canonical DDL + schema creation/verification
+│   ├── schema.py             # canonical DDL + ensure/verify against user_version
 │   ├── metadata_store.py     # MetadataStore: node/edge/metadata rows, queries, lineage
 │   └── chunk_store.py        # ChunkStore: chunk & delta BLOBs, artifacts, reassembly, read cache, gc
 │
@@ -270,7 +270,7 @@ The reassembled-artifact **read cache** lives at `<root>/.cache/<session>/` — 
 
 **`connection.py` — `ConnectionManager`.** Opens the DB with `journal_mode=WAL`, `synchronous=NORMAL`, `foreign_keys=ON`, `busy_timeout`, `mmap_size`, `temp_store=MEMORY`; hands out thread-local read connections; exposes a serialised, **reentrant** `write()` transaction (single writer; nested blocks join the outermost transaction, so ingest commits node row + chunks + artifacts as one atomic unit); rebinds connections if the PID changed (fork safety); checkpoints the WAL after large ingests so the sidecar never balloons. SQLite's threading/fork rules are the trickiest correctness surface in the build, so exactly one module owns them.
 
-**`schema.py`.** `SCHEMA_SQL`, `ensure_schema(conn)` (creates the schema on a fresh database, verifies an existing one holds the expected tables). The DDL lives in one canonical place; `auto_vacuum=INCREMENTAL` is set at creation because it cannot be enabled later.
+**`schema.py`.** `SCHEMA_SQL`, `SCHEMA_VERSION`, `ensure_schema(conn)` (stamps `PRAGMA user_version` at creation, verifies it on every open, then checks the expected tables are present). The DDL lives in one canonical, versioned place; `auto_vacuum=INCREMENTAL` is set at creation because it cannot be enabled later. There is no migration: a store at any other version is refused, never converted. The stamp is what makes that check possible — table names alone would not catch a change to the chunk encoding or to the meaning of an existing column.
 
 **`metadata_store.py` — `MetadataStore`.** `add_node` (node row + edges + metadata rows in one transaction), `get`, `exists`, `find(**kwargs)`, `most_recent`, `children`, `lineage` (recursive CTE), `find_by_hash`, `remove`, `all_node_ids`. Replaces the old `lineage_database` and every bit of its snapshot/journal/reconcile machinery. Multi-key `find` intersects per-key subqueries on the indexed metadata table — the trickiest SQL in the build, deliberately confined to this one well-tested method. `find(parent_id=…)` matches the node's ordered parent list from the edge table (an empty list matches roots).
 
@@ -320,6 +320,7 @@ The reassembled-artifact **read cache** lives at `<root>/.cache/<session>/` — 
 One database, `ancestree.db`, in WAL mode. Structural and provenance facts are real columns (AD6); the `metadata` table holds only user metadata; chunks, deltas and resemblance features sit alongside.
 
 ```sql
+PRAGMA user_version = 1;
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 PRAGMA synchronous = NORMAL;
@@ -598,7 +599,7 @@ Backwards compatibility is **not** a goal (pre-1.0). The API is redesigned aroun
 
 **Maintenance & output** — `store.prune(node, dry_run=True)`, `store.compact()` (replaces `gc`/`flush`/`clear_cache`), `store.export_metadata(dest=None)` (grep-able `meta.json` sidecars), `store.export_graph()` (view-only static HTML), `store.serve_graph(port=0)` (the searchable explorer).
 
-**Power queries & introspection** — `store.sql(query, params=())`: any read-only `SELECT` over the documented schema, on a `query_only` connection (the schema is a documented public contract, canonically `schema.py`); the natural first step toward DataFrame querying. `store.stats()`: node/chunk counts, artifact vs stored bytes, dedup ratio, database size — makes the deduplication visible.
+**Power queries & introspection** — `store.sql(query, params=())`: any read-only `SELECT` over the documented schema, on a `query_only` connection (the schema is a versioned public contract via `PRAGMA user_version` and `schema.py`); the natural first step toward DataFrame querying. `store.stats()`: node/chunk counts, artifact vs stored bytes, dedup ratio, database size — makes the deduplication visible.
 
 **CLI** — `python -m ancestree serve|export|compact <root>` (stdlib `argparse`).
 
@@ -653,3 +654,4 @@ A deliberate **clean break** (v2.5): the on-disk format and the API both change,
 | 2026-07-25 | v2.8 — **chunk encoding and indexes settled before release.** The average chunk size drops to 16 KiB so a delta base fits inside zlib's 32,256-byte dictionary window (−14% stored, −22% ingest), payloads zlib cannot shrink are stored verbatim (kind 2), and `idx_meta_key` covers `(key, value)`. |
 | 2026-07-26 | v3.0 — **the public vocabulary made consistent before release.** `dedup` → `reuse_identical` and `chunk` → `delta` (the old `chunk=False` never disabled chunking — Layer 1 always runs — so the name described the wrong thing); `NodeRecord.parent_ids` → `parent_id`, matching the record, the filter and the edge column; and the three output methods take one verb pair each: `generate_web_graph` → `export_graph`, `host_live_graph` → `serve_graph`, `export` → `export_metadata`, which also lines the API up with the `serve`/`export` CLI. All pre-1.0 and pre-release, so no deprecation shims. |
 | 2026-07-26 | v2.9 — **schema version stamping removed.** `SCHEMA_VERSION`, `schema_version()` and the version checks in `ensure_schema` are deleted; a store no longer records what wrote it. `ensure_schema` now creates the schema or verifies the expected tables are present, which still refuses a SQLite file ancestree did not write. The one fact worth stating is that 0.1.x stores do not open in 0.2.0, and it is stated once, in the caveats. |
+| 2026-07-26 | v3.1 — **v2.9 reversed: version stamping restored, and the store root guarded.** Reverting it was the wrong call to make in the week the on-disk format goes public, because it cannot be retrofitted onto stores already written. Table-name presence is not a substitute: the chunk encoding, or the meaning of a column, can change without the schema's shape changing at all, so a 0.3.0 would open a 0.2.0 store and misread it rather than refuse it. `SCHEMA_VERSION`, `schema_version()` and the three refusal branches (unstamped / newer / older) are back, and `store.sql()`'s "versioned public contract" (v2.1) means something again. Separately, `_refuse_legacy_root` closes the hole a stamp could never cover: a 0.1.x root has no database to stamp, so `ensure_schema` took the fresh-creation path and handed back an **empty store sitting beside the user's old node directories** — the work was still on disk, but it read as gone. A root holding `.lineage_config.json` and no `ancestree.db` is now refused before anything is created. |
