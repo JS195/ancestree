@@ -51,7 +51,7 @@ We take security seriously. If you discover a security vulnerability in this pro
 
 We follow a coordinated disclosure process:
 - We aim to fix confirmed vulnerabilities as quickly as possible.
-- Security fixes will be released with a new version and clearly documented in the [changelog](CHANGELOG.md).
+- Security fixes will be released with a new version and clearly documented in the [changelog](https://github.com/JS195/ancestree/blob/main/CHANGELOG.md).
 - We will notify users through GitHub Releases, PyPI, and relevant channels.
 
 ---

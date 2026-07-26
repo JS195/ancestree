@@ -69,7 +69,7 @@ A PR is in good shape when lint, formatting, type checking, and tests all pass.
 User-facing docs live in `docs/` and are built with MkDocs. If your change
 affects behavior or the public API, please update the docs and, where relevant,
 the example notebooks in `docs/examples/`. Notable changes should also get an
-entry in [`CHANGELOG.md`](CHANGELOG.md).
+entry in [`CHANGELOG.md`](https://github.com/JS195/ancestree/blob/main/CHANGELOG.md).
 
 To preview the docs locally:
 
@@ -89,4 +89,4 @@ When filing a bug, it helps to include:
 ## License
 
 By contributing, you agree that your contributions will be licensed under the
-[MIT License](LICENSE) that covers this project.
+[MIT License](https://github.com/JS195/ancestree/blob/main/LICENSE) that covers this project.

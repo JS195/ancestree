@@ -14,7 +14,7 @@ maintainers = [
   {name = "Joshua Smith", email = "78921007+JS195@users.noreply.github.com"}
 ]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",

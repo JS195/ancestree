@@ -23,7 +23,7 @@ The SQLite rebuild, and a clean break from 0.1.x. Every decision is recorded in 
 - `store.backup(dest)`: a consistent copy via SQLite's online backup API, safe to take while the store is open and being written. Copying `ancestree.db` alone out from under a live store silently yields an empty store.
 - Hard-kill recovery: a run killed mid-block leaves a seeded scratch directory, and the next store open adopts it as an unhealthy node. 0.1.x lost that work.
 - CLI: `python -m ancestree serve|export|compact <root>`.
-- Two executed example notebooks: basic usage and a branching ML pipeline. The chunking and timing measurements are in `docs/benchmarks/RESULTS.md`.
+- Six executed example notebooks: basic usage, a branching ML pipeline, and four worked pipelines from different fields (genomics, design optimisation, survey reprocessing, a quant backtest grid). The storage and timing measurements are in `docs/benchmarks/RESULTS.md`.
 - Reads reassemble on demand: packed artifacts rebuild from the chunk pool into a per-session cache at `<root>/.cache/`, cleared when the session ends. The live explorer serves artifacts straight from the chunk pool and never touches that cache.
 - Artifact containment is enforced against symlinks as well as paths. `node / "../outside.txt"` has always raised, but a symlink pointing the same way used to be followed at commit and its target stored as a node artifact, reachable unintentionally via `shutil.copytree(..., symlinks=True)` over a tree containing a link to a shared file. Escaping links are now skipped with a warning, and links resolving inside the node are stored normally.
 
