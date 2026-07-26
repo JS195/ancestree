@@ -130,14 +130,6 @@ CLI: `python -m ancestree serve|export|compact <root>`.
 
 ---
 
-## Store compatibility
-
-A store belongs to the version that wrote it. Ancestree checks the recorded format version on open and refuses anything it did not write, with an explanatory error and without touching the file. There is no migration, by design. To read an old store, keep the version that wrote it installed; every version stays on PyPI.
-
-0.2.0 is a rebuild on SQLite, so file-based 0.1.x stores are not readable. The API was redesigned at the same time (`find_node` to `find`, `get_lineage` to `lineage`, `get_most_recent_node` to `latest`). The full old-to-new table is in [REBUILD_BLUEPRINT.md](https://github.com/JS195/ancestree/blob/main/REBUILD_BLUEPRINT.md).
-
----
-
 ## Development
 
 Issues and PRs welcome. For bugs or feature requests, open an issue or email [78921007+JS195@users.noreply.github.com](mailto:78921007+JS195@users.noreply.github.com).

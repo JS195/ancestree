@@ -72,7 +72,7 @@ my_store/
 
 Only `ancestree.db` holds anything you cannot regenerate. The dotted directories are working space: `.scratch/` holds a node's files while its `with` block runs and empties when the node commits, `.cache/` holds artifacts reassembled for reading and clears when the session ends. Deleting either at rest costs nothing. While a store is open SQLite also keeps `ancestree.db-wal` and `-shm` beside the database, so read [Caveats](caveats.md#one-file-is-the-whole-store-but-a-live-store-is-three) before backing one up.
 
-Every write is a transaction, so a node is committed whole or not at all. `prune()` deletes a branch and reclaims the space, `export()` writes `meta.json` sidecars, and `store.sql(...)` queries a documented, versioned schema directly.
+Every write is a transaction, so a node is committed whole or not at all. `prune()` deletes a branch and reclaims the space, `export()` writes `meta.json` sidecars, and `store.sql(...)` queries a documented schema directly.
 
 ## Track, search and visualise
 

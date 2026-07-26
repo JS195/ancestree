@@ -20,7 +20,7 @@ This is my working plan for rebuilding ancestree on a single SQLite backing stor
 8. [What Gets Deleted — The Simplification Payoff](#8-what-gets-deleted--the-simplification-payoff)
 9. [Trade-offs & Risks](#9-trade-offs--risks)
 10. [Implementation Roadmap](#10-implementation-roadmap)
-11. [Public API and Migration](#11-public-api-and-migration)
+11. [Public API](#11-public-api)
 12. [Future Work](#12-future-work)
 13. [Glossary](#13-glossary)
 14. [Decision Log](#decision-log)
@@ -41,7 +41,7 @@ This rebuild moves **all durable state into one SQLite database (`ancestree.db`)
 - **The two big classes** (`LineageStore`, 899 lines; `Node`, 716 lines) get broken into focused, testable units.
 - **A locally hosted live explorer** (`host_live_graph()`, stdlib `http.server`) joins the emailable single-file HTML export instead of replacing it.
 
-The result: faster loading (memory-mapped, indexed queries instead of an O(N) directory reconcile on every cold start), native-speed writes (user code still just writes files), far simpler persistence, better storage efficiency — no new dependencies, and a public API I have deliberately redesigned rather than preserved (see [§11](#11-public-api-and-migration)).
+The result: faster loading (memory-mapped, indexed queries instead of an O(N) directory reconcile on every cold start), native-speed writes (user code still just writes files), far simpler persistence, better storage efficiency — no new dependencies, and a public API I have deliberately redesigned rather than preserved (see [§11](#11-public-api)).
 
 This is a **consolidation onto a better substrate**, not a rescue of bad code. Good existing logic will be preserved, not rewritten.
 
@@ -70,7 +70,7 @@ This is a **consolidation onto a better substrate**, not a rescue of bad code. G
 
 - **HC1 — Zero dependencies.** `pip install ancestree-track` pulls nothing but the standard library. That rules out Postgres/MySQL, Flask/FastAPI, zstd/bsdiff/xdelta, and pandas-as-a-requirement. `sqlite3`, `http.server`, `zlib`, `hashlib` are all stdlib and fine.
 - **HC2 — Keep the read/write ergonomics.** `node / "file.csv"` gives a real path to write to; `node.artifacts()` gives readable paths back. Nobody should have to learn new syntax.
-- **HC3 — Ergonomics over compatibility.** Backwards compatibility is explicitly *not* required (the package is pre-1.0). I am free to change the API wherever that improves the design; the only fixed points are the feel of writing/reading artifacts (HC2) and the zero-dependency rule (HC1). The redesign is specified in [§11](#11-public-api-and-migration) and [AD10](#ad10--redesign-the-public-api-for-coherence).
+- **HC3 — Ergonomics over compatibility.** Backwards compatibility is explicitly *not* required (the package is pre-1.0). I am free to change the API wherever that improves the design; the only fixed points are the feel of writing/reading artifacts (HC2) and the zero-dependency rule (HC1). The redesign is specified in [§11](#11-public-api) and [AD10](#ad10--redesign-the-public-api-for-coherence).
 
 ---
 
@@ -204,7 +204,7 @@ src/ancestree/
 ├── db/                       # how state is PERSISTED — all SQLite
 │   ├── __init__.py
 │   ├── connection.py         # ConnectionManager: pragmas, per-thread/PID conns, write lock, fork reset
-│   ├── schema.py             # canonical DDL + ensure/verify against user_version
+│   ├── schema.py             # canonical DDL + schema creation/verification
 │   ├── metadata_store.py     # MetadataStore: node/edge/metadata rows, queries, lineage
 │   └── chunk_store.py        # ChunkStore: chunk & delta BLOBs, artifacts, reassembly, read cache, gc
 │
@@ -270,7 +270,7 @@ The reassembled-artifact **read cache** lives at `<root>/.cache/<session>/` — 
 
 **`connection.py` — `ConnectionManager`.** Opens the DB with `journal_mode=WAL`, `synchronous=NORMAL`, `foreign_keys=ON`, `busy_timeout`, `mmap_size`, `temp_store=MEMORY`; hands out thread-local read connections; exposes a serialised, **reentrant** `write()` transaction (single writer; nested blocks join the outermost transaction, so ingest commits node row + chunks + artifacts as one atomic unit); rebinds connections if the PID changed (fork safety); checkpoints the WAL after large ingests so the sidecar never balloons. SQLite's threading/fork rules are the trickiest correctness surface in the build, so exactly one module owns them.
 
-**`schema.py`.** `SCHEMA_SQL`, `SCHEMA_VERSION`, `ensure_schema(conn)` (stamps `PRAGMA user_version` at creation, verifies it on every open). The DDL lives in one canonical, versioned place; `auto_vacuum=INCREMENTAL` is set at creation because it cannot be enabled later. There is no migration: a store at any other version is refused, never converted.
+**`schema.py`.** `SCHEMA_SQL`, `ensure_schema(conn)` (creates the schema on a fresh database, verifies an existing one holds the expected tables). The DDL lives in one canonical place; `auto_vacuum=INCREMENTAL` is set at creation because it cannot be enabled later.
 
 **`metadata_store.py` — `MetadataStore`.** `add_node` (node row + edges + metadata rows in one transaction), `get`, `exists`, `find(**kwargs)`, `most_recent`, `children`, `lineage` (recursive CTE), `find_by_hash`, `remove`, `all_node_ids`. Replaces the old `lineage_database` and every bit of its snapshot/journal/reconcile machinery. Multi-key `find` intersects per-key subqueries on the indexed metadata table — the trickiest SQL in the build, deliberately confined to this one well-tested method. `find(parent_id=…)` matches the node's ordered parent list from the edge table (an empty list matches roots).
 
@@ -320,7 +320,6 @@ The reassembled-artifact **read cache** lives at `<root>/.cache/<session>/` — 
 One database, `ancestree.db`, in WAL mode. Structural and provenance facts are real columns (AD6); the `metadata` table holds only user metadata; chunks, deltas and resemblance features sit alongside.
 
 ```sql
-PRAGMA user_version = 1;
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 PRAGMA synchronous = NORMAL;
@@ -503,7 +502,7 @@ Net effect: the subtlest ~40% of the old code was deleted rather than moved — 
 | **SQLite on NFS** | Unreliable file locking | Documented non-goal; use local disk; `busy_timeout` for local multi-process |
 | **Packed-read latency** | First read of a packed artifact costs reassembly | Loose scratch for recent reads; read cache for repeats; delta depth capped at 1 with a C-speed codec (AD5) |
 | **Multi-process write concurrency** | SQLite serialises writers | WAL + `busy_timeout`; fine for the single-writer common case |
-| **Backward incompatibility** | 0.1.x stores won't open | Accepted (v2.5): a clean break — no migration tool; 0.1.x stays installable from PyPI for old stores |
+| **Backward incompatibility** | 0.1.x stores won't open | Accepted (v2.5): a clean break; 0.1.x stays installable from PyPI for old stores |
 | **Rewrite risk** (rebuild + API break + test rewrite land together) | Regressions during the transition | The rewritten suite (unit + integration + property tests over every subsystem) is the safety net; legacy code was only deleted once it was fully covered |
 
 ---
@@ -522,7 +521,7 @@ Each phase is independently testable and leaves the suite green. I tick items as
 
 ### Phase 1 — Persistence foundation
 - [x] `db/connection.py` — pragmas, per-thread/PID connections, write lock.
-- [x] `db/schema.py` — DDL from [§6](#6-data-model--sqlite-schema), `ensure_schema`, `migrate` stub.
+- [x] `db/schema.py` — DDL from [§6](#6-data-model--sqlite-schema), `ensure_schema`.
 - [x] `errors.py` — pulled forward from Phase 2 (`SchemaError` backs schema verification).
 - **Exit:** create/open a `.db`, schema verified, connection & fork-safety unit tests pass.
 
@@ -541,7 +540,7 @@ Each phase is independently testable and leaves the suite green. I tick items as
 - [x] `domain/{metadata,rules,node}.py`, `store.py`.
 - [x] Wire `create_node`, context-manager, `add_meta`, `artifacts`, `__truediv__`.
 - [x] `store.sql()` read-only escape hatch (`query_only` connection) and `store.stats()` (counts, sizes, dedup ratio).
-- **Exit:** the suite rewritten to the redesigned API ([§11](#11-public-api-and-migration)) is green against the new backend.
+- **Exit:** the suite rewritten to the redesigned API ([§11](#11-public-api)) is green against the new backend.
 
 ### Phase 5 — Node dedup & maintenance
 - [x] `domain/fingerprint.py`; `content_hash` column; adopt/rebind on identical content.
@@ -571,11 +570,11 @@ Each phase is independently testable and leaves the suite green. I tick items as
 - [x] Version bump to **0.2.0** + CHANGELOG with the old→new API cheat-sheet.
 - **Exit:** CLI complete; docs updated; CI green.
 
-*(The migration tool and the deferred legacy-code deletion left this phase at v2.5: no backwards compatibility means the 0.1.x modules, tests and assets went right after Phase 7, and no tool converts old stores.)*
+*(The deferred legacy-code deletion left this phase at v2.5: no backwards compatibility means the 0.1.x modules, tests and assets went right after Phase 7.)*
 
 ---
 
-## 11. Public API and Migration
+## 11. Public API
 
 Backwards compatibility is **not** a goal (pre-1.0). The API is redesigned around one coherent vocabulary; the only fixed points are the write/read feel (HC2) and zero dependencies (HC1). See [AD10](#ad10--redesign-the-public-api-for-coherence).
 
@@ -599,7 +598,7 @@ Backwards compatibility is **not** a goal (pre-1.0). The API is redesigned aroun
 
 **Maintenance & output** — `store.prune(node, dry_run=True)`, `store.compact()` (replaces `gc`/`flush`/`clear_cache`), `store.export(dest=None)` (grep-able `meta.json` sidecars), `store.generate_web_graph()` (view-only static HTML), `store.host_live_graph(port=0)` (the searchable explorer).
 
-**Power queries & introspection** — `store.sql(query, params=())`: any read-only `SELECT` over the documented schema, on a `query_only` connection (the schema is a versioned public contract via `PRAGMA user_version` and `schema.py`); the natural first step toward DataFrame querying. `store.stats()`: node/chunk counts, raw vs stored bytes, dedup ratio, database size — makes the deduplication visible.
+**Power queries & introspection** — `store.sql(query, params=())`: any read-only `SELECT` over the documented schema, on a `query_only` connection (the schema is a documented public contract, canonically `schema.py`); the natural first step toward DataFrame querying. `store.stats()`: node/chunk counts, raw vs stored bytes, dedup ratio, database size — makes the deduplication visible.
 
 **CLI** — `python -m ancestree serve|export|compact <root>` (stdlib `argparse`).
 
@@ -609,7 +608,7 @@ Backwards compatibility is **not** a goal (pre-1.0). The API is redesigned aroun
 
 ### Coming from 0.1.x
 
-A deliberate **clean break** (v2.5): the on-disk format and the API both change, 0.1.x stores are not readable by the rebuild, and **no migration tool is provided** — anyone needing an old store keeps 0.1.x installed for it. The rebuild ships as **0.2.0** (pre-1.0, so a breaking minor release is legitimate); the renames above are the whole API delta and are mechanical.
+A deliberate **clean break** (v2.5): the on-disk format and the API both change, and 0.1.x stores are not readable by the rebuild — anyone needing an old store keeps 0.1.x installed for it. The rebuild ships as **0.2.0** (pre-1.0, so a breaking minor release is legitimate); the renames above are the whole API delta and are mechanical.
 
 ---
 
@@ -648,7 +647,8 @@ A deliberate **clean break** (v2.5): the on-disk format and the API both change,
 | 2026-07-07 | v2.2 — layered package layout, off the back of Phase 0 feedback that the flat root had far too many modules. Root keeps entry points and cross-cutting leaves; everything else moved into `domain/`, `db/`, `ingest/`, `web/`. |
 | 2026-07-08 | v2.3 — **Layer-2 benchmark done (AD5): `chunk` defaults ON.** On the target workload (12 near-duplicate versions, ~1% scattered in-place edits) Layer 2 stored **2.3× less** than Layer 1 alone (ratio 2.31 vs 1.00) for 1.07× ingest and sub-millisecond read overhead — `benchmarks/RESULTS.md`. Two implementation notes worth remembering: resemblance uses min-wise transforms over strided 8-byte samples (a wrong candidate only costs one trial encode, because a delta is kept solely when it beats plain compression); and the zdict has to be truncated to 32,256 bytes because zlib's usable match distance is `w_size − MIN_LOOKAHEAD` (32,506) — a full-32K dictionary leaves aligned content exactly one step out of reach and every delta silently degenerates. Found that one the hard way. |
 | 2026-07-08 | v2.4 — mid-rebuild parity review against the 0.1.x surface (the goal is an SQL transition that keeps every functionality). Fixed in code: **`find(parent_id=…)` restored** (parents live in the edge table now, so it silently matched nothing) and **`store.export()` delivered** (promised in §11 but scheduled in no phase). Fixed in the plan: the old explorer's **runs table and node diff** pinned as explicit Phase 8 exit criteria. Confirmed deliberate, not gaps: `Node.path`, `rebuild_db_from_disk`, `gc`/`flush`/`clear_cache` → `compact`, structural facts as attributes. Added `docs/examples/sql_backend_quickstart.ipynb`, executed end to end. |
-| 2026-07-08 | v2.5 — **dropped backwards compatibility entirely.** The 0.1.x modules, their tests and the old assets are deleted now rather than at Phase 9, and the package exports flip to the new API. The Phase 9 **migration tool is gone** — old stores stay on 0.1.x. Compat shims removed from the new code (`InvalidTransition` no longer subclasses `ValueError`; the alias reserved keys go). The safety-net policy is retired — the rewritten suite is the safety net. Phase 9 shrinks to release polish. |
+| 2026-07-08 | v2.5 — **dropped backwards compatibility entirely.** The 0.1.x modules, their tests and the old assets are deleted now rather than at Phase 9, and the package exports flip to the new API. Old stores stay on 0.1.x. Compat shims removed from the new code (`InvalidTransition` no longer subclasses `ValueError`; the alias reserved keys go). The safety-net policy is retired — the rewritten suite is the safety net. Phase 9 shrinks to release polish. |
 | 2026-07-09 | v2.6 — **read cache moved back inside the store**: `<root>/.cache/<pid>-<suffix>/` instead of the system temp dir, so the paths reads hand back make sense at a glance and the layout matches what I'm used to from 0.1.x. This partially reverses v2.1 — the reason it lived in temp was "zero reaping code", and that argument expired when the Phase 5 sweep landed: it already runs at every store open with a pid-liveness check, so reaping dead cache sessions is ~15 extra lines on machinery that exists anyway. Cache dirs hold only derived data, so reaping can never lose work. Reads deliberately do NOT resolve into `.scratch` (the other half of the question that prompted this): the sweep adopts orphaned scratch as unhealthy nodes, so cache copies there would masquerade as crashed work. |
 | 2026-07-09 | v2.7 — **the classic explorer is back as live mode** (my call): the server renders the 0.1.x `template_new.html` + `styles.css` + `actions.js` with the whole store as `window.PIPELINE_DATA`, fresh on every page load — I missed the old front end, and a refresh is all the "live" a local tool needs. Its search/diff/runs table run client-side; the SQL JSON API stays for programmatic use, so AD11 is amended rather than reversed (the Python→SQL grammar remains the one the library exposes). `live.html` deleted; `ancestree/assets/` is tracked and ships again. `host_live_graph` is now non-blocking by default, opens the browser, and re-running it replaces the previous server; store teardown runs via a `weakref` finalizer so close() is optional. Repo cleanup in the same pass: the temporarily-restored V1 modules and their test suite deleted again, and the docs site pages (index, caveats, reference, examples, mkdocs nav) rewritten for the new API — no V1 references remain outside `docs/examples/legacy-0.1/`, which stays on record. |
-| 2026-07-25 | v2.8 — **migration removed entirely; chunk encoding and indexes settled before release.** The average chunk size drops to 16 KiB so a delta base fits inside zlib's 32,256-byte dictionary window (−14% stored, −22% ingest), payloads zlib cannot shrink are stored verbatim (kind 2), and `idx_meta_key` covers `(key, value)`. `migrate()` and `_MIGRATIONS` are **deleted**: migration is not a goal of this project, so `ensure_schema` checks `PRAGMA user_version` and refuses anything that is not `SCHEMA_VERSION`, leaving the file untouched — the same stance already taken for 0.1.x stores. Since 0.2.0 has not shipped, the first released format stays stamped **v1**. |
+| 2026-07-25 | v2.8 — **chunk encoding and indexes settled before release.** The average chunk size drops to 16 KiB so a delta base fits inside zlib's 32,256-byte dictionary window (−14% stored, −22% ingest), payloads zlib cannot shrink are stored verbatim (kind 2), and `idx_meta_key` covers `(key, value)`. |
+| 2026-07-26 | v2.9 — **schema version stamping removed.** `SCHEMA_VERSION`, `schema_version()` and the version checks in `ensure_schema` are deleted; a store no longer records what wrote it. `ensure_schema` now creates the schema or verifies the expected tables are present, which still refuses a SQLite file ancestree did not write. The one fact worth stating is that 0.1.x stores do not open in 0.2.0, and it is stated once, in the caveats. |

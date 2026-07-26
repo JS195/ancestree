@@ -38,11 +38,9 @@ SQLite allows many readers but one writer at a time. Concurrent processes can sh
 
 Opening a store sweeps for scratch directories orphaned by a crashed session. The sweep never touches a node another process is still writing: a node is assembled in a staging directory and renamed into place only once it carries its crash-recovery seed, so in-flight nodes are not mistaken for litter.
 
-## A store is tied to the version that wrote it
+## 0.1.x stores
 
-Every store records its format version. Ancestree checks it and refuses anything it did not write; it never converts a store. Migration is not a goal of this project.
-
-A store written by an older or newer version will not open, giving an explanatory error rather than a silent misread. Nothing is modified on a failed open. To read an old store, keep the version that wrote it installed; both remain on PyPI. Treat a store as data you can keep, but not something to carry across upgrades.
+Stores written by 0.1.x will not open in 0.2.0; keep 0.1.x installed to read them.
 
 ## NFS
 
