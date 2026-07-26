@@ -2012,7 +2012,7 @@ rerun and produces byte-identical output, that is still a <em>separate
 execution</em>, at a separate time, by a separate person, against a possibly
 different commit. An audit trail that silently merges two runs into one is
 not an audit trail.</p>
-<p><code>chunk=True</code> is the default and is left on, though this store will not
+<p><code>delta=True</code> is the default and is left on, though this store will not
 benefit much: the artifacts are small equity curves rather than large arrays.
 Section 12 comes back to that honestly.</p>
 </div>
@@ -2049,7 +2049,7 @@ Section 12 comes back to that honestly.</p>
 <span class="n">store</span> <span class="o">=</span> <span class="n">ancestree</span><span class="o">.</span><span class="n">LineageStore</span><span class="p">(</span>
     <span class="n">WORKDIR</span> <span class="o">/</span> <span class="s2">"research"</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">RULES</span><span class="p">,</span> <span class="n">gen_triggers</span><span class="o">=</span><span class="p">[</span><span class="s2">"feature_set"</span><span class="p">],</span> <span class="n">reuse_identical</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dedup </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">reuse_identical</span><span class="si">}</span><span class="s2">   chunk </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">chunk</span><span class="si">}</span><span class="s2">   triggers </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">gen_triggers</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dedup </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">reuse_identical</span><span class="si">}</span><span class="s2">   chunk </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">delta</span><span class="si">}</span><span class="s2">   triggers </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">gen_triggers</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">RULES = {
     "market_data": [None],
@@ -2063,7 +2063,7 @@ Section 12 comes back to that honestly.</p>
 store = ancestree.LineageStore(
     WORKDIR / "research", rules=RULES, gen_triggers=["feature_set"], reuse_identical=False
 )
-print(f"dedup {store.reuse_identical}   chunk {store.chunk}   triggers {store.gen_triggers}")</div>
+print(f"dedup {store.reuse_identical}   chunk {store.delta}   triggers {store.gen_triggers}")</div>
 </div>
 </div>
 </div>
@@ -4318,7 +4318,7 @@ web graph  interactive_pipeline.html (627 KiB)
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 13:59:44 UTC">July 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 26, 2026 14:29:26 UTC">July 26, 2026</span>
   </span>
 
     
