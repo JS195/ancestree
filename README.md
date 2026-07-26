@@ -22,7 +22,6 @@ Data lineage tracking for exploratory work. No server, no dependencies, one SQLi
 - [Recorded automatically](#recorded-automatically)
 - [Querying](#querying)
 - [Explorers](#explorers)
-- [Store compatibility](#store-compatibility)
 - [Development](#development)
 - [License](#license)
 

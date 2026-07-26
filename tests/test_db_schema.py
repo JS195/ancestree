@@ -1,8 +1,9 @@
 """Phase 1: schema creation, verification and refusal (issue #12).
 
-Covers the ensure_schema paths: fresh creation (settings + DDL), idempotent
-reopen, refusal of files ancestree did not write, and that the schema's own
-guarantees (foreign keys, cascades) hold through the ConnectionManager.
+Covers the ensure_schema paths: fresh creation (settings + DDL + version
+stamp), idempotent reopen, refusal of foreign/newer/older files, and that
+the schema's own guarantees (foreign keys, cascades) hold through the
+ConnectionManager.
 """
 
 import sqlite3
@@ -10,8 +11,9 @@ from pathlib import Path
 
 import pytest
 
+from ancestree.db import schema
 from ancestree.db.connection import ConnectionManager
-from ancestree.db.schema import TABLES
+from ancestree.db.schema import SCHEMA_VERSION, TABLES
 from ancestree.errors import SchemaError
 
 
@@ -38,6 +40,7 @@ def test_fresh_database_gets_full_schema(tmp_path: Path) -> None:
         )
     }
     assert names == set(TABLES)
+    assert _pragma(conn, "user_version") == SCHEMA_VERSION
     assert _pragma(conn, "journal_mode") == "wal"
     assert _pragma(conn, "auto_vacuum") == 2  # INCREMENTAL
     assert _pragma(conn, "foreign_keys") == 1
@@ -56,19 +59,20 @@ def test_reopening_an_existing_store_is_idempotent(tmp_path: Path) -> None:
         second.read().execute("SELECT value FROM config WHERE key = 'rules'").fetchone()
     )
     assert row is not None and row["value"] == "{}"
+    assert _pragma(second.read(), "user_version") == SCHEMA_VERSION
     second.close()
 
 
 def test_foreign_sqlite_file_is_refused(tmp_path: Path) -> None:
-    """A SQLite file ancestree did not write holds tables but not the ones
-    the schema defines, so it is refused rather than written into."""
+    """A SQLite file ancestree did not write carries no version stamp, so it
+    is refused rather than written into."""
     db = tmp_path / "other.db"
     raw = sqlite3.connect(db)
     raw.execute("CREATE TABLE junk (x)")
     raw.commit()
     raw.close()
 
-    with pytest.raises(SchemaError, match="missing expected tables"):
+    with pytest.raises(SchemaError, match="not created by ancestree"):
         ConnectionManager(db)
 
     # Refused, and left exactly as it was found.
@@ -82,6 +86,47 @@ def test_foreign_sqlite_file_is_refused(tmp_path: Path) -> None:
     }
     raw.close()
     assert names == {"junk"}
+
+
+def test_newer_store_is_refused(tmp_path: Path) -> None:
+    """A store from a future ancestree is refused on the stamp alone. The
+    table names would still match, so nothing else could catch it."""
+    db = tmp_path / "store.db"
+    ConnectionManager(db).close()
+    raw = sqlite3.connect(db)
+    raw.execute(f"PRAGMA user_version = {SCHEMA_VERSION + 1}")
+    raw.close()
+
+    with pytest.raises(SchemaError, match="newer than this ancestree"):
+        ConnectionManager(db)
+
+
+def test_older_store_is_refused_not_migrated(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """There is no migration path, by design. A store from an older format
+    must be refused with an explanation, never silently converted.
+
+    v1 is the first format, so "older" is reached by advancing what this
+    ancestree writes — which is exactly the situation a future bump creates.
+    """
+    db = tmp_path / "store.db"
+    ConnectionManager(db).close()
+    monkeypatch.setattr(schema, "SCHEMA_VERSION", SCHEMA_VERSION + 1)
+
+    with pytest.raises(SchemaError, match="does not migrate"):
+        ConnectionManager(db)
+
+    # Refused, and left exactly as it was found.
+    raw = sqlite3.connect(db)
+    assert raw.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
+    raw.close()
+
+
+def test_no_migration_machinery_is_exposed() -> None:
+    """Migration is not a goal; the module must not carry the hooks for it."""
+    assert not hasattr(schema, "migrate")
+    assert not hasattr(schema, "_MIGRATIONS")
 
 
 def test_foreign_keys_are_enforced(tmp_path: Path) -> None:

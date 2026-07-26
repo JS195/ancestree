@@ -35,6 +35,7 @@ from .domain.fingerprint import ContentSummary
 from .domain.node import Node, RecordingNode
 from .domain.provenance import capture
 from .domain.rules import RuleEngine, validate_step_type
+from .errors import SchemaError
 from .ingest.packing import ingest_node
 from .ingest.workspace import NodeWorkspace
 from .maintenance import Pruner, compact_chunks, sweep_orphan_scratch
@@ -43,6 +44,10 @@ from .web.export import export_static
 
 DB_FILENAME = "ancestree.db"
 
+#: Written at the root of every 0.1.x store. Its presence alongside no
+#: database is the one reliable signal that a root holds the old format.
+LEGACY_CONFIG_FILENAME = ".lineage_config.json"
+
 #: Self-type for __enter__; typing.Self needs 3.11 and there are no deps.
 _StoreT = TypeVar("_StoreT", bound="LineageStore")
 
@@ -50,6 +55,27 @@ _StoreT = TypeVar("_StoreT", bound="LineageStore")
 NodeLike = Union[str, Node, RecordingNode, None]
 #: A create_node parent: one node-like, or a list/tuple of them (a join).
 ParentArg = Union[NodeLike, list[NodeLike], tuple[NodeLike, ...]]
+
+
+def _refuse_legacy_root(root: Path) -> None:
+    """Refuses a 0.1.x store root instead of creating a new store beside it.
+
+    The schema version stamp guards one database against another, but a
+    0.1.x store has no database to stamp: it is a directory per node plus a
+    ``.lineage_config.json``. Left alone, ``ensure_schema`` would take the
+    fresh-creation path and hand back an empty store sitting next to the old
+    nodes — the work is still on disk, but it reads as though it were gone,
+    which is worse than an error. Nothing is created or modified before this
+    check runs.
+    """
+    if (root / LEGACY_CONFIG_FILENAME).exists() and not (root / DB_FILENAME).exists():
+        raise SchemaError(
+            f"{root} is a 0.1.x store: it holds {LEGACY_CONFIG_FILENAME} and "
+            f"no {DB_FILENAME}. A 0.2.0 store is a single SQLite database and "
+            "there is no migration, so nothing here has been touched. Keep "
+            "ancestree 0.1.x installed to read this store, or pass a "
+            "different root to start a new one."
+        )
 
 
 class LineageStore:
@@ -85,8 +111,13 @@ class LineageStore:
                 chunking and exact chunk deduplication always run,
                 whatever this is set to (persisted at creation; defaults
                 to True).
+
+        Raises:
+            SchemaError: If `root` holds a 0.1.x store, or a database this
+                ancestree did not write (see `db.schema.ensure_schema`).
         """
         self.root = Path(root)
+        _refuse_legacy_root(self.root)
         self.root.mkdir(parents=True, exist_ok=True)
         self._manager = ConnectionManager(self.root / DB_FILENAME)
         self._metadata = MetadataStore(self._manager)

@@ -27,8 +27,9 @@ class ArtifactNotFound(AncestreeError):
 
 
 class SchemaError(AncestreeError):
-    """The database file is not a usable ancestree store: a foreign SQLite
-    file, a format newer than this package, or missing tables."""
+    """The root does not hold a store this ancestree can open: a 0.1.x
+    directory store, a foreign SQLite file, a schema version other than the
+    one this package writes, or missing tables."""
 
 
 class IntegrityError(AncestreeError):

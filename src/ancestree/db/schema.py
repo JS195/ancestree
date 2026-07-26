@@ -1,10 +1,22 @@
-"""The canonical DDL.
+"""The canonical DDL and schema versioning.
 
 ``SCHEMA_SQL`` is the one authoritative statement of the store's shape —
 REBUILD_BLUEPRINT.md section 6 mirrors it. ``ensure_schema`` creates a fresh
-database atomically or verifies an existing one. Database-level settings
-that must be chosen at creation time (``auto_vacuum``, ``journal_mode``) are
-set here, once; per-connection pragmas live in connection.py.
+database atomically (stamping ``PRAGMA user_version``) or verifies an
+existing one. Database-level settings that must be chosen at creation time
+(``auto_vacuum``, ``journal_mode``) are set here, once; per-connection
+pragmas live in connection.py.
+
+**There is no migration.** A store's format version is checked, never
+converted: a database written by any other schema version is refused with
+an explanatory error. Migration is deliberately not a goal — keeping the
+ancestree that wrote a store installed is the supported path, exactly as
+it is for 0.1.x stores.
+
+Table names alone cannot carry this. The chunk encoding and the meaning of
+existing columns can change without a single table being added or dropped,
+so a version stamp is the only thing that lets a later ancestree tell a
+store it understands from one it would silently misread.
 
 See REBUILD_BLUEPRINT.md sections 5.3 and 6 (Phase 1, issue #12).
 """
@@ -14,6 +26,11 @@ from __future__ import annotations
 import sqlite3
 
 from ..errors import SchemaError
+
+#: Stamped into ``PRAGMA user_version`` at creation and verified on every
+#: open. Bump on any change to the DDL or the chunk encoding; stores at any
+#: other version are refused rather than converted.
+SCHEMA_VERSION = 1
 
 #: Every table the schema defines; an opened store is verified against this.
 TABLES: frozenset[str] = frozenset(
@@ -138,19 +155,28 @@ def _tables(conn: sqlite3.Connection) -> set[str]:
     return {row[0] for row in rows}
 
 
+def schema_version(conn: sqlite3.Connection) -> int:
+    """The store's ``PRAGMA user_version`` (0 on a file ancestree never
+    stamped)."""
+    return int(conn.execute("PRAGMA user_version").fetchone()[0])
+
+
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Creates the schema on a fresh database, or verifies an existing one.
 
-    A fresh (table-less) database gets the creation-time settings and the
-    full DDL in one atomic script — either the whole schema lands or none of
-    it. An existing store is checked for the tables it should have.
+    A fresh (table-less) database gets the creation-time settings, the full
+    DDL and the version stamp in one atomic script — either the whole schema
+    lands or none of it. An existing store must already be at
+    ``SCHEMA_VERSION``: there is no migration, so any other version is
+    refused rather than converted.
 
     Args:
         conn: An open connection to the store's database file.
 
     Raises:
-        SchemaError: If the file holds tables but is missing expected ones —
-            either not an ancestree store, or a corrupt one.
+        SchemaError: If the file holds tables but no ancestree version stamp
+            (not an ancestree store), was written by a different schema
+            version, or is missing expected tables.
     """
     existing = _tables(conn)
     if not existing:
@@ -159,12 +185,33 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         # persistent, so every later connection inherits it.
         conn.execute("PRAGMA auto_vacuum = INCREMENTAL")
         conn.execute("PRAGMA journal_mode = WAL")
-        conn.executescript(f"BEGIN;\n{SCHEMA_SQL}\nCOMMIT;")
+        conn.executescript(
+            f"BEGIN;\n{SCHEMA_SQL}\nPRAGMA user_version = {SCHEMA_VERSION};\nCOMMIT;"
+        )
         return
+
+    version = schema_version(conn)
+    if version == 0:
+        raise SchemaError(
+            "This SQLite file was not created by ancestree (it holds tables "
+            "but no ancestree schema version)."
+        )
+    if version > SCHEMA_VERSION:
+        raise SchemaError(
+            f"This store uses schema v{version}, which is newer than this "
+            f"ancestree (v{SCHEMA_VERSION}). Upgrade the package to open it."
+        )
+    if version < SCHEMA_VERSION:
+        raise SchemaError(
+            f"This store uses schema v{version}; this ancestree writes "
+            f"v{SCHEMA_VERSION} and does not migrate stores between "
+            "versions. Keep the ancestree version that wrote it installed "
+            "to read it, or start a new store with this one."
+        )
 
     missing = TABLES - existing
     if missing:
         raise SchemaError(
-            f"Store is missing expected tables {sorted(missing)}; this "
-            "SQLite file was not written by ancestree, or is corrupt."
+            f"Store is missing expected tables {sorted(missing)}; the "
+            "database may be corrupt."
         )
