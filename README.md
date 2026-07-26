@@ -43,7 +43,7 @@ Ancestree models the pipeline as a directed acyclic graph. Each step is a node h
 
 **One SQLite file.** Nodes are rows, not folders. Metadata, lineage and artifact bytes all live in `<root>/ancestree.db`. Back it up with `store.backup(dest)`, query it with `store.sql(...)`, or write `meta.json` sidecars with `store.export_metadata()`. Keep stores on local disk; SQLite locking over NFS is unreliable.
 
-**Two layers of deduplication.** Rerunning a step that produces identical content returns the same node, not a copy. Below that, artifacts are split into content-defined chunks stored once, and near-identical artifacts are stored as deltas against existing ones. On a 69 MB corpus of six file types across six revisions, 2.6x less storage. Already-compressed data (PNG, parquet, zip) is stored verbatim. `store.stats()` reports the ratio on your own data.
+**Two layers of deduplication.** Rerunning a step that produces identical content returns the same node, not a copy. Below that, artifacts are split into content-defined chunks stored once, and near-identical artifacts are stored as deltas against existing ones. On a 69 MB corpus of six file types across six revisions, 2.6x less storage. Already-compressed data (PNG, parquet, zip) is stored verbatim. `store.stats()` reports the ratio on your own data, and the [benchmarks](https://js195.github.io/ancestree/benchmarks/RESULTS/) record what each layer saves and what each operation costs.
 
 **Crash handling.** A step that raises keeps its partial output, flagged `healthy=False` and searchable. A step that wrote nothing is discarded with a warning. After a hard kill, the next store open adopts whatever was written as an unhealthy node.
 

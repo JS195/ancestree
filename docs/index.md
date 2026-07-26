@@ -144,3 +144,4 @@ Metadata is not needed to expose files: every artifact appears as a clickable li
 
 - Work through the [Examples](examples.md), including a [machine learning workflow](examples/ml_pipeline.ipynb).
 - See the [API Reference](reference.md) for `LineageStore` and `Node`.
+- Read the [Benchmarks](benchmarks/RESULTS.md) for what deduplication saves and what each operation costs.

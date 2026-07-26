@@ -15,7 +15,7 @@ The SQLite rebuild, and a clean break from 0.1.x. Every decision is recorded in 
 
 ### Added
 - `store.serve_graph()` and `python -m ancestree serve`: a live explorer on localhost. Search (`field=value`, `accuracy>0.9`, free text), node diffs and the sortable runs table are answered by SQL on the server.
-- Layer-2 deduplication: near-identical artifacts are stored as chunk deltas against similar chunks already in the pool, using zlib dictionary compression. On a mixed 69 MB corpus of six file types across six revisions the store is 2.63x smaller, and 2.23x on the synthetic near-duplicate benchmark. Numbers are in `benchmarks/RESULTS.md`. Payloads zlib cannot shrink (PNG, parquet, zip) are stored verbatim rather than re-compressed.
+- Layer-2 deduplication: near-identical artifacts are stored as chunk deltas against similar chunks already in the pool, using zlib dictionary compression. On a mixed 69 MB corpus of six file types across six revisions the store is 2.63x smaller, and 2.23x on the synthetic near-duplicate benchmark. Numbers are in `docs/benchmarks/RESULTS.md`. Payloads zlib cannot shrink (PNG, parquet, zip) are stored verbatim rather than re-compressed.
 - `store.sql(query)`: read-only SQL over a documented, versioned schema, for questions the API does not cover.
 - `store.stats()`: node and chunk counts, `artifact_bytes` versus `chunk_stored_bytes`, and the dedup ratio. `database_bytes` counts the WAL alongside the database, so it reflects what the store occupies.
 - `store.export_metadata()`: per-node `meta.json` sidecars, for reading a store without ancestree installed.
@@ -23,7 +23,7 @@ The SQLite rebuild, and a clean break from 0.1.x. Every decision is recorded in 
 - `store.backup(dest)`: a consistent copy via SQLite's online backup API, safe to take while the store is open and being written. Copying `ancestree.db` alone out from under a live store silently yields an empty store.
 - Hard-kill recovery: a run killed mid-block leaves a seeded scratch directory, and the next store open adopts it as an unhealthy node. 0.1.x lost that work.
 - CLI: `python -m ancestree serve|export|compact <root>`.
-- Two executed example notebooks: basic usage and a branching ML pipeline. The 0.1.x notebooks are kept under `docs/examples/legacy-0.1/`, and the chunking and timing measurements are in `benchmarks/RESULTS.md`.
+- Two executed example notebooks: basic usage and a branching ML pipeline. The 0.1.x notebooks are kept under `docs/examples/legacy-0.1/`, and the chunking and timing measurements are in `docs/benchmarks/RESULTS.md`.
 - Reads reassemble on demand: packed artifacts rebuild from the chunk pool into a per-session cache at `<root>/.cache/`, cleared when the session ends. The live explorer serves artifacts straight from the chunk pool and never touches that cache.
 - Artifact containment is enforced against symlinks as well as paths. `node / "../outside.txt"` has always raised, but a symlink pointing the same way used to be followed at commit and its target stored as a node artifact, reachable unintentionally via `shutil.copytree(..., symlinks=True)` over a tree containing a link to a shared file. Escaping links are now skipped with a warning, and links resolving inside the node are stored normally.
 

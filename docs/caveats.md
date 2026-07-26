@@ -30,7 +30,7 @@ Compaction scans the whole chunk pool, so pruning in a loop repeats that work. P
 
 ## Write and read costs
 
-Your code writes files at native speed inside the block. The cost is paid at block exit, where the artifact is chunked, hashed, compressed and committed. The chunking loop is pure Python at roughly 27 MB/s, so it scales with megabytes; files of 64 MiB and above switch to fixed boundaries at C speed. The first read of an artifact in a session reassembles it from chunks, and every read after that is a plain file read from the cache. `benchmarks/RESULTS.md` measures all of this.
+Your code writes files at native speed inside the block. The cost is paid at block exit, where the artifact is chunked, hashed, compressed and committed. The chunking loop is pure Python at roughly 27 MB/s, so it scales with megabytes; files of 64 MiB and above switch to fixed boundaries at C speed. The first read of an artifact in a session reassembles it from chunks, and every read after that is a plain file read from the cache. The [Benchmarks](benchmarks/RESULTS.md) measure all of this.
 
 ## Concurrency
 

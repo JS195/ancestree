@@ -94,6 +94,10 @@ nav:
       - Survey Reprocessing: examples/survey_reprocessing.ipynb
       - Quant Backtest Grid: examples/quant_backtest.ipynb
   - Live Demo: demo.md
+  - Benchmarks:
+      - Results: benchmarks/RESULTS.md
+      - Storage: benchmarks/storage_benchmark.ipynb
+      - Timing: benchmarks/timing_benchmark.ipynb
   - API Reference: reference.md
   - Caveats & Limitations: caveats.md
 
