@@ -4,7 +4,7 @@ The whole store is one SQLite database and every write is a transaction. That bu
 
 ## Rules and policy are set once
 
-Rules, generation triggers and the `dedup`/`chunk` policy are written into the database at creation and read back on every later open. They cannot be changed afterwards. Passing different values to an existing store warns, and the stored configuration wins. To change them, start a new store.
+Rules, generation triggers and the `reuse_identical`/`chunk` policy are written into the database at creation and read back on every later open. They cannot be changed afterwards. Passing different values to an existing store warns, and the stored configuration wins. To change them, start a new store.
 
 Rules only restrict the step types you list. A `step_type` absent from `rules` has no transition constraint and can be created under any parent, and a store created with no rules permits everything.
 
@@ -70,11 +70,11 @@ The structural keys the store owns (`node_id`, `parent_id`, `step_type`, `genera
 
 The default `auto` data type infers rendering from the value's type, not by inspecting string contents: a `Path` becomes an image (by suffix) or a file link, a `dict` or `list` becomes JSON, a DataFrame becomes a table, an `http(s)://` string becomes a link. Any other string stays `text`. numpy and pandas scalars, arrays, sets and datetimes are coerced to native Python with a warning; anything still unserialisable is rejected at the `add_meta` call.
 
-## Deduplication surprises
+## Identical-node reuse surprises
 
-With `dedup` on (the default), re-running a step with identical content (step type, parents, metadata and artifact bytes) returns the same node: the `with` block's variable is rebound onto the existing node and nothing new is stored. Change any of those and you get a distinct node. Failed runs never merge. For a record of every run regardless, create the store with `dedup=False`.
+With `reuse_identical` on (the default), re-running a step with identical content (step type, parents, metadata and artifact bytes) returns the same node: the `with` block's variable is rebound onto the existing node and nothing new is stored. Change any of those and you get a distinct node. Failed runs never merge. For a record of every run regardless, create the store with `reuse_identical=False`.
 
-Read `node.node_id` after the block, not inside it. Rebinding happens on exit, so an id copied out during the block is provisional, and if the node then deduplicates into an existing one, that id is never persisted:
+Read `node.node_id` after the block, not inside it. Rebinding happens on exit, so an id copied out during the block is provisional, and if the node is then reused into an existing one, that id is never persisted:
 
 ```python
 with store.create_node(step_type="clean") as node:

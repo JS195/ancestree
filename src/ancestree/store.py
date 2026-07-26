@@ -6,8 +6,8 @@ and exposes the public API: ``create_node``, the query vocabulary
 ``from_parent``), the power tools (``sql``, ``stats``) and the store
 lifecycle. Orchestration only — every algorithm lives in a focused module.
 
-Store policy (``rules``, ``gen_triggers``, ``dedup``, ``chunk``) is
-persisted in the database at creation and cannot be changed afterwards;
+Store policy (``rules``, ``gen_triggers``, ``reuse_identical``, ``chunk``)
+is persisted in the database at creation and cannot be changed afterwards;
 reopening with different values warns and uses the stored policy.
 
 See REBUILD_BLUEPRINT.md section 5.3 (Phase 4, issue #15).
@@ -66,7 +66,7 @@ class LineageStore:
         root: Path | str,
         rules: dict[str, list[str]] | None = None,
         gen_triggers: list[str] | None = None,
-        dedup: bool | None = None,
+        reuse_identical: bool | None = None,
         chunk: bool | None = None,
     ) -> None:
         """Opens (creating if needed) the store at `root`.
@@ -77,19 +77,22 @@ class LineageStore:
                 Persisted at creation; immutable afterwards.
             gen_triggers: Step types that start a new generation.
                 Persisted at creation; immutable afterwards.
-            dedup: Node-level deduplication policy (persisted at creation;
-                defaults to True). Enforced from Phase 5.
-            chunk: Layer-2 (delta) dedup policy (persisted at creation;
-                defaults to True). Enforced from Phase 6.
+            reuse_identical: A node with the same parents and content as an
+                existing one is bound to that node instead of being written
+                again (persisted at creation; defaults to True).
+            chunk: Layer-2 (delta) storage deduplication policy (persisted
+                at creation; defaults to True).
         """
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self._manager = ConnectionManager(self.root / DB_FILENAME)
         self._metadata = MetadataStore(self._manager)
-        config = self._load_or_create_config(rules, gen_triggers, dedup, chunk)
+        config = self._load_or_create_config(
+            rules, gen_triggers, reuse_identical, chunk
+        )
         self.rules: dict[str, list[str]] = config["rules"]
         self.gen_triggers: list[str] = config["gen_triggers"]
-        self.dedup: bool = config["dedup"]
+        self.reuse_identical: bool = config["reuse_identical"]
         self.chunk: bool = config["chunk"]
         # The chunk policy is Layer-2 (resemblance/delta) storage (AD5).
         self._chunks = ChunkStore(self._manager, delta=self.chunk)
@@ -146,7 +149,7 @@ class LineageStore:
         self,
         rules: dict[str, list[str]] | None,
         gen_triggers: list[str] | None,
-        dedup: bool | None,
+        reuse_identical: bool | None,
         chunk: bool | None,
     ) -> dict[str, Any]:
         row = (
@@ -158,7 +161,9 @@ class LineageStore:
             stored: dict[str, Any] = {
                 "rules": rules or {},
                 "gen_triggers": gen_triggers or [],
-                "dedup": True if dedup is None else bool(dedup),
+                "reuse_identical": (
+                    True if reuse_identical is None else bool(reuse_identical)
+                ),
                 "chunk": True if chunk is None else bool(chunk),
             }
             with self._manager.write() as conn:
@@ -185,13 +190,16 @@ class LineageStore:
                 UserWarning,
                 stacklevel=3,
             )
-        for name, supplied in (("dedup", dedup), ("chunk", chunk)):
+        for name, supplied in (
+            ("reuse_identical", reuse_identical),
+            ("chunk", chunk),
+        ):
             if supplied is not None and bool(supplied) != stored[name]:
                 warnings.warn(
                     f"Supplied {name}={supplied!r} differs from the stored "
                     f"policy ({name}={stored[name]!r}) and has been "
-                    "ignored. dedup/chunk are persisted store policy, set "
-                    "once at creation.",
+                    "ignored. reuse_identical/chunk are persisted store "
+                    "policy, set once at creation.",
                     UserWarning,
                     stacklevel=3,
                 )
@@ -308,11 +316,11 @@ class LineageStore:
         """Ingests the node if the block recorded anything (files or
         metadata); discards the workspace and returns False otherwise.
 
-        Clean completions are fingerprinted: with dedup on, a node
-        content-identical to an existing one is not persisted again — the
-        handle is rebound onto the existing node instead. Failed runs are
-        never deduplicated (partial work must not merge into a healthy
-        node) and carry no content_hash."""
+        Clean completions are fingerprinted: with reuse_identical on, a
+        node content-identical to an existing one is not persisted again —
+        the handle is rebound onto the existing node instead. Failed runs
+        are never reused (partial work must not merge into a healthy node)
+        and carry no content_hash."""
         files = workspace.files()
         if not files and not handle._entries:
             workspace.discard()
@@ -337,7 +345,9 @@ class LineageStore:
                 handle.step_type, handle.parent_id, envelopes, digests
             )
             content_hash = summary.digest
-            if self.dedup and self._adopt_if_duplicate(handle, workspace, summary):
+            if self.reuse_identical and self._reuse_identical_node(
+                handle, workspace, summary
+            ):
                 return True
 
         prov = capture()
@@ -374,7 +384,7 @@ class LineageStore:
         )
         return True
 
-    def _adopt_if_duplicate(
+    def _reuse_identical_node(
         self,
         handle: RecordingNode,
         workspace: NodeWorkspace,

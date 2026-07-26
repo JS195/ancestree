@@ -2,7 +2,7 @@
 
 Ports the query/lineage semantics of test_querying_and_search.py and
 test_dag.py to the SQLite persistence layer: equality and predicate
-search, DAG lineage ordering, children, most_recent and dedup lookup.
+search, DAG lineage ordering, children, most_recent and content-hash lookup.
 """
 
 from collections.abc import Sequence

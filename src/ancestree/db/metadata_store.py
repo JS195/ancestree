@@ -554,8 +554,8 @@ class MetadataStore:
         return None if row is None else str(row["node_id"])
 
     def find_by_hash(self, content_hash: str) -> str | None:
-        """A node whose content_hash matches, or None. Backs node-level
-        dedup: the caller treats the result as a candidate and
+        """A node whose content_hash matches, or None. Backs
+        reuse_identical: the caller treats the result as a candidate and
         byte-verifies before reuse."""
         row = (
             self._manager.read()

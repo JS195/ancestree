@@ -30,10 +30,10 @@ Four longer examples from different fields. Each takes a different graph shape, 
 
 - :material-telescope: **[Survey Reprocessing](examples/survey_reprocessing.ipynb)**
 
-    A campaign. A telescope survey reduced twice after a calibration fault. Generations, node deduplication, and scoring two runs against each other.
+    A campaign. A telescope survey reduced twice after a calibration fault. Generations, identical-node reuse, and scoring two runs against each other.
 
 - :material-finance: **[Quant Backtest Grid](examples/quant_backtest.ipynb)**
 
-    A lattice. Strategy configurations across walk-forward folds, with a look-ahead bug planted, traced and withdrawn. Contamination tracing, `dedup=False` for audit, and counting trials for a multiple-testing correction.
+    A lattice. Strategy configurations across walk-forward folds, with a look-ahead bug planted, traced and withdrawn. Contamination tracing, `reuse_identical=False` for audit, and counting trials for a multiple-testing correction.
 
 </div>

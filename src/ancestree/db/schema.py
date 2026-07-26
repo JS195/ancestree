@@ -30,7 +30,7 @@ TABLES: frozenset[str] = frozenset(
 )
 
 SCHEMA_SQL = """
--- Store-wide configuration: rules, gen_triggers, dedup/chunk policy, format.
+-- Store-wide configuration: rules, gen_triggers, reuse_identical/chunk policy.
 CREATE TABLE config (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL                        -- JSON
@@ -46,7 +46,7 @@ CREATE TABLE node (
     healthy         INTEGER NOT NULL,          -- 0/1
     duration_s      REAL,
     size_bytes      INTEGER NOT NULL DEFAULT 0,
-    content_hash    TEXT,                      -- node-level dedup bucket key
+    content_hash    TEXT,                      -- content-identity bucket key
     prov_user       TEXT,
     prov_python     TEXT,
     prov_platform   TEXT,

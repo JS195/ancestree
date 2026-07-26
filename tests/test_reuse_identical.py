@@ -1,4 +1,4 @@
-"""Phase 5: node-level deduplication (issue #16) — completes the goal of
+"""Phase 5: reuse_identical (issue #16) — completes the goal of
 the original feature branch on the new substrate. Ports the semantics of
 test_dedupe.py: identical clean nodes merge (the handle rebinds), anything
 differing stays separate, failed runs never merge, and the fingerprint is
@@ -15,7 +15,7 @@ from ancestree.store import LineageStore
 
 @pytest.fixture()
 def store(tmp_path: Path) -> LineageStore:
-    return LineageStore(tmp_path / "proj")  # dedup defaults to True
+    return LineageStore(tmp_path / "proj")  # reuse_identical defaults to True
 
 
 def _run(
@@ -106,14 +106,14 @@ def test_failed_runs_never_merge(store: LineageStore) -> None:
     assert all(record.content_hash is None for record in unhealthy)
 
 
-def test_dedup_policy_off_keeps_duplicates(tmp_path: Path) -> None:
-    store = LineageStore(tmp_path / "nodedup", dedup=False)
+def test_reuse_identical_off_keeps_duplicates(tmp_path: Path) -> None:
+    store = LineageStore(tmp_path / "nodedup", reuse_identical=False)
     _run(store)
     _run(store)
     assert len(store.find()) == 2
 
 
-def test_dedup_works_across_reopen(tmp_path: Path) -> None:
+def test_reuse_identical_works_across_reopen(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     first = LineageStore(root)
     original = _run(first)

@@ -80,7 +80,7 @@ This is a **consolidation onto a better substrate**, not a rescue of bad code. G
 
 | Module | Lines | Responsibility |
 |--------|-------|----------------|
-| `core.py` | 899 | `LineageStore` — config, node creation, rules, dedup, background packer, querying, prune, GC, viz |
+| `core.py` | 899 | `LineageStore` — config, node creation, rules, node reuse, background packer, querying, prune, GC, viz |
 | `models.py` | 716 | `Node` — metadata envelopes, content hashing, chunk packing/reassembly, manifest, path resolution |
 | `database.py` | 286 | `lineage_database` — JSON index: snapshot + append-only journal + directory reconcile |
 | `chunkstore.py` | 257 | FastCDC chunker, content-addressed chunk pool, session read cache |
@@ -164,7 +164,7 @@ Each decision records what I chose, why, and what it costs. Everything in [§5](
 - **Decision.** Backwards compatibility is dropped (pre-1.0). The API gets one consistent vocabulary and sheds surface that stops meaning anything after the rebuild.
 - **Removed.** `Node.path` (nodes are rows); `rebuild_db_from_disk()` (no separate index to rebuild); `flush()`/`clear_cache()` (lifecycle is automatic; space is reclaimed by `compact()`).
 - **Renamed** into one query vocabulary: `get_node`→`get`, `find_node`→`find`, `get_most_recent_node`→`latest`, `get_child_nodes`→`children`, `get_lineage`→`lineage`, `find_in_lineage`→`ancestors`.
-- **Reshaped.** `dedup`/`chunk` become persisted store policy set once at creation (like `rules`), not per-open flags; maintenance converges on `compact()`; visualisation is `generate_web_graph()` (static) + `host_live_graph()` (live).
+- **Reshaped.** `reuse_identical`/`chunk` become persisted store policy set once at creation (like `rules`), not per-open flags; maintenance converges on `compact()`; visualisation is `generate_web_graph()` (static) + `host_live_graph()` (live).
 - **Restructured.** The mutable **recording handle** yielded by `create_node` (write API: `/`, `add_meta`) is split from the immutable **`Node` record** returned by queries (read API: attributes, `metadata`, `artifacts`). This kills the old footgun of calling `add_meta` on a queried node and lets the record be a proper hashable value object.
 - **Why.** The old verbs mixed `get_*`/`find_*` inconsistently and several methods stop making sense post-rebuild. A coherent API is one of the goals, not a casualty.
 - **Cost.** A breaking change for 0.1.x, which I am fine with pre-1.0. The test suite gets rewritten to the new API rather than pinned to the old one.
@@ -198,7 +198,7 @@ src/ancestree/
 │   ├── node.py               # Node record + recording handle
 │   ├── metadata.py           # metadata envelope: validate / coerce / infer type
 │   ├── rules.py              # RuleEngine — transition validation + generation numbering
-│   ├── fingerprint.py        # node content-identity (hash + equality) → node-level dedup
+│   ├── fingerprint.py        # node content-identity (hash + equality) → reuse_identical
 │   └── provenance.py         # who/what/how capture (user, python, platform, git)
 │
 ├── db/                       # how state is PERSISTED — all SQLite
@@ -327,7 +327,7 @@ PRAGMA synchronous = NORMAL;
 -- lets compact() reclaim space via incremental_vacuum instead of a full VACUUM.
 PRAGMA auto_vacuum = INCREMENTAL;
 
--- Store-wide configuration: rules, gen_triggers, dedup/chunk policy, format.
+-- Store-wide configuration: rules, gen_triggers, reuse_identical/chunk policy.
 CREATE TABLE config (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL                        -- JSON
@@ -343,7 +343,7 @@ CREATE TABLE node (
     healthy         INTEGER NOT NULL,          -- 0/1
     duration_s      REAL,
     size_bytes      INTEGER NOT NULL DEFAULT 0,
-    content_hash    TEXT,                      -- node-level dedup bucket key
+    content_hash    TEXT,                      -- content-identity bucket key
     prov_user       TEXT,
     prov_python     TEXT,
     prov_platform   TEXT,
@@ -422,7 +422,7 @@ CREATE TABLE artifact_chunk (
 CREATE INDEX idx_ac_digest ON artifact_chunk(digest);   -- reachability / GC
 ```
 
-How it hangs together: `node` 1─N `metadata`; `node` N─N `node` via `edge` (the DAG); `node` 1─N `artifact` 1─N `artifact_chunk` N─1 `chunk`; a `chunk` may reference another `chunk` (`base_digest`) for delta storage and has N `chunk_feature` rows for resemblance lookup. **Dedup lives at two keys:** `chunk.digest` (identical chunk = same row) and `node.content_hash` (identical node = reused row).
+How it hangs together: `node` 1─N `metadata`; `node` N─N `node` via `edge` (the DAG); `node` 1─N `artifact` 1─N `artifact_chunk` N─1 `chunk`; a `chunk` may reference another `chunk` (`base_digest`) for delta storage and has N `chunk_feature` rows for resemblance lookup. **Dedup lives at two keys:** `chunk.digest` (identical chunk = same row) and `node.content_hash` (identical node = reused row, the `reuse_identical` policy).
 
 **GC reachability.** A chunk is live if any `artifact_chunk` references it **or** it is the `base_digest` of a live delta chunk — a single hop, because delta depth is capped at 1 (AD5). `compact()` computes this before deleting, so a base can never be reaped out from under its delta.
 
@@ -447,7 +447,7 @@ SQLite is the durable store and the query engine — it is never on the synchron
 1. `create_node` validates the transition (`RuleEngine`), works out the generation, allocates a node_id, and creates `.scratch/<node_id>/`.
 2. User code writes files via `node / "x"` (native) and attaches metadata via `add_meta`.
 3. At clean block exit: `packing` reads the scratch files in one pass — chunking, dedup/delta, artifact SHA-256s, total size and the content hash all together.
-4. If `dedup` is on and an identical `content_hash` exists (verified against the full content summary), the node is *adopted*: the handle rebinds onto the existing row and the scratch is discarded.
+4. If `reuse_identical` is on and an identical `content_hash` exists (verified against the full content summary), the node is *adopted*: the handle rebinds onto the existing row and the scratch is discarded.
 5. Otherwise one transaction writes the `node` row, `edge` rows, `metadata` rows, `chunk`/`chunk_feature` blobs and `artifact`/`artifact_chunk` rows.
 6. The scratch directory is deleted.
 
@@ -542,10 +542,10 @@ Each phase is independently testable and leaves the suite green. I tick items as
 - [x] `store.sql()` read-only escape hatch (`query_only` connection) and `store.stats()` (counts, sizes, dedup ratio).
 - **Exit:** the suite rewritten to the redesigned API ([§11](#11-public-api)) is green against the new backend.
 
-### Phase 5 — Node dedup & maintenance
+### Phase 5 — Identical-node reuse & maintenance
 - [x] `domain/fingerprint.py`; `content_hash` column; adopt/rebind on identical content.
 - [x] `maintenance.py` — `Pruner` (SQL cascade prune), `compact()` (orphan-chunk GC + `incremental_vacuum`), orphan-scratch sweep at store open.
-- **Exit:** dedup semantics fully green on the new API (finishes what my original feature branch started); prune/compact/sweep tests pass.
+- **Exit:** reuse_identical semantics fully green on the new API (finishes what my original feature branch started); prune/compact/sweep tests pass.
 
 ### Phase 6 — CDC Layer 2 (advanced dedup)
 - [x] `ingest/cdc.py` resemblance + delta sections (super-features computed in the chunking pass; zlib-`zdict` codec); wire into `packing`/`ChunkStore` behind the `chunk` policy.
@@ -602,7 +602,7 @@ Backwards compatibility is **not** a goal (pre-1.0). The API is redesigned aroun
 
 **CLI** — `python -m ancestree serve|export|compact <root>` (stdlib `argparse`).
 
-**Store policy** — `LineageStore(root, rules=None, gen_triggers=None, dedup=..., chunk=...)`; `dedup`/`chunk` are persisted at creation like `rules`, not re-passed per open.
+**Store policy** — `LineageStore(root, rules=None, gen_triggers=None, reuse_identical=..., chunk=...)`; `reuse_identical`/`chunk` are persisted at creation like `rules`, not re-passed per open.
 
 **Removed** — `Node.path`, `rebuild_db_from_disk()`, `gc()`, `flush()`, `clear_cache()` (folded into `compact()` / automatic lifecycle).
 

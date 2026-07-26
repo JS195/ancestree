@@ -231,14 +231,14 @@ def test_from_parent_inside_a_block(store: LineageStore) -> None:
 
 def test_policy_is_persisted_and_immutable(tmp_path: Path) -> None:
     root = tmp_path / "proj"
-    first = LineageStore(root, rules={"clean": ["ingest"]}, dedup=False)
-    assert first.dedup is False and first.chunk is True
+    first = LineageStore(root, rules={"clean": ["ingest"]}, reuse_identical=False)
+    assert first.reuse_identical is False and first.chunk is True
     first.close()
 
     # Reopening with nothing re-supplied uses the stored policy.
     second = LineageStore(root)
     assert second.rules == {"clean": ["ingest"]}
-    assert second.dedup is False
+    assert second.reuse_identical is False
     second.close()
 
     with pytest.warns(UserWarning, match="Rules cannot be changed"):
@@ -247,8 +247,8 @@ def test_policy_is_persisted_and_immutable(tmp_path: Path) -> None:
     third.close()
 
     with pytest.warns(UserWarning, match="persisted store policy"):
-        fourth = LineageStore(root, dedup=True)
-    assert fourth.dedup is False
+        fourth = LineageStore(root, reuse_identical=True)
+    assert fourth.reuse_identical is False
     fourth.close()
 
 
@@ -268,12 +268,12 @@ def test_sql_is_read_only(store: LineageStore) -> None:
         store.sql("INSERT INTO config VALUES ('evil', 'x')")
 
 
-def test_stats_show_dedup(store: LineageStore) -> None:
+def test_stats_show_storage_dedup(store: LineageStore) -> None:
     import random
 
     payload = random.Random(3).randbytes(300_000)
-    # Distinct metadata keeps the two nodes separate under node-level
-    # dedup (Phase 5); their identical bytes still share every chunk.
+    # Distinct metadata keeps the two nodes separate under
+    # reuse_identical (Phase 5); identical bytes still share every chunk.
     for run in range(2):
         with store.create_node(step_type="ingest") as node:
             (node / "same.bin").write_bytes(payload)

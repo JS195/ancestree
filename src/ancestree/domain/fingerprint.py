@@ -1,4 +1,4 @@
-"""Node content identity: the fingerprint behind node-level deduplication.
+"""Node content identity: the fingerprint behind reuse_identical.
 
 A node's content is its step_type, its parents (order-independent), its
 user metadata envelopes and its artifact digests — never the volatile
@@ -56,7 +56,7 @@ class ContentSummary:
     @property
     def digest(self) -> str:
         """The SHA-256 fingerprint stored in the node table's content_hash
-        column and used as the dedup bucket key."""
+        column and used as the content-identity bucket key."""
         payload = {
             "step_type": self.step_type,
             "parents": list(self.parent_ids),

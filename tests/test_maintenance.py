@@ -13,8 +13,8 @@ from ancestree.store import LineageStore
 
 @pytest.fixture()
 def store(tmp_path: Path) -> LineageStore:
-    # dedup off so identical payloads make genuinely distinct nodes.
-    return LineageStore(tmp_path / "proj", dedup=False)
+    # reuse_identical off so identical payloads make distinct nodes.
+    return LineageStore(tmp_path / "proj", reuse_identical=False)
 
 
 def _node(
@@ -119,7 +119,7 @@ def test_compact_keeps_chunks_shared_with_survivors(
 
     payload = random.Random(3).randbytes(150_000)
     keeper = _node(store, "keeper", blob=payload)
-    twin = _node(store, "twin", blob=payload)  # dedup off: two nodes, shared chunks
+    twin = _node(store, "twin", blob=payload)  # reuse off: two nodes, shared chunks
 
     store.prune(twin, dry_run=False)
     assert store.compact() == 0  # every chunk still referenced by the keeper
