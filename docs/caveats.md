@@ -4,7 +4,7 @@ The whole store is one SQLite database and every write is a transaction. That bu
 
 ## Rules and policy are set once
 
-Rules, generation triggers and the `reuse_identical`/`chunk` policy are written into the database at creation and read back on every later open. They cannot be changed afterwards. Passing different values to an existing store warns, and the stored configuration wins. To change them, start a new store.
+Rules, generation triggers and the `reuse_identical`/`delta` policy are written into the database at creation and read back on every later open. They cannot be changed afterwards. Passing different values to an existing store warns, and the stored configuration wins. To change them, start a new store.
 
 Rules only restrict the step types you list. A `step_type` absent from `rules` has no transition constraint and can be created under any parent, and a store created with no rules permits everything.
 

@@ -18,7 +18,7 @@ The store is grouped here by what you are trying to do rather than alphabeticall
 
 ## Creating a store
 
-A store is a directory holding one SQLite database. Rules, generation triggers and the `reuse_identical`/`chunk` policy are written in at creation and read back on every later open, so reopening by path is enough. See [Caveats](caveats.md#rules-and-policy-are-set-once) for what cannot be changed afterwards.
+A store is a directory holding one SQLite database. Rules, generation triggers and the `reuse_identical`/`delta` policy are written in at creation and read back on every later open, so reopening by path is enough. See [Caveats](caveats.md#rules-and-policy-are-set-once) for what cannot be changed afterwards.
 
 ::: ancestree.LineageStore
     handler: python

@@ -44,7 +44,7 @@ class NodeWorkspace:
         root: str | Path,
         node_id: str,
         step_type: str,
-        parent_ids: Sequence[str] = (),
+        parent_id: Sequence[str] = (),
         generation: int = 0,
     ) -> None:
         self.root = Path(root)
@@ -54,7 +54,7 @@ class NodeWorkspace:
         seed: dict[str, Any] = {
             "node_id": node_id,
             "step_type": step_type,
-            "parent_ids": list(parent_ids),
+            "parent_id": list(parent_id),
             "generation": generation,
             "pid": os.getpid(),
             "started_utc": datetime.now(timezone.utc).isoformat(),

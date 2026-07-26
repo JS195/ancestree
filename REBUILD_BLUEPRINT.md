@@ -140,7 +140,7 @@ Each decision records what I chose, why, and what it costs. Everything in [§5](
 ### AD5 — Two-layer deduplication
 - **Decision.** *Layer 1:* FastCDC → byte-identical chunks stored once. *Layer 2:* derive min-wise super-features in the same pass as chunking, look up similar-but-not-identical stored chunks, and store the newcomer as a **delta**: zlib dictionary compression with the base chunk as the preset dictionary (`zlib.compressobj(zdict=base)`), kept only when it is genuinely smaller than raw. **Delta depth is capped at 1 — a base is always a raw chunk** — so a read costs at most two fetches and GC reachability is a single hop.
 - **Why.** This catches the near-duplicate blocks exact CDC structurally misses — the actual "find repeated blocks" win. Using DEFLATE's dictionary mechanism instead of writing my own copy/insert codec keeps the codec **C-speed and about 20 lines** (encode = compress with `zdict`, decode = decompress with `zdict`), instead of what would otherwise have been the slowest pure-Python code in the build. Stdlib only (HC1).
-- **Limits & gate.** DEFLATE's 32 KB window means a base contributes at most ~32 KB of reference data — full coverage at my 32 KB average chunk size, partial for bigger chunks. Layer 2 ships behind the `chunk` policy and its **default was decided by a benchmark, not by faith** (Phase 6): measured dedup ratio vs ingest/read overhead on realistic near-duplicate fixtures.
+- **Limits & gate.** DEFLATE's 32 KB window means a base contributes at most ~32 KB of reference data — full coverage at my 32 KB average chunk size, partial for bigger chunks. Layer 2 ships behind the `delta` policy and its **default was decided by a benchmark, not by faith** (Phase 6): measured dedup ratio vs ingest/read overhead on realistic near-duplicate fixtures.
 - **Cost.** Reading a delta chunk fetches its base too (bounded by depth 1); the resemblance index adds one lookup plus a few rows per new chunk; `compact()` has to keep live bases (a one-hop closure).
 
 ### AD6 — Structural & provenance fields become columns
@@ -164,7 +164,7 @@ Each decision records what I chose, why, and what it costs. Everything in [§5](
 - **Decision.** Backwards compatibility is dropped (pre-1.0). The API gets one consistent vocabulary and sheds surface that stops meaning anything after the rebuild.
 - **Removed.** `Node.path` (nodes are rows); `rebuild_db_from_disk()` (no separate index to rebuild); `flush()`/`clear_cache()` (lifecycle is automatic; space is reclaimed by `compact()`).
 - **Renamed** into one query vocabulary: `get_node`→`get`, `find_node`→`find`, `get_most_recent_node`→`latest`, `get_child_nodes`→`children`, `get_lineage`→`lineage`, `find_in_lineage`→`ancestors`.
-- **Reshaped.** `reuse_identical`/`chunk` become persisted store policy set once at creation (like `rules`), not per-open flags; maintenance converges on `compact()`; visualisation is `generate_web_graph()` (static) + `host_live_graph()` (live).
+- **Reshaped.** `reuse_identical`/`delta` become persisted store policy set once at creation (like `rules`), not per-open flags; maintenance converges on `compact()`; visualisation is `generate_web_graph()` (static) + `host_live_graph()` (live).
 - **Restructured.** The mutable **recording handle** yielded by `create_node` (write API: `/`, `add_meta`) is split from the immutable **`Node` record** returned by queries (read API: attributes, `metadata`, `artifacts`). This kills the old footgun of calling `add_meta` on a queried node and lets the record be a proper hashable value object.
 - **Why.** The old verbs mixed `get_*`/`find_*` inconsistently and several methods stop making sense post-rebuild. A coherent API is one of the goals, not a casualty.
 - **Cost.** A breaking change for 0.1.x, which I am fine with pre-1.0. The test suite gets rewritten to the new API rather than pinned to the old one.
@@ -327,7 +327,7 @@ PRAGMA synchronous = NORMAL;
 -- lets compact() reclaim space via incremental_vacuum instead of a full VACUUM.
 PRAGMA auto_vacuum = INCREMENTAL;
 
--- Store-wide configuration: rules, gen_triggers, reuse_identical/chunk policy.
+-- Store-wide configuration: rules, gen_triggers, reuse_identical/delta policy.
 CREATE TABLE config (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL                        -- JSON
@@ -602,7 +602,7 @@ Backwards compatibility is **not** a goal (pre-1.0). The API is redesigned aroun
 
 **CLI** — `python -m ancestree serve|export|compact <root>` (stdlib `argparse`).
 
-**Store policy** — `LineageStore(root, rules=None, gen_triggers=None, reuse_identical=..., chunk=...)`; `reuse_identical`/`chunk` are persisted at creation like `rules`, not re-passed per open.
+**Store policy** — `LineageStore(root, rules=None, gen_triggers=None, reuse_identical=..., delta=...)`; `reuse_identical`/`delta` are persisted at creation like `rules`, not re-passed per open.
 
 **Removed** — `Node.path`, `rebuild_db_from_disk()`, `gc()`, `flush()`, `clear_cache()` (folded into `compact()` / automatic lifecycle).
 

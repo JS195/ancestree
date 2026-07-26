@@ -32,7 +32,7 @@ class ContentSummary:
     """
 
     step_type: str
-    parent_ids: tuple[str, ...]  # sorted: parent order is not content
+    parent_id: tuple[str, ...]  # sorted: parent order is not content
     metadata: dict[str, dict[str, Any]]
     artifact_sha256s: dict[str, str]
 
@@ -40,7 +40,7 @@ class ContentSummary:
     def of(
         cls,
         step_type: str,
-        parent_ids: Iterable[str],
+        parent_id: Iterable[str],
         metadata: Mapping[str, dict[str, Any]],
         artifact_sha256s: Mapping[str, str],
     ) -> ContentSummary:
@@ -48,7 +48,7 @@ class ContentSummary:
         so `["a", "b"]` and `["b", "a"]` fingerprint identically."""
         return cls(
             step_type=step_type,
-            parent_ids=tuple(sorted(parent_ids)),
+            parent_id=tuple(sorted(parent_id)),
             metadata=dict(metadata),
             artifact_sha256s=dict(artifact_sha256s),
         )
@@ -59,7 +59,7 @@ class ContentSummary:
         column and used as the content-identity bucket key."""
         payload = {
             "step_type": self.step_type,
-            "parents": list(self.parent_ids),
+            "parents": list(self.parent_id),
             "meta": self.metadata,
             "artifacts": self.artifact_sha256s,
         }

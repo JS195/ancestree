@@ -118,7 +118,8 @@ class NodeRecord:
     prov_git_commit: str | None = None
     prov_git_branch: str | None = None
     prov_git_dirty: bool | None = None
-    parent_ids: tuple[str, ...] = field(default=())
+    #: Ordered parent ids — a tuple, since a node may be a join.
+    parent_id: tuple[str, ...] = field(default=())
 
 
 @dataclass(frozen=True)
@@ -191,7 +192,7 @@ def _record_from_row(row: Any, parents: tuple[str, ...]) -> NodeRecord:
         prov_git_dirty=None
         if row["prov_git_dirty"] is None
         else bool(row["prov_git_dirty"]),
-        parent_ids=parents,
+        parent_id=parents,
     )
 
 
@@ -247,8 +248,8 @@ class MetadataStore:
             conn.executemany(
                 "INSERT INTO edge (child_id, parent_id, ordinal) VALUES (?, ?, ?)",
                 [
-                    (record.node_id, parent_id, ordinal)
-                    for ordinal, parent_id in enumerate(record.parent_ids)
+                    (record.node_id, parent, ordinal)
+                    for ordinal, parent in enumerate(record.parent_id)
                 ],
             )
             conn.executemany(

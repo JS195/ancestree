@@ -2,7 +2,7 @@
 
 The content-addressed pool lives in the ``chunk`` table: each chunk is
 stored once, keyed by the SHA-256 of its plaintext — a repeat put is a
-no-op, which is the exact dedup (Layer 1). With the store's ``chunk``
+no-op, which is the exact dedup (Layer 1). With the store's ``delta``
 policy on, Layer 2 engages: a new chunk's super-features nominate a
 similar base chunk, and the newcomer is stored as a zlib-zdict delta
 (kind 1) when that genuinely beats storing it on its own. Depth is capped
@@ -75,8 +75,8 @@ class ChunkStore:
     """Reads and writes the chunk pool and artifact recipes of one store."""
 
     def __init__(self, manager: ConnectionManager, delta: bool = False) -> None:
-        """`delta` is the store's persisted ``chunk`` policy: when True,
-        Layer-2 resemblance/delta storage runs on every new chunk."""
+        """`delta` is the store's persisted policy of the same name: when
+        True, Layer-2 resemblance/delta storage runs on every new chunk."""
         self._manager = manager
         self._delta = delta
         self._cache_root: Path | None = None

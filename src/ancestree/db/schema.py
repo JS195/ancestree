@@ -30,7 +30,7 @@ TABLES: frozenset[str] = frozenset(
 )
 
 SCHEMA_SQL = """
--- Store-wide configuration: rules, gen_triggers, reuse_identical/chunk policy.
+-- Store-wide configuration: rules, gen_triggers, reuse_identical/delta policy.
 CREATE TABLE config (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL                        -- JSON

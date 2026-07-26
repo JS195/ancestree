@@ -70,7 +70,7 @@ class Pruner:
         children_in_region: dict[str, list[str]] = {nid: [] for nid in affected}
         for nid in affected:
             record = self._metadata.get(nid)
-            parents = list(record.parent_ids) if record else []
+            parents = list(record.parent_id) if record else []
             all_parents[nid] = parents
             for parent in parents:
                 if parent in affected:
@@ -262,7 +262,7 @@ def sweep_orphan_scratch(
             root,
             node_id,
             str(seed.get("step_type") or "unknown"),
-            [str(p) for p in seed.get("parent_ids") or []],
+            [str(p) for p in seed.get("parent_id") or []],
             generation=int(seed.get("generation") or 0),
         )
         if not workspace.files():
@@ -282,7 +282,7 @@ def sweep_orphan_scratch(
                 created_utc=started,
                 created_epoch=epoch,
                 healthy=False,  # a hard kill is never a clean completion
-                parent_ids=tuple(str(p) for p in seed.get("parent_ids") or []),
+                parent_id=tuple(str(p) for p in seed.get("parent_id") or []),
             )
             ingest_node(manager, metadata, chunks, workspace, record)
         except Exception:  # noqa: BLE001, S112 - best effort; the evidence is kept either way

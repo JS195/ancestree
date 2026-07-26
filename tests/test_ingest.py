@@ -37,7 +37,7 @@ def _record(node_id: str, parents: tuple[str, ...] = ()) -> NodeRecord:
         created_utc="2026-07-08T00:00:00+00:00",
         created_epoch=1_750_000_000.0,
         healthy=True,
-        parent_ids=parents,
+        parent_id=parents,
     )
 
 
@@ -59,7 +59,7 @@ def test_workspace_creates_scratch_and_seed(tmp_path: Path) -> None:
     seed = json.loads((ws.path / SEED_FILENAME).read_text())
     assert seed["node_id"] == "abc12345"
     assert seed["step_type"] == "clean"
-    assert seed["parent_ids"] == ["p1", "p2"]
+    assert seed["parent_id"] == ["p1", "p2"]
     assert isinstance(seed["pid"], int)
     assert "started_utc" in seed
 

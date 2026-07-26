@@ -232,7 +232,7 @@ def test_from_parent_inside_a_block(store: LineageStore) -> None:
 def test_policy_is_persisted_and_immutable(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     first = LineageStore(root, rules={"clean": ["ingest"]}, reuse_identical=False)
-    assert first.reuse_identical is False and first.chunk is True
+    assert first.reuse_identical is False and first.delta is True
     first.close()
 
     # Reopening with nothing re-supplied uses the stored policy.

@@ -39,6 +39,7 @@ class Node:
     node_id: str
     step_type: str = field(compare=False)
     generation: int = field(compare=False)
+    #: Ordered parent ids — a tuple, since a node may be a join.
     parent_id: tuple[str, ...] = field(compare=False)
     created_utc: str = field(compare=False)
     healthy: bool = field(compare=False)

@@ -43,7 +43,7 @@ def _record(
         created_utc="2026-07-08T00:00:00+00:00",
         created_epoch=_EPOCH + epoch_offset,
         healthy=healthy,
-        parent_ids=parents,
+        parent_id=parents,
     )
 
 
@@ -86,7 +86,7 @@ def test_roundtrip_record_and_metadata(store: MetadataStore) -> None:
     record = store.get("b")
     assert record is not None
     assert record.step_type == "model"
-    assert record.parent_ids == ("a",)
+    assert record.parent_id == ("a",)
     assert record.healthy is True
 
     meta = store.metadata_for("b")
@@ -106,7 +106,7 @@ def test_parent_order_is_preserved(store: MetadataStore) -> None:
     _add(store, "join", parents=("p2", "p1"), epoch_offset=2)
     record = store.get("join")
     assert record is not None
-    assert record.parent_ids == ("p2", "p1")
+    assert record.parent_id == ("p2", "p1")
 
 
 def test_find_by_column_equality(store: MetadataStore) -> None:
@@ -273,7 +273,7 @@ def test_remove_is_a_noop_for_missing_and_cascades(
     assert store.get("a") is None
     assert store.metadata_for("a") == {}
     record = store.get("b")
-    assert record is not None and record.parent_ids == ()  # edge cascaded
+    assert record is not None and record.parent_id == ()  # edge cascaded
 
 
 def test_find_by_parent_id(store: MetadataStore) -> None:

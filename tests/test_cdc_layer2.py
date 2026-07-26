@@ -191,8 +191,8 @@ def test_near_duplicate_versions_shrink_the_store(tmp_path: Path) -> None:
         _mutate(payload, 2_000, seed=19 + i) for i in range(3)
     ]  # ~1% scattered edits: every chunk differs, Layer 1 shares nothing
 
-    def fill(root: Path, chunk_policy: bool) -> int:
-        store = LineageStore(root, chunk=chunk_policy)
+    def fill(root: Path, delta_policy: bool) -> int:
+        store = LineageStore(root, delta=delta_policy)
         for index, version in enumerate(versions):
             with store.create_node(step_type="version") as node:
                 (node / "data.bin").write_bytes(version)
@@ -205,8 +205,8 @@ def test_near_duplicate_versions_shrink_the_store(tmp_path: Path) -> None:
         store.close()
         return stored
 
-    layer1_only = fill(tmp_path / "l1", chunk_policy=False)
-    layer2 = fill(tmp_path / "l2", chunk_policy=True)
+    layer1_only = fill(tmp_path / "l1", delta_policy=False)
+    layer2 = fill(tmp_path / "l2", delta_policy=True)
     # With only 3 versions the raw first copy dominates, and randbytes is
     # incompressible so every chunk pays full per-chunk overhead with nothing
     # for zlib to reclaim; the amortized ratio over many versions is measured
@@ -217,7 +217,7 @@ def test_near_duplicate_versions_shrink_the_store(tmp_path: Path) -> None:
 def test_random_mutations_roundtrip_through_a_delta_store(
     tmp_path: Path,
 ) -> None:
-    store = LineageStore(tmp_path / "proj", chunk=True)
+    store = LineageStore(tmp_path / "proj", delta=True)
     rng = random.Random(99)
     payload = rng.randbytes(120_000)
     for round_number in range(6):

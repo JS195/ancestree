@@ -142,7 +142,7 @@ def test_sweep_adopts_dead_sessions(
     # to keep this test about the happy path.
     seed_path = workspace.path / SEED_FILENAME
     seed = json.loads(seed_path.read_text())
-    seed["parent_ids"] = []
+    seed["parent_id"] = []
     seed_path.write_text(json.dumps(seed))
 
     monkeypatch.setattr("ancestree.maintenance._pid_alive", lambda pid: False)

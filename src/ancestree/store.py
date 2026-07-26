@@ -6,7 +6,7 @@ and exposes the public API: ``create_node``, the query vocabulary
 ``from_parent``), the power tools (``sql``, ``stats``) and the store
 lifecycle. Orchestration only — every algorithm lives in a focused module.
 
-Store policy (``rules``, ``gen_triggers``, ``reuse_identical``, ``chunk``)
+Store policy (``rules``, ``gen_triggers``, ``reuse_identical``, ``delta``)
 is persisted in the database at creation and cannot be changed afterwards;
 reopening with different values warns and uses the stored policy.
 
@@ -67,7 +67,7 @@ class LineageStore:
         rules: dict[str, list[str]] | None = None,
         gen_triggers: list[str] | None = None,
         reuse_identical: bool | None = None,
-        chunk: bool | None = None,
+        delta: bool | None = None,
     ) -> None:
         """Opens (creating if needed) the store at `root`.
 
@@ -80,22 +80,24 @@ class LineageStore:
             reuse_identical: A node with the same parents and content as an
                 existing one is bound to that node instead of being written
                 again (persisted at creation; defaults to True).
-            chunk: Layer-2 (delta) storage deduplication policy (persisted
-                at creation; defaults to True).
+            delta: Layer-2 storage policy — a new chunk similar to one
+                already stored is kept as a delta against it. Layer-1
+                chunking and exact chunk deduplication always run,
+                whatever this is set to (persisted at creation; defaults
+                to True).
         """
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self._manager = ConnectionManager(self.root / DB_FILENAME)
         self._metadata = MetadataStore(self._manager)
         config = self._load_or_create_config(
-            rules, gen_triggers, reuse_identical, chunk
+            rules, gen_triggers, reuse_identical, delta
         )
         self.rules: dict[str, list[str]] = config["rules"]
         self.gen_triggers: list[str] = config["gen_triggers"]
         self.reuse_identical: bool = config["reuse_identical"]
-        self.chunk: bool = config["chunk"]
-        # The chunk policy is Layer-2 (resemblance/delta) storage (AD5).
-        self._chunks = ChunkStore(self._manager, delta=self.chunk)
+        self.delta: bool = config["delta"]
+        self._chunks = ChunkStore(self._manager, delta=self.delta)
         self._engine = RuleEngine(self.rules, self.gen_triggers)
         self._pruner = Pruner(self._manager, self._metadata)
         # Resources are released when close() is called, when the store is
@@ -150,7 +152,7 @@ class LineageStore:
         rules: dict[str, list[str]] | None,
         gen_triggers: list[str] | None,
         reuse_identical: bool | None,
-        chunk: bool | None,
+        delta: bool | None,
     ) -> dict[str, Any]:
         row = (
             self._manager.read()
@@ -164,7 +166,7 @@ class LineageStore:
                 "reuse_identical": (
                     True if reuse_identical is None else bool(reuse_identical)
                 ),
-                "chunk": True if chunk is None else bool(chunk),
+                "delta": True if delta is None else bool(delta),
             }
             with self._manager.write() as conn:
                 conn.execute(
@@ -192,13 +194,13 @@ class LineageStore:
             )
         for name, supplied in (
             ("reuse_identical", reuse_identical),
-            ("chunk", chunk),
+            ("delta", delta),
         ):
             if supplied is not None and bool(supplied) != stored[name]:
                 warnings.warn(
                     f"Supplied {name}={supplied!r} differs from the stored "
                     f"policy ({name}={stored[name]!r}) and has been "
-                    "ignored. reuse_identical/chunk are persisted store "
+                    "ignored. reuse_identical/delta are persisted store "
                     "policy, set once at creation.",
                     UserWarning,
                     stacklevel=3,
@@ -244,11 +246,11 @@ class LineageStore:
         ):
             node_id = uuid.uuid4().hex[:8]
 
-        parent_ids = [p.node_id for p in parents]
+        parent_id = [p.node_id for p in parents]
         workspace = NodeWorkspace(
-            self.root, node_id, step_type, parent_ids, generation=generation
+            self.root, node_id, step_type, parent_id, generation=generation
         )
-        handle = RecordingNode(node_id, step_type, generation, parent_ids, workspace)
+        handle = RecordingNode(node_id, step_type, generation, parent_id, workspace)
 
         start = time.monotonic()
         try:
@@ -367,7 +369,7 @@ class LineageStore:
             prov_git_commit=prov["git_commit"],
             prov_git_branch=prov["git_branch"],
             prov_git_dirty=prov["git_dirty"],
-            parent_ids=tuple(handle.parent_id),
+            parent_id=tuple(handle.parent_id),
         )
         rows = [
             metadata_row(
@@ -404,7 +406,7 @@ class LineageStore:
             return False
         existing = ContentSummary.of(
             record.step_type,
-            record.parent_ids,
+            record.parent_id,
             self._metadata_envelopes(candidate_id),
             {
                 relpath: artifact.sha256
@@ -418,7 +420,7 @@ class LineageStore:
         handle.node_id = record.node_id
         handle.step_type = record.step_type
         handle.generation = record.generation
-        handle.parent_id = list(record.parent_ids)
+        handle.parent_id = list(record.parent_id)
         workspace.discard()
         return True
 
@@ -439,7 +441,7 @@ class LineageStore:
             node_id=record.node_id,
             step_type=record.step_type,
             generation=record.generation,
-            parent_id=record.parent_ids,
+            parent_id=record.parent_id,
             created_utc=record.created_utc,
             healthy=record.healthy,
             duration_s=record.duration_s,
@@ -530,7 +532,7 @@ class LineageStore:
         paths from the node's parent(s), in parent order. Empty when the
         node or its parents cannot be resolved."""
         if isinstance(node, (Node, RecordingNode)):
-            parent_ids: Sequence[str] = list(node.parent_id)
+            parent_id: Sequence[str] = list(node.parent_id)
         else:
             record = (
                 self._metadata.get(self._node_id_of(node) or "")
@@ -539,11 +541,11 @@ class LineageStore:
             )
             if record is None:
                 return []
-            parent_ids = record.parent_ids
+            parent_id = record.parent_id
         paths: list[Path] = []
-        for parent_id in parent_ids:
-            if self._metadata.exists(parent_id):
-                paths.extend(self._artifact_paths(parent_id, filename))
+        for parent in parent_id:
+            if self._metadata.exists(parent):
+                paths.extend(self._artifact_paths(parent, filename))
         return paths
 
     # ------------------------------------------------------------------
@@ -621,7 +623,7 @@ class LineageStore:
                 "node_id": record.node_id,
                 "step_type": record.step_type,
                 "generation": record.generation,
-                "parent_id": list(record.parent_ids),
+                "parent_id": list(record.parent_id),
                 "created_utc": record.created_utc,
                 "healthy": record.healthy,
                 "duration_s": record.duration_s,
